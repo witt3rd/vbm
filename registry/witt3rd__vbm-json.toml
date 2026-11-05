@@ -4,7 +4,7 @@ what = "Verified JSON codec"
 milestone = "Level 1 card; framing module"
 depends_on = []
 repo = "https://github.com/witt3rd/vbm-json"
-commit = "46cde9eb38c9b0cc5c7ac3a777c3a8f8b16e3152"
+commit = "ca1a00a432a000c4a15710ea2b1809598270b169"
 targets = ["C", "WebAssembly", "Python", "Rust"]
 manifest = "vbm-proof.toml"
 
@@ -15,7 +15,7 @@ approved = "2026-11-04"
 
 [latest]
 date = "2026-11-05"
-correctness = "fail"
-landedness = "fail"
+correctness = "pass"
+landedness = "pass"
 level = "none"
 card = "registry/scores/witt3rd__vbm-json.json"

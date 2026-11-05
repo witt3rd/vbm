@@ -1,17 +1,17 @@
 {
   "schema": "scorecard-3",
   "scorecard": {
-    "sha": "3d484c4434d089a0c524d7b349a6385f69c92900",
+    "sha": "1bbe86f45d7fc557c5ff58d71ec6625606d99a45",
     "dirty": false
   },
   "subject": {
     "name": "vbm-json",
     "kind": "library",
-    "commit": "46cde9eb38c9b0cc5c7ac3a777c3a8f8b16e3152",
-    "commit_date": "2026-11-05T10:02:51-08:00"
+    "commit": "ca1a00a432a000c4a15710ea2b1809598270b169",
+    "commit_date": "2026-11-05T11:27:42-08:00"
   },
   "adapter": {
-    "sha256": "b6ba23ff3ae9b66f2ab23e9515c15e4b83d0e55e16b35a99f9e583dd7b974555"
+    "sha256": "7cd908aafeac92d36ad6610d6e9df26d51a9b7cf8680929fdd56a02f7ea17725"
   },
   "sandbox": {
     "launcher_sha256": "9d2c6418e11cb0f709b2db4a2d981e07d0b276fb35354048628c110c1cb3b6bb",
@@ -367,17 +367,17 @@
       "dir": "up",
       "definition": "the subject's MB/s as a percent of the BEST SCALAR comparator's (the adapter marks each comparator scalar or not; the floor 50 is 'within 2x'), on one corpus named by its sha256, from the adapter's [bench] cmd in the sandbox (cgroup-capped); every declared comparator must report a number AND a pinned version with the sha256 of its binary and inputs, or the metric is not-measurable and names the gap. The gap to each non-scalar comparator (SIMD) is reported openly, not floored",
       "implemented": true,
-      "value": 73.5,
+      "value": 74.0,
       "floor": {
         "op": ">=",
         "value": 50
       },
       "status": "pass",
-      "subject_mb_s": 26.1,
+      "subject_mb_s": 69.0,
       "comparators_mb_s": {
-        "python-json": 22.4,
-        "serde_json": 35.5,
-        "simdjson": 347.0
+        "python-json": 62.3,
+        "serde_json": 93.2,
+        "simdjson": 867.7
       },
       "comparator_provenance": {
         "python-json": {
@@ -406,86 +406,86 @@
           "sha256": "857fc854d687e2f3881fd7f3a700d58659902a5edb91e156484726f1204f202c",
           "bytes": 1033424,
           "mb_s": {
-            "subject": 26.1,
-            "python-json": 22.4,
-            "serde_json": 35.5,
-            "simdjson": 347.0
+            "subject": 69.0,
+            "python-json": 62.3,
+            "serde_json": 93.2,
+            "simdjson": 867.7
           },
           "best_scalar": "serde_json",
-          "percent_of_best_scalar": 73.5
+          "percent_of_best_scalar": 74.0
         },
         {
           "name": "twitter",
           "sha256": "30721e496a8d73cfc50658923c34eb2c0fbe15ee6835005e43ee624d8dedf200",
           "bytes": 631515,
           "mb_s": {
-            "subject": 46.6,
-            "python-json": 56.0,
-            "serde_json": 77.4,
-            "simdjson": 1055.4
+            "subject": 118.0,
+            "python-json": 151.6,
+            "serde_json": 218.5,
+            "simdjson": 2574.3
           },
           "best_scalar": "serde_json",
-          "percent_of_best_scalar": 60.2
+          "percent_of_best_scalar": 54.0
         },
         {
           "name": "canada",
           "sha256": "f83b3b354030d5dd58740c68ac4fecef64cb730a0d12a90362a7f23077f50d78",
           "bytes": 2251051,
           "mb_s": {
-            "subject": 29.9,
-            "python-json": 19.6,
-            "serde_json": 75.9,
-            "simdjson": 304.2
+            "subject": 87.0,
+            "python-json": 54.6,
+            "serde_json": 211.2,
+            "simdjson": 765.7
           },
           "best_scalar": "serde_json",
-          "percent_of_best_scalar": 39.4
+          "percent_of_best_scalar": 41.2
         },
         {
           "name": "citm_catalog",
           "sha256": "a73e7a883f6ea8de113dff59702975e60119b4b58d451d518a929f31c92e2059",
           "bytes": 1727204,
           "mb_s": {
-            "subject": 62.8,
-            "python-json": 61.3,
-            "serde_json": 135.8,
-            "simdjson": 1179.1
+            "subject": 160.4,
+            "python-json": 198.2,
+            "serde_json": 386.0,
+            "simdjson": 2938.7
           },
           "best_scalar": "serde_json",
-          "percent_of_best_scalar": 46.2
+          "percent_of_best_scalar": 41.6
         },
         {
           "name": "small-objects",
           "sha256": "12b0bc9c4c312449ce677f4fd03e6b693ba7f232f5b1332219bddc2b049af2c8",
           "bytes": 2412355,
           "mb_s": {
-            "subject": 17.9,
-            "python-json": 20.8,
-            "serde_json": 21.6,
-            "simdjson": 319.6
+            "subject": 50.3,
+            "python-json": 64.2,
+            "serde_json": 60.5,
+            "simdjson": 745.8
           },
-          "best_scalar": "serde_json",
-          "percent_of_best_scalar": 82.9
+          "best_scalar": "python-json",
+          "percent_of_best_scalar": 78.3
         },
         {
           "name": "string-heavy",
           "sha256": "e42cabee744c0288079e5eb037aefb069f1e3efda8dd15263fbe4081e5e73228",
           "bytes": 2915939,
           "mb_s": {
-            "subject": 50.0,
-            "python-json": 58.0,
-            "serde_json": 76.6,
-            "simdjson": 885.8
+            "subject": 149.7,
+            "python-json": 186.1,
+            "serde_json": 203.2,
+            "simdjson": 1992.4
           },
           "best_scalar": "serde_json",
-          "percent_of_best_scalar": 65.3
+          "percent_of_best_scalar": 73.7
         }
       ],
       "corpora_at_or_above_floor": 4,
       "corpora_floor_percent": 50,
       "best_scalar": "serde_json",
-      "gap_to_best_scalar_x": 1.36,
+      "gap_to_best_scalar_x": 1.35,
       "gap_to_non_scalar_x": {
-        "simdjson": 13.3
+        "simdjson": 12.6
       }
     },
     {
@@ -494,7 +494,7 @@
       "dir": "down",
       "definition": "WARM: what a landing costs. Wall seconds, measured by the runner, of the adapter's [tier1] warm_command (the fast gate on a typical change) run in the same sandbox right after the cold run, on the cache that run left, after warm_change_cmd applied the typical change (untimed). It must exit 0 and its output must carry the self-test evidence of every declared gate except the named warm_skips; a warm run that does not show the gates ran is a fail, and a missing warm run is not-measurable",
       "implemented": true,
-      "value": 25.2,
+      "value": 18.4,
       "floor": {
         "op": "<",
         "value": 60
@@ -538,12 +538,12 @@
       "dir": "down",
       "definition": "COLD: what an outside contributor pays. Wall seconds, measured by the runner, of the adapter's [tier1] command in a fresh clone and a fresh sandbox with no cache (it must exit 0). A CEILING (<= 600), shown beside the warm number and never hidden or averaged with it",
       "implemented": true,
-      "value": 625.9,
+      "value": 270.4,
       "floor": {
         "op": "<=",
         "value": 600
       },
-      "status": "fail",
+      "status": "pass",
       "command": "cp -a /subject /tmp/w && cd /tmp/w && git config core.hooksPath scripts/githooks &&\nR=$(command -v lake) && mkdir /tmp/shim &&\ncat > /tmp/shim/lake <<SH\n#!/bin/bash\ncase \" \\$* \" in *\" --run \"*) exec f",
       "measured": true
     },
@@ -567,11 +567,11 @@
       "dir": "up",
       "definition": "first-parent commits in the window ending at the pinned commit, per hour of their span (span at least 1 h)",
       "implemented": true,
-      "value": 3.429,
+      "value": 3.157,
       "floor": null,
       "status": "pass",
-      "commits": 31,
-      "span_seconds": 32544
+      "commits": 33,
+      "span_seconds": 37635
     },
     {
       "id": "velocity.p90_commit_to_main_seconds",
@@ -582,7 +582,7 @@
       "value": 7373,
       "floor": null,
       "status": "pass",
-      "changes": 23,
+      "changes": 25,
       "changes_with_a_recorded_start": 10
     },
     {
@@ -692,13 +692,35 @@
       "dir": "up",
       "definition": "the ran-evidence of the fast gate (DECISIONS 19): the cases its gates and self-tests EXECUTED, summed over the lines `ran: NAME: N cases` (NAME [A-Za-z0-9_.-]+, N at most 15 digits) of the fast-gate log (its stdout and stderr, run in the sandbox, exit 0 required). Fails, with the reason, when the log has a line containing SKIPPED, no evidence line at all, or a sum of 0 cases, or a name that the adapter does not declare in [tier1] ran_names (a subject cannot invent a gate), or a declared name that is missing or shows 0 cases; no declared ran_names is not-measurable. A self-test that never ran is not a self-test: this closes the vacuous pass that honesty.gates_self_tested cannot see. Honest weakness: a count regex proves a count was printed, not that every case was meaningful; the evidence is the subject's own output, so soundness is the attack suite's question",
       "implemented": true,
-      "value": null,
+      "value": 25558,
       "floor": {
         "op": ">=",
         "value": 1
       },
-      "status": "not-measurable",
-      "reason": "the adapter declares no [tier1] ran_names: the evidence lines must name exactly the declared gates (DECISIONS 19), so a subject without them is not measured (and fails its floor)"
+      "status": "pass",
+      "evidence_names": 7,
+      "cases": 25558,
+      "cases_by_name": {
+        "axiom-gate": 2244,
+        "closure-gate": 24,
+        "ledger-gate": 18,
+        "tests": 883,
+        "trust-ledger": 13,
+        "vectors-check": 22373,
+        "zero-warning": 3
+      },
+      "zero_case_names": [],
+      "skipped_lines": [],
+      "ran_names_declared": [
+        "axiom-gate",
+        "closure-gate",
+        "ledger-gate",
+        "trust-ledger",
+        "vectors-check",
+        "zero-warning",
+        "tests"
+      ],
+      "weakness": "a count regex proves a count was printed, not that every case was meaningful"
     },
     {
       "id": "honesty.attack_suite",
@@ -712,8 +734,8 @@
         "value": 1
       },
       "status": "pass",
-      "pass_line": "PASS relabel-attacks: 60 of 60 attacks refused (55 s)",
-      "sabotage_line": "FAIL relabel-attacks: 0 of 60 attacks refused (5 s)"
+      "pass_line": "PASS relabel-attacks: 60 of 60 attacks refused (35 s)",
+      "sabotage_line": "FAIL relabel-attacks: 0 of 60 attacks refused (3 s)"
     }
   ],
   "dimensions": {
@@ -738,22 +760,14 @@
       "below_floor_implemented": []
     },
     "velocity": {
-      "status": "fail",
-      "below_floor": [
-        "velocity.tier1_seconds_cold"
-      ],
-      "below_floor_implemented": [
-        "velocity.tier1_seconds_cold"
-      ]
+      "status": "pass",
+      "below_floor": [],
+      "below_floor_implemented": []
     },
     "honesty": {
-      "status": "fail",
-      "below_floor": [
-        "honesty.selftests_ran_cases"
-      ],
-      "below_floor_implemented": [
-        "honesty.selftests_ran_cases"
-      ]
+      "status": "pass",
+      "below_floor": [],
+      "below_floor_implemented": []
     }
   },
   "verdicts": {
@@ -761,12 +775,10 @@
       "dimensions": {
         "verified": "pass",
         "construction": "pass",
-        "honesty": "fail"
+        "honesty": "pass"
       },
-      "below_floor": [
-        "honesty.selftests_ran_cases"
-      ],
-      "status": "fail",
+      "below_floor": [],
+      "status": "pass",
       "not_defined_yet": [
         "generation"
       ],
@@ -775,12 +787,10 @@
     },
     "landedness": {
       "dimensions": {
-        "velocity": "fail"
+        "velocity": "pass"
       },
-      "below_floor": [
-        "velocity.tier1_seconds_cold"
-      ],
-      "status": "fail"
+      "below_floor": [],
+      "status": "pass"
     },
     "profile": {
       "dimensions": {
