@@ -1,0 +1,21 @@
+kind = "library"
+status = "live"
+what = "Verified JSON codec"
+milestone = "Level 1 card; framing module"
+depends_on = []
+repo = "https://github.com/witt3rd/vbm-json"
+commit = "0a6696caa7c2eee79b6c323a900c51405193a392"
+targets = ["C", "WebAssembly", "Python", "Rust"]
+manifest = "vbm-proof.toml"
+
+[measured]
+reason = "The first Level 2 subject: our own library, whose efficiency against comparators, mutation score and reproducible builds are the public evidence of the method. Until the microVM isolation exists it runs on our worker host in a resource-limited process, and its card says so."
+adapter = "scorecard.toml"
+approved = "2026-11-04"
+
+[latest]
+date = "2026-11-05"
+correctness = "pass"
+landedness = "fail"
+level = "none"
+card = "registry/scores/witt3rd__vbm-json.json"

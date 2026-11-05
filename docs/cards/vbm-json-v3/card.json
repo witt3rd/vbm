@@ -1,0 +1,409 @@
+{
+  "schema": "scorecard-1",
+  "scorecard": {
+    "sha": "9dbe735d44cdc6525a77c6567b132bd2707d34c4",
+    "dirty": false
+  },
+  "subject": {
+    "name": "vbm-json",
+    "kind": "library",
+    "commit": "6b239dea3bf9ba6f59ad5c710d619871d9462cae"
+  },
+  "adapter": {
+    "sha256": "a74bb4ad6523c8db8900e655c672f785168b7aa2b67e5ff6bf93409ac60f14f2"
+  },
+  "sandbox": {
+    "launcher_sha256": "d3ae46de24d343c7312d0c60390e5a97a8b06f9d023c6a98fd834cbf03436450",
+    "limits": {
+      "cpus": 2,
+      "memory_mb": 4096,
+      "disk_mb": 2048,
+      "pids": 512
+    },
+    "attestations": [
+      {
+        "kind": "bwrap",
+        "image_digest": "sha256:2db4bdca4f77759ac9f7009f942f3fdd6887d05537c65b4fe4229ce065e80021",
+        "network": "none",
+        "subject_mount": "ro",
+        "enforcement": "cgroup",
+        "limits": {
+          "cpus": 2,
+          "memory_mb": 4096,
+          "disk_mb": 2048,
+          "pids": 512,
+          "timeout_seconds": 1800
+        }
+      },
+      {
+        "kind": "bwrap",
+        "image_digest": "sha256:2db4bdca4f77759ac9f7009f942f3fdd6887d05537c65b4fe4229ce065e80021",
+        "network": "none",
+        "subject_mount": "ro",
+        "enforcement": "cgroup",
+        "limits": {
+          "cpus": 2,
+          "memory_mb": 4096,
+          "disk_mb": 2048,
+          "pids": 512,
+          "timeout_seconds": 900
+        }
+      },
+      {
+        "kind": "bwrap",
+        "image_digest": "sha256:2db4bdca4f77759ac9f7009f942f3fdd6887d05537c65b4fe4229ce065e80021",
+        "network": "none",
+        "subject_mount": "ro",
+        "enforcement": "cgroup",
+        "limits": {
+          "cpus": 2,
+          "memory_mb": 4096,
+          "disk_mb": 2048,
+          "pids": 512,
+          "timeout_seconds": 900
+        }
+      },
+      {
+        "kind": "bwrap",
+        "image_digest": "sha256:2db4bdca4f77759ac9f7009f942f3fdd6887d05537c65b4fe4229ce065e80021",
+        "network": "none",
+        "subject_mount": "ro",
+        "enforcement": "cgroup",
+        "limits": {
+          "cpus": 2,
+          "memory_mb": 4096,
+          "disk_mb": 2048,
+          "pids": 512,
+          "timeout_seconds": 900
+        }
+      },
+      {
+        "kind": "bwrap",
+        "image_digest": "sha256:2db4bdca4f77759ac9f7009f942f3fdd6887d05537c65b4fe4229ce065e80021",
+        "network": "none",
+        "subject_mount": "ro",
+        "enforcement": "cgroup",
+        "limits": {
+          "cpus": 2,
+          "memory_mb": 4096,
+          "disk_mb": 2048,
+          "pids": 512,
+          "timeout_seconds": 900
+        }
+      }
+    ]
+  },
+  "skipped_files": [],
+  "metrics": [
+    {
+      "id": "verified.unproved_escapes",
+      "dimension": "verified",
+      "dir": "down",
+      "definition": "lines matching the adapter's [proof] sorry_pattern in its source globs (a line containing [proof] allow_marker is skipped)",
+      "implemented": true,
+      "value": 0,
+      "floor": {
+        "op": "==",
+        "value": 0
+      },
+      "status": "pass",
+      "findings": [],
+      "files_scanned": 24
+    },
+    {
+      "id": "verified.specified_share",
+      "dimension": "verified",
+      "dir": "up",
+      "definition": "percent specified, read from the subject's closure gate output; not-measurable when the subject has no closure gate",
+      "implemented": true,
+      "value": 100.0,
+      "floor": {
+        "op": ">=",
+        "value": 100
+      },
+      "status": "pass"
+    },
+    {
+      "id": "verified.nonstandard_axioms",
+      "dimension": "verified",
+      "dir": "down",
+      "definition": "constants that depend on an axiom beyond the standard three (a placeholder proof included), from the adapter's [proof] axiom_cmd, in the sandbox",
+      "implemented": true,
+      "value": 0,
+      "floor": {
+        "op": "==",
+        "value": 0
+      },
+      "status": "pass"
+    },
+    {
+      "id": "verified.trusted_c_lines",
+      "dimension": "verified",
+      "dir": "down",
+      "definition": "newline count of the files matching trust.c_files",
+      "implemented": true,
+      "value": 76,
+      "floor": null,
+      "status": "pass",
+      "files": {
+        "abi/lean_json.c": 76
+      }
+    },
+    {
+      "id": "verified.trust_ledger_entries",
+      "dimension": "verified",
+      "dir": "down",
+      "definition": "lines of the trust ledger matching trust.entry_regex",
+      "implemented": true,
+      "value": 9,
+      "floor": null,
+      "status": "pass"
+    },
+    {
+      "id": "verified.non_vacuity",
+      "dimension": "verified",
+      "dir": "up",
+      "definition": "percent of spec/code mutants that break a proof",
+      "implemented": false,
+      "value": null,
+      "floor": {
+        "op": ">=",
+        "value": 100
+      },
+      "status": "not-measurable",
+      "reason": "not implemented in this runner version"
+    },
+    {
+      "id": "bare_metal.freestanding_build",
+      "dimension": "bare_metal",
+      "dir": "up",
+      "definition": "1 if the adapter's [bare_metal] build_cmd (a build with -ffreestanding -nostdlib) exits 0, else 0; in the sandbox",
+      "implemented": true,
+      "value": 0,
+      "floor": {
+        "op": "==",
+        "value": 1
+      },
+      "status": "fail",
+      "exit": 1,
+      "output_tail": "abi/lean_json.c:5:10: fatal error: 'pthread.h' file not found\n    5 | #include <pthread.h>\n      |          ^~~~~~~~~~~\n1 error generated.\n"
+    },
+    {
+      "id": "bare_metal.libc_symbols",
+      "dimension": "bare_metal",
+      "dir": "down",
+      "definition": "distinct undefined symbols printed by [bare_metal] symbols_cmd (nm -u of the artifact, the subject's own prefixes filtered by the adapter) minus allowed_symbols; the command must end with --end-of-symbols-- (a silent failure is not zero); in the sandbox",
+      "implemented": true,
+      "value": 5,
+      "floor": {
+        "op": "==",
+        "value": 0
+      },
+      "status": "fail",
+      "symbols": [
+        "free",
+        "malloc",
+        "memcpy",
+        "memset",
+        "pthread_once"
+      ]
+    },
+    {
+      "id": "construction.hand_written_tests",
+      "dimension": "construction",
+      "dir": "down",
+      "definition": "tracked files that are hand-written TESTS OF THE SUBJECT'S CODE by DECISIONS 5 (default test patterns plus tests.extra, minus tests.generated and minus the declared gate self-tests)",
+      "implemented": true,
+      "value": 1,
+      "floor": {
+        "op": "==",
+        "value": 0
+      },
+      "status": "fail",
+      "files": [
+        "tests/abi_test.c"
+      ],
+      "generated_excluded": 322,
+      "gate_selftests_excluded": 5
+    },
+    {
+      "id": "construction.mutation_score",
+      "dimension": "construction",
+      "dir": "up",
+      "definition": "percent of code mutants killed by the proofs or the generated vectors",
+      "implemented": false,
+      "value": null,
+      "floor": {
+        "op": ">=",
+        "value": 100
+      },
+      "status": "not-measurable",
+      "reason": "not implemented in this runner version"
+    },
+    {
+      "id": "efficiency.throughput_vs_best",
+      "dimension": "efficiency",
+      "dir": "up",
+      "definition": "percent of the best comparator's throughput on the fixed corpus",
+      "implemented": false,
+      "value": null,
+      "floor": {
+        "op": ">=",
+        "value": 80
+      },
+      "status": "not-measurable",
+      "reason": "not implemented in this runner version"
+    },
+    {
+      "id": "velocity.tier1_seconds",
+      "dimension": "velocity",
+      "dir": "down",
+      "definition": "wall seconds of the adapter's tier1 command in the scratch clone (it must exit 0)",
+      "implemented": true,
+      "value": 58.8,
+      "floor": {
+        "op": "<",
+        "value": 60
+      },
+      "status": "pass"
+    },
+    {
+      "id": "velocity.open_prs",
+      "dimension": "velocity",
+      "dir": "down",
+      "definition": "open pull requests of the subject's origin repo (gh pr list)",
+      "implemented": true,
+      "value": 0,
+      "floor": {
+        "op": "==",
+        "value": 0
+      },
+      "status": "pass",
+      "repo": "witt3rd/vbm-json"
+    },
+    {
+      "id": "velocity.commits_per_hour",
+      "dimension": "velocity",
+      "dir": "up",
+      "definition": "first-parent commits in the window ending at the pinned commit, per hour of their span (span at least 1 h)",
+      "implemented": true,
+      "value": 1.218,
+      "floor": null,
+      "status": "pass",
+      "commits": 11,
+      "span_seconds": 32513
+    },
+    {
+      "id": "velocity.p90_commit_to_main_seconds",
+      "dimension": "velocity",
+      "dir": "down",
+      "definition": "p90 of the time from a change's FIRST AUTHORED commit (or the worker's start) to its landing on main; not-measurable until that start is recorded (never zero)",
+      "implemented": true,
+      "value": null,
+      "floor": null,
+      "status": "not-measurable",
+      "reason": "the change's first authored commit is not recorded on main (rebase and squash rewrite the dates, which read 0 under direct landing)"
+    },
+    {
+      "id": "honesty.gate_selftests",
+      "dimension": "honesty",
+      "dir": "up",
+      "definition": "percent of the declared gate self-test files (adapter [tests] gate_selftests, under scripts/) that the fast-gate script names; zero such files is not-measurable (a gate not watched to fail is decoration). Presence and coverage only: that each can fail is shown by the subject's own run",
+      "implemented": true,
+      "value": 100.0,
+      "floor": {
+        "op": ">=",
+        "value": 100
+      },
+      "status": "pass",
+      "files": [
+        "scripts/test_abi.sh",
+        "scripts/test_githook.sh",
+        "scripts/test_land_direct.sh",
+        "scripts/test_protected_set.sh",
+        "scripts/test_run_parallel.sh"
+      ],
+      "not_named_by_the_fast_gate": []
+    },
+    {
+      "id": "honesty.gates_self_tested",
+      "dimension": "honesty",
+      "dir": "up",
+      "definition": "percent of the subject's gates with a negative self-test that ran",
+      "implemented": false,
+      "value": null,
+      "floor": {
+        "op": ">=",
+        "value": 100
+      },
+      "status": "not-measurable",
+      "reason": "not implemented in this runner version"
+    },
+    {
+      "id": "honesty.attack_suite",
+      "dimension": "honesty",
+      "dir": "up",
+      "definition": "the relabel-attack suite passes, and fails under --sabotage",
+      "implemented": false,
+      "value": null,
+      "floor": {
+        "op": "==",
+        "value": 1
+      },
+      "status": "not-measurable",
+      "reason": "not implemented in this runner version"
+    }
+  ],
+  "dimensions": {
+    "verified": {
+      "status": "fail",
+      "below_floor": [
+        "verified.non_vacuity"
+      ],
+      "below_floor_implemented": []
+    },
+    "bare_metal": {
+      "status": "fail",
+      "below_floor": [
+        "bare_metal.freestanding_build",
+        "bare_metal.libc_symbols"
+      ],
+      "below_floor_implemented": [
+        "bare_metal.freestanding_build",
+        "bare_metal.libc_symbols"
+      ]
+    },
+    "construction": {
+      "status": "fail",
+      "below_floor": [
+        "construction.hand_written_tests",
+        "construction.mutation_score"
+      ],
+      "below_floor_implemented": [
+        "construction.hand_written_tests"
+      ]
+    },
+    "efficiency": {
+      "status": "fail",
+      "below_floor": [
+        "efficiency.throughput_vs_best"
+      ],
+      "below_floor_implemented": []
+    },
+    "velocity": {
+      "status": "pass",
+      "below_floor": [],
+      "below_floor_implemented": []
+    },
+    "honesty": {
+      "status": "fail",
+      "below_floor": [
+        "honesty.gates_self_tested",
+        "honesty.attack_suite"
+      ],
+      "below_floor_implemented": []
+    }
+  },
+  "result": "fail",
+  "implemented_result": "fail"
+}

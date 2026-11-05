@@ -1,0 +1,5 @@
+kind = "foundation"
+status = "planned"
+what = "Freestanding Lean runtime shim: allocator, mem* replacements, WebAssembly and native"
+milestone = "at the second library"
+depends_on = []

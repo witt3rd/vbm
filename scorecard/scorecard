@@ -1,0 +1,713 @@
+#!/usr/bin/env python3
+"""scorecard runner: measure one pinned commit of a subject repo against the seven ideals and print ONE JSON card (scorecard/SPEC.md, scorecard/DECISIONS.md).
+  scorecard/scorecard run --repo <path> --commit <rev> [--adapter <file>] [--out <file>] [--sandbox <launcher>] [--keep]
+The subject is UNTRUSTED CODE (scorecard/SPEC.md): it is only READ, in a scratch CLONE (removed afterwards), and NOTHING of it is executed unless a sandbox launcher is given (--sandbox) and its attestation checks out.
+Static metrics read only files the adapter declares, through one guard (no symlinks, no `..`, size-capped) and under an alarm (adapter regexes are hostile). The adapter defaults to scorecard.toml at the pinned commit. A missing, unknown or mistyped adapter key is
+rejected (exit 2). Floors, no averaging: a dimension with a floored metric that is `fail` or `not-measurable` fails; one failing dimension fails the card. `result` is strict (a metric this runner does
+not implement is not-measurable and fails its floor); `implemented_result` judges only the implemented metrics. Same commits in, same bytes out: no clock value appears in the card except the measured seconds, and every such metric is marked `measured: true` (it varies with load; scripts/test_scorecard.sh compares runs with those values masked).
+The metric table below, the floors and the adapter schema are gate-defining (scripts/protected-paths.txt)."""
+import argparse, base64, hashlib, json, os, random, re, secrets, shlex, shutil, signal, stat, subprocess, sys, tempfile, threading, time, tomllib
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+import scorecard_policy, scorecard_certify, scorecard_verdicts, scorecard_plain   # the registry allowlist (SPEC rule 10); Level 1 (SPEC "Level 1: Certified")
+SCHEMA_VERSION = "scorecard-3"   # 3: velocity.tier1_seconds split into warm and cold (DECISIONS 17); `verdicts` instead of `result` (DECISIONS 18)
+
+# The adapter schema (DECISIONS 4): section -> key -> type. Every key is required.
+MUTATION = {"files": list, "comment": str, "setup_cmd": str, "kill_cmd": str, "mutants": int, "seed": int, "kill_timeout_seconds": int, "timeout_seconds": int}
+OPTIONAL = {"mutation": {"equivalent": str}, "nonvacuity": {"equivalent": str},
+            "tier1": {"gates": list, "attack_cmd": str, "attack_sabotage_cmd": str, "attack_timeout_seconds": int, "warm_change_cmd": str, "warm_command": str, "warm_timeout_seconds": int, "warm_skips": list, "ran_names": list}}   # optional keys (default empty): the subject's list of EQUIVALENT mutants, a path in the subject (see run_mutation); [tier1] gates = [{name, selftest}] (see honesty.gates_self_tested) and the attack-suite commands (see honesty.attack_suite); [tier1] warm_change_cmd, warm_command, warm_timeout_seconds, warm_skips declare the warm run (see velocity.tier1_seconds_warm; none declared: that metric is not-measurable); [tier1] ran_names = evidence names the fast-gate log must carry with a positive case count (see honesty.selftests_ran_cases; REQUIRED for that metric: none declared is not-measurable, so the metric fails its floor)
+ADAPTER = {
+    "subject": {"name": str, "kind": str},                                  # kind: library | runtime
+    "source": {"globs": list},                                              # files scanned for forbidden constructs
+    "trust": {"c_files": list, "ledger": str, "entry_regex": str},          # trusted C files; the trust ledger and the line that opens an entry
+    "tests": {"generated": list, "extra": list, "gate_selftests": list, "entry_points": list, "scenario_files": list},    # generated/boundary-evidence paths (not tests); extra hand-written test paths; the self-tests of gates and process scripts (under scripts/); the names of the calls that run the subject's code ([] = count every test file as one case); scenario files = test files that build their own inputs in code (deep documents, allocator failures) though no literal appears in a call: each counts as one case
+    "proof": {"sorry_pattern": str, "allow_marker": str, "closure_cmd": str, "closure_regex": str, "closure_timeout_seconds": int,
+              "axiom_cmd": str, "axiom_regex": str, "axiom_timeout_seconds": int},   # + the axiom gate ("" = none): its output's group 1 is the count of constants that depend on a non-standard axiom (a placeholder proof included)
+    "mutation": MUTATION, "nonvacuity": MUTATION,   # code mutation (killed by the generated vectors) and specification mutation (killed by a broken proof): files to mutate, a one-time setup, the harness whose non-zero exit KILLS a mutant ("" = none)
+    "bench": {"cmd": str, "comparators": list, "timeout_seconds": int},   # a throughput bench ("" = none) printing `corpus SHA256 BYTES`, `subject MB_PER_S`, and per comparator `comparator NAME MB_PER_S` and `provenance NAME VERSION BINARY_SHA256 INPUTS_SHA256`; comparators = [{name, scalar}], every one must report
+    "bare_metal": {"build_cmd": str, "symbols_cmd": str, "allowed_symbols": list, "wasm_cmd": str, "wasm_bytes_regex": str, "timeout_seconds": int},   # a freestanding build ("" = none); a command that prints the artifact's undefined symbols one per line, then the line --end-of-symbols--   # the ONLY place a proof language appears: its unproved-escape pattern, the comment marker that allows a mention,
+                                                                            # and the closure gate command ("" = none) with the regex whose group 1 is the specified-share percent
+    "tier1": {"command": str, "timeout_seconds": int, "script": str},      # the fast gate; `script` is the file (read statically) that declares which self-tests it runs
+    "velocity": {"window_hours": int},
+    "floors": {"specified_share": (int, float)},                            # a library's is 100; a runtime's is its baseline and may only rise
+}
+KINDS = ("library", "runtime")
+RAN_NAME = r"[A-Za-z0-9_.-]+"
+RAN_WEAKNESS = "a count regex proves a count was printed, not that every case was meaningful"   # main's wording (DECISIONS 19), printed with the metric and in the card notes
+RAN_LINE = re.compile(rf"^ran: ({RAN_NAME}): ([0-9]{{1,15}}) cases$", re.M)   # the ran-evidence line (DECISIONS 19); anything else starting `ran:` is ignored, never counted
+PATH_KEYS = [("source", "globs"), ("trust", "c_files"), ("trust", "ledger"), ("tests", "generated"), ("tests", "extra"), ("tests", "gate_selftests"), ("tests", "scenario_files"), ("tier1", "script"), ("mutation", "files"), ("nonvacuity", "files")]   # declared paths: relative, no ".."
+LIMITS = dict(cpus=2, memory_mb=4096, disk_mb=2048, pids=512)   # the sandbox limits (SPEC); max_seconds caps any adapter timeout
+MAX_SECONDS, OUT_CAP, MAX_FILE = 3600, 1_000_000, 5_000_000
+METRIC_SECONDS = int(os.environ.get("SCORECARD_METRIC_SECONDS", "20"))   # alarm for every static metric
+EXECUTING = {"efficiency.throughput_vs_best", "construction.mutation_score", "verified.non_vacuity", "verified.specified_share", "verified.nonstandard_axioms", "bare_metal.freestanding_build", "bare_metal.wasm_freestanding_build", "bare_metal.libc_symbols", "velocity.tier1_seconds_warm", "velocity.tier1_seconds_cold", "honesty.gates_self_tested", "honesty.selftests_ran_cases", "honesty.attack_suite"}   # metrics that run subject code (only ever through the sandbox); no alarm: the launcher enforces the time limit
+GIT_ENV = {**{k: v for k, v in os.environ.items() if not k.startswith("GIT_")}, "GIT_CONFIG_GLOBAL": "/dev/null", "GIT_CONFIG_SYSTEM": "/dev/null", "GIT_CONFIG_NOSYSTEM": "1", "GIT_TERMINAL_PROMPT": "0"}
+
+# The metrics. floor: None (tracked) or (op, value); "adapter" = the value comes from the adapter's [floors]. dir: which way is better.
+METRICS = [
+    dict(id="verified.unproved_escapes", dim="verified", floor=("==", 0), dir="down", desc="lines matching the adapter's [proof] sorry_pattern in its source globs (a line containing [proof] allow_marker is skipped)"),
+    dict(id="verified.specified_share", dim="verified", floor=("adapter", "specified_share"), dir="up", desc="percent specified, read from the subject's closure gate output; not-measurable when the subject has no closure gate"),
+    dict(id="verified.nonstandard_axioms", dim="verified", floor=("==", 0), dir="down", desc="constants that depend on an axiom beyond the standard three (a placeholder proof included), from the adapter's [proof] axiom_cmd, in the sandbox"),
+    dict(id="verified.trusted_c_lines", dim="verified", floor=None, dir="down", desc="newline count of the files matching trust.c_files"),
+    dict(id="verified.trust_ledger_entries", dim="verified", floor=None, dir="down", desc="lines of the trust ledger matching trust.entry_regex"),
+    dict(id="verified.non_vacuity", dim="verified", floor=(">=", 100), dir="up", desc="percent of viable SPECIFICATION mutants (the same operator swaps, at seeded sites of the adapter's [nonvacuity] files, at most 200) that break a proof (the adapter's kill_cmd exits non-zero; 99 = the mutated specification itself does not build, excluded); the unmutated baseline must pass; in the sandbox"),
+    dict(id="bare_metal.freestanding_build", dim="bare_metal", floor=("==", 1), dir="up", desc="1 if the adapter's [bare_metal] build_cmd (a build with -ffreestanding -nostdlib) exits 0, else 0; in the sandbox"),
+    dict(id="bare_metal.wasm_freestanding_build", dim="bare_metal", floor=("==", 1), dir="up", needs=("bare_metal", "wasm_cmd"), desc="1 if the adapter's [bare_metal] wasm_cmd (a freestanding wasm32 build, no libc, no imports) exits 0, else 0; its size in bytes is read with wasm_bytes_regex. Listed only when the adapter declares a wasm target"),
+    dict(id="bare_metal.libc_symbols", dim="bare_metal", floor=("==", 0), dir="down", desc="distinct undefined symbols printed by [bare_metal] symbols_cmd (nm -u of the artifact, the subject's own prefixes filtered by the adapter) minus allowed_symbols; the command must end with --end-of-symbols-- (a silent failure is not zero); in the sandbox"),
+    dict(id="construction.hand_written_tests", dim="construction", floor=("==", 0), dir="down", desc="CASE LITERALS written by hand in the subject's test files (DECISIONS 5): in each candidate file (default test patterns plus tests.extra, minus tests.generated and minus the declared gate self-tests) the calls to a declared tests.entry_points name that have a string or bytes literal in their arguments. A DRIVER (it loads generated vectors and compares verdicts, no input literal of its own) has 0 cases and is listed as a driver, not counted; with no entry_points every candidate file counts as one case"),
+    dict(id="construction.mutation_score", dim="construction", floor=(">=", 100), dir="up", desc="percent of viable code mutants (the scorecard's operator swaps at seeded sites of the adapter's [mutation] files, at most 200) that the adapter's kill_cmd harness kills (non-zero exit; 99 = not viable, excluded); the unmutated baseline must pass; in the sandbox"),
+    dict(id="efficiency.throughput_vs_best", dim="efficiency", floor=(">=", 50), dir="up", desc="the subject's MB/s as a percent of the BEST SCALAR comparator's (the adapter marks each comparator scalar or not; the floor 50 is 'within 2x'), on one corpus named by its sha256, from the adapter's [bench] cmd in the sandbox (cgroup-capped); every declared comparator must report a number AND a pinned version with the sha256 of its binary and inputs, or the metric is not-measurable and names the gap. The gap to each non-scalar comparator (SIMD) is reported openly, not floored"),
+    dict(id="velocity.tier1_seconds_warm", dim="velocity", floor=("<", 60), dir="down", desc="WARM: what a landing costs. Wall seconds, measured by the runner, of the adapter's [tier1] warm_command (the fast gate on a typical change) run in the same sandbox right after the cold run, on the cache that run left, after warm_change_cmd applied the typical change (untimed). It must exit 0 and its output must carry the self-test evidence of every declared gate except the named warm_skips; a warm run that does not show the gates ran is a fail, and a missing warm run is not-measurable"),
+    dict(id="velocity.tier1_seconds_cold", dim="velocity", floor=("<=", 600), dir="down", desc="COLD: what an outside contributor pays. Wall seconds, measured by the runner, of the adapter's [tier1] command in a fresh clone and a fresh sandbox with no cache (it must exit 0). A CEILING (<= 600), shown beside the warm number and never hidden or averaged with it"),
+    dict(id="velocity.open_prs", dim="velocity", floor=("==", 0), dir="down", desc="open pull requests of the subject's origin repo (gh pr list)"),
+    dict(id="velocity.commits_per_hour", dim="velocity", floor=None, dir="up", desc="first-parent commits in the window ending at the pinned commit, per hour of their span (span at least 1 h)"),
+    dict(id="velocity.p90_commit_to_main_seconds", dim="velocity", floor=None, dir="down", desc="p90 (nearest rank) over the changes in the window of: last landing time minus FIRST AUTHORED commit time. A change is the run of first-parent commits landed within 120 s of each other; author dates survive a direct landing's rebase, squash merges rewrite them (those read 0). Not-measurable when every change reads 0 (no authoring start is recorded), never a silent zero"),
+    dict(id="honesty.gate_selftests", dim="honesty", floor=(">=", 100), dir="up", desc="percent of the declared gate self-test files (adapter [tests] gate_selftests, under scripts/) that the fast-gate script names; zero such files is not-measurable (a gate not watched to fail is decoration). Presence and coverage only: that each can fail is shown by the subject's own run"),
+    dict(id="honesty.gates_self_tested", dim="honesty", floor=(">=", 100), dir="up", desc="percent of the gates the adapter declares ([tier1] gates = [{name, selftest}]) whose negative self-test LEFT EVIDENCE in this run: the selftest pattern matches the output of the fast gate, run in the sandbox (it must exit 0). The evidence is the subject's own output, so it shows the self-test was reached, never that it is sound (that is the attack suite); no declared gate is not-measurable"),
+    dict(id="honesty.selftests_ran_cases", dim="honesty", floor=(">=", 1), dir="up", desc="the ran-evidence of the fast gate (DECISIONS 19): the cases its gates and self-tests EXECUTED, summed over the lines `ran: NAME: N cases` (NAME [A-Za-z0-9_.-]+, N at most 15 digits) of the fast-gate log (its stdout and stderr, run in the sandbox, exit 0 required). Fails, with the reason, when the log has a line containing SKIPPED, no evidence line at all, or a sum of 0 cases, or a name that the adapter does not declare in [tier1] ran_names (a subject cannot invent a gate), or a declared name that is missing or shows 0 cases; no declared ran_names is not-measurable. A self-test that never ran is not a self-test: this closes the vacuous pass that honesty.gates_self_tested cannot see. Honest weakness: a count regex proves a count was printed, not that every case was meaningful; the evidence is the subject's own output, so soundness is the attack suite's question"),
+    dict(id="honesty.attack_suite", dim="honesty", floor=("==", 1), dir="up", desc="the subject's relabel-attack suite (adapter [tier1] attack_cmd) exits 0 and its last line starts with PASS, and its sabotage run (attack_sabotage_cmd: every gate an attack relies on replaced by a stub) exits non-zero with a last line starting FAIL: a suite that cannot fail is decoration; both run in the sandbox; none declared is not-measurable"),
+]
+for _m in METRICS: _m["plain"] = scorecard_plain.PLAIN.get(_m["id"], "")   # data about each metric for a plain reader; not part of its definition
+MEASURES = {}   # metric id -> function(ctx) -> (value, extra dict); registered below
+
+
+class NotMeasurable(Exception): pass
+class Fail(Exception):
+    def __init__(self, reason, value=None, extra=None): super().__init__(reason); self.reason, self.value, self.extra = reason, value, extra or {}
+class Reject(Exception): pass    # bad input: exit 2
+class MetricTimeout(BaseException): pass
+
+
+def measure(mid):
+    def reg(f): MEASURES[mid] = f; return f
+    return reg
+
+
+def git(repo, *a, check=True):
+    r = subprocess.run(["git", "-C", repo, "-c", "core.fsmonitor=false", "-c", "core.hooksPath=/dev/null", *a], capture_output=True, text=True, env=GIT_ENV)
+    if check and r.returncode: raise Reject(f"git {' '.join(a[:2])} failed in {repo}: {r.stderr.strip().splitlines()[-1] if r.stderr.strip() else r.returncode}")
+    return r.stdout
+
+
+def load_adapter(text):
+    try: d = tomllib.loads(text)
+    except tomllib.TOMLDecodeError as e: raise Reject(f"adapter: not valid TOML: {e}")
+    for sec, keys in ADAPTER.items():
+        if not isinstance(d.get(sec), dict): raise Reject(f"adapter: missing section [{sec}]")
+        for k, t in keys.items():
+            if k not in d[sec]: raise Reject(f"adapter: missing key [{sec}] {k}")
+            v = d[sec][k]
+            if isinstance(v, bool) or not isinstance(v, t) or (t is list and (sec, k) != ("bench", "comparators") and not all(isinstance(x, str) for x in v)):
+                raise Reject(f"adapter: [{sec}] {k} must be {getattr(t, '__name__', 'a number')}")
+        for k, t in OPTIONAL.get(sec, {}).items():
+            if k in d[sec] and not isinstance(d[sec][k], t): raise Reject(f"adapter: [{sec}] {k} must be {t.__name__}")
+            d[sec].setdefault(k, t())
+        for k in d[sec]:
+            if k not in keys and k not in OPTIONAL.get(sec, {}): raise Reject(f"adapter: unknown key [{sec}] {k}")
+    for sec in d:
+        if sec not in ADAPTER: raise Reject(f"adapter: unknown section [{sec}]")
+    for sec, k in PATH_KEYS + [(sc, "equivalent") for sc in ("mutation", "nonvacuity") if d[sc]["equivalent"]]:
+        for v in (d[sec][k] if isinstance(d[sec][k], list) else [d[sec][k]]):
+            if v.startswith("/") or ".." in v.split("/") or "\0" in v: raise Reject(f"adapter: [{sec}] {k}: an absolute path or '..' is not allowed: {v!r}")
+    for k in ("sorry_pattern", "closure_regex"):
+        try: re.compile(d["proof"][k])
+        except re.error as e: raise Reject(f"adapter: [proof] {k} is not a valid regex: {e}")
+    cs = d["bench"]["comparators"]
+    if not all(isinstance(c, dict) and set(c) == {"name", "scalar"} and isinstance(c["name"], str) and re.fullmatch(r"[A-Za-z0-9._-]+", c["name"]) and isinstance(c["scalar"], bool) for c in cs): raise Reject("adapter: [bench] comparators must be a list of {name = \"...\", scalar = true|false}")
+    if d["bench"]["cmd"] and not any(c["scalar"] for c in cs): raise Reject("adapter: [bench] comparators needs at least one scalar comparator (the efficiency floor is against the best scalar one)")
+    for sec in ("mutation", "nonvacuity"):
+        if not 1 <= d[sec]["mutants"] <= 200: raise Reject(f"adapter: [{sec}] mutants must be 1..200 (the budget of DECISIONS 8)")
+    gs = d["tier1"]["gates"]
+    if not all(isinstance(g, dict) and set(g) == {"name", "selftest"} and isinstance(g["name"], str) and g["name"].strip() and isinstance(g["selftest"], str) for g in gs):
+        raise Reject("adapter: [tier1] gates must be a list of {name = \"...\", selftest = \"REGEX\"}")
+    if len({g["name"] for g in gs}) != len(gs): raise Reject("adapter: [tier1] gates: a gate is named once")
+    for g in gs:
+        try: re.compile(g["selftest"])
+        except re.error as e: raise Reject(f"adapter: [tier1] gates {g['name']!r}: selftest is not a valid regex: {e}")
+        if len(g["selftest"]) < 12: raise Reject(f"adapter: [tier1] gates {g['name']!r}: a selftest pattern shorter than 12 characters would match almost any output")
+    if bool(d["tier1"]["attack_cmd"]) != bool(d["tier1"]["attack_sabotage_cmd"]): raise Reject("adapter: [tier1] attack_cmd and attack_sabotage_cmd are declared together (the suite must be shown able to fail)")
+    t1 = d["tier1"]
+    if bool(t1["warm_command"]) != bool(t1["warm_change_cmd"]): raise Reject("adapter: [tier1] warm_change_cmd and warm_command are declared together (the warm run is the gate after a typical change)")
+    if t1["warm_command"] and not 1 <= t1["warm_timeout_seconds"] <= 1800: raise Reject("adapter: [tier1] warm_timeout_seconds must be 1..1800 when a warm run is declared")
+    if t1["warm_command"] and not t1["gates"]: raise Reject("adapter: [tier1] a warm run needs [tier1] gates (the warm output must show the gates ran)")
+    if not all(isinstance(x, str) for x in t1["warm_skips"]) or not set(t1["warm_skips"]) <= {g["name"] for g in t1["gates"]}: raise Reject("adapter: [tier1] warm_skips names declared gates only")
+    if t1["warm_skips"] and len(set(t1["warm_skips"])) >= len(t1["gates"]): raise Reject("adapter: [tier1] warm_skips cannot name every gate (the warm run must show at least one gate ran)")
+    rn = t1["ran_names"]
+    if not all(re.fullmatch(RAN_NAME, x) for x in rn) or len(set(rn)) != len(rn): raise Reject("adapter: [tier1] ran_names are distinct evidence names matching [A-Za-z0-9_.-]+")
+    for g in d["tests"]["gate_selftests"]:
+        if not g.startswith("scripts/"): raise Reject(f"adapter: [tests] gate_selftests must be under scripts/ (tests of the subject's own code are not gate self-tests): {g!r}")
+    if d["subject"]["kind"] not in KINDS: raise Reject(f"adapter: [subject] kind must be one of {KINDS}")
+    if d["subject"]["kind"] == "library" and d["floors"]["specified_share"] != 100: raise Reject("adapter: a library's [floors] specified_share is 100 (DECISIONS 1)")
+    return d
+
+
+def judge(m, value, adapter):
+    if m["floor"] is None: return "pass", None
+    op, ref = m["floor"]
+    if op == "adapter": op, ref = ">=", adapter["floors"][ref]
+    ok = {"==": value == ref, ">=": value >= ref, "<": value < ref, "<=": value <= ref}[op]
+    return ("pass" if ok else "fail"), {"op": op, "value": ref}
+
+
+class alarm:   # a wall-clock limit on a static metric; the regex engine checks signals, so a catastrophic adapter pattern is stopped
+    def __init__(self, secs): self.secs = secs
+    def __enter__(self):
+        def h(*_): raise MetricTimeout()
+        if self.secs: signal.signal(signal.SIGALRM, h); signal.setitimer(signal.ITIMER_REAL, self.secs)
+    def __exit__(self, *_): signal.setitimer(signal.ITIMER_REAL, 0)
+
+
+def build_card(ctx):
+    metrics = []
+    for m in METRICS:
+        if m.get("needs") and not ctx["adapter"][m["needs"][0]][m["needs"][1]]: continue   # a metric for a target the adapter does not declare is not listed
+        e = {"id": m["id"], "dimension": m["dim"], "dir": m["dir"], "definition": m["desc"], "implemented": m["id"] in MEASURES, "value": None, "floor": None}
+        if m["floor"]: e["floor"] = {"op": m["floor"][0], "value": m["floor"][1]} if m["floor"][0] != "adapter" else {"op": ">=", "value": ctx["adapter"]["floors"][m["floor"][1]]}
+        try:
+            if m["id"] not in MEASURES: raise NotMeasurable("not implemented in this runner version")
+            with alarm(0 if m["id"] in EXECUTING else METRIC_SECONDS): e["value"], extra = MEASURES[m["id"]](ctx)
+            e["status"], _ = judge(m, e["value"], ctx["adapter"]); e.update(extra)
+        except MetricTimeout: e["status"], e["reason"] = "not-measurable", f"the metric ran over {METRIC_SECONDS} s (a hostile or runaway pattern): stopped"
+        except NotMeasurable as x: e["status"], e["reason"] = "not-measurable", str(x)
+        except Fail as x: e["status"], e["reason"], e["value"] = "fail", x.reason, x.value; e.update(x.extra)
+        metrics.append(e)
+    dims = {}
+    for e in metrics:
+        if e["floor"] is None: continue
+        d = dims.setdefault(e["dimension"], {"status": "pass", "below_floor": [], "below_floor_implemented": []})
+        if e["status"] != "pass":   # fail, or not-measurable (DECISIONS 6: not-measurable fails the floor)
+            d["status"] = "fail"; d["below_floor"].append(e["id"])
+            if e["implemented"]: d["below_floor_implemented"].append(e["id"])
+    card = {"schema": SCHEMA_VERSION, "scorecard": ctx["scorecard"], "subject": {"name": ctx["adapter"]["subject"]["name"], "kind": ctx["adapter"]["subject"]["kind"], "commit": ctx["commit"], "commit_date": ctx["commit_date"]},
+            "adapter": {"sha256": ctx["adapter_sha"]}, "sandbox": ctx["sandbox_info"], "skipped_files": sorted(ctx["skipped"]), "metrics": metrics, "dimensions": dims}
+    card["verdicts"] = scorecard_verdicts.verdicts(card)
+    return card
+
+
+CLOCK = time.monotonic   # the host clock that times every measured phase (a module name so a self-test can shift it: scripts/test_scorecard.sh)
+
+
+def sh(argv, timeout, env, cwd=None, nonce=None, marks=None):
+    """Run argv (a launcher, never subject code directly) in its own session; kill that process group on timeout or when the output passes OUT_CAP. Returns (rc, output, seconds); rc is None on a timeout, -9 on a flood.
+    With a nonce, every output line `@@scorecard NONCE LABEL RC` (printed by the runner's own wrapper script) is stamped with the HOST clock at the moment it ARRIVES and appended to `marks` as (label, rc, time): the phases of a run are timed
+    by the runner, never by a clock or a number the subject's code reports (a line without the nonce is just output)."""
+    t0, hit = CLOCK(), []
+    p = subprocess.Popen(argv, cwd=cwd, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, start_new_session=True)
+    def kill():
+        try: os.killpg(p.pid, signal.SIGKILL)
+        except ProcessLookupError: pass
+    tm = threading.Timer(timeout, lambda: (hit.append(1), kill())); tm.start()
+    buf, seen, tag = b"", 0, f"@@scorecard {nonce} ".encode()
+    while len(buf) <= OUT_CAP and (c := os.read(p.stdout.fileno(), 65536)):   # os.read returns what has arrived (a buffered read would wait for a full block and blur the phase times)
+        buf += c; now = CLOCK()
+        while nonce and (nl := buf.find(b"\n", seen)) >= 0:
+            line, seen = buf[seen:nl], nl + 1
+            if line.startswith(tag) and len(f := line[len(tag):].split()) == 2 and f[1].lstrip(b"-").isdigit(): marks.append((f[0].decode(errors="replace"), int(f[1]), now))
+    if len(buf) > OUT_CAP: kill()
+    p.stdout.close(); p.wait(); tm.cancel()
+    return (None if hit else p.returncode), buf[:OUT_CAP].decode(errors="replace"), round(CLOCK() - t0, 1)
+
+
+# ---- the cheap mechanical metrics (slice 2) ----
+# DECISIONS 5: a hand-written test is any executable case or expected-output file not produced by a generator from the spec. Default patterns; the adapter adds tests.extra and
+# names tests.generated (boundary evidence: generated vectors, a vendored corpus), which is subtracted.
+TEST_PATTERNS = ["**/test/**", "**/tests/**", "**/testdata/**", "**/fixtures/**", "**/golden/**", "**/*_test/**", "**/test_*", "**/*_test", "**/*_test.*", "**/*.test.*", "**/*_spec.*", "**/*.spec.*",
+                 "**/*Test.*", "**/*Tests.*", "**/*.golden"]
+
+
+def gre(pat):   # a glob (* within a segment, ** across segments, ?) as an anchored regex
+    out, i = "", 0
+    while i < len(pat):
+        if pat.startswith("**/", i): out += "(?:.*/)?"; i += 3
+        elif pat.startswith("**", i): out += ".*"; i += 2
+        elif pat[i] == "*": out += "[^/]*"; i += 1
+        elif pat[i] == "?": out += "[^/]"; i += 1
+        else: out += re.escape(pat[i]); i += 1
+    return re.compile(out + r"\Z")
+
+
+def matching(ctx, pats):
+    rs = [gre(x) for x in pats]
+    return sorted(p for p in git(ctx["wt"], "ls-files", "-z").split("\0") if p and any(r.match(p) for r in rs))
+
+
+def safe_read(ctx, rel, cap=MAX_FILE):
+    """The one guard for reading a declared file of the subject: relative, no `..`, no symlink (the file or any parent), a regular file, at most MAX_FILE bytes. Returns bytes, or None (recorded in the card's skipped_files)."""
+    wt = os.path.realpath(ctx["wt"]); p = os.path.join(wt, rel)
+    why = None
+    if os.path.isabs(rel) or ".." in rel.split("/"): why = "unsafe path"
+    else:
+        try: st = os.lstat(p)
+        except OSError: ctx["skipped"].add(f"{rel}: not present at the pinned commit"); return None
+        if not stat.S_ISREG(st.st_mode) or os.path.realpath(os.path.dirname(p)) != os.path.dirname(p): why = "a symlink or not a regular file"
+        elif st.st_size > cap: why = f"over {cap} bytes"
+    if why: ctx["skipped"].add(f"{rel}: {why}"); return None
+    with open(p, "rb") as f: return f.read()
+
+
+def tail(out, n=240):   # the end of a subject command's (untrusted) output, one line, for a failure reason
+    return " ".join(out.split())[-n:]
+
+
+def run_cmd(ctx, cmd, timeout, nonce=None, marks=None):
+    """Subject code runs ONLY through the sandbox launcher (SPEC, Untrusted subject code); with none configured, nothing executes. The launcher gets a clean environment and a fixed argument shape, and must attest."""
+    if not ctx["sandbox"]: raise NotMeasurable("subject code runs only inside the sandbox and no launcher is configured (--sandbox): nothing was executed")
+    secs = min(timeout, MAX_SECONDS); ctx["n_exec"] += 1; out = os.path.join(ctx["scratch"], f"out{ctx['n_exec']}"); os.mkdir(out)
+    lim = dict(LIMITS, timeout_seconds=secs)
+    argv = [ctx["sandbox"], "--subject", ctx["wt"], "--out", out, "--timeout", str(secs), "--cpus", str(lim["cpus"]), "--memory-mb", str(lim["memory_mb"]), "--disk-mb", str(lim["disk_mb"]), "--pids", str(lim["pids"]), "--net", "none", "--", cmd]
+    rc, text, t = sh(argv, secs + int(os.environ.get("SCORECARD_GRACE_SECONDS", "30")), {"PATH": "/usr/bin:/bin", "LANG": "C", "HOME": ctx["scratch"]}, nonce=nonce, marks=marks)
+    try:
+        raw = open(os.path.join(out, "attestation.json"), "rb").read(65536); att = json.loads(raw)
+        bad = [k for k, v in (("network", "none"), ("subject_mount", "ro"), ("limits", lim)) if att.get(k) != v] + ([] if isinstance(att.get("image_digest"), str) and att["image_digest"] else ["image_digest"])
+    except (OSError, ValueError, AttributeError): raise NotMeasurable("the sandbox wrote no valid attestation.json: its result is not trusted")
+    if bad: raise NotMeasurable(f"the sandbox attestation does not match the contract ({', '.join(bad)}): its result is not trusted")
+    ctx["attestations"].append(att)
+    return rc, text, t
+
+
+def tier1_script(t, nonce):
+    """The wrapper the RUNNER writes around the adapter's gate commands, run as the one command of one sandbox: cold, then (when declared) the typical change, then the warm gate. Each phase is a child `bash -c` under its own wall limit;
+    the wrapper prints a nonce-stamped line between phases and the runner times them on the host clock (see sh). The cold run's working copy stays in /tmp for the warm phase (the cache the warm run is primed by)."""
+    q = shlex.quote
+    def phase(label, cmd, limit):
+        return (f'printf "\\n@@scorecard {nonce} {label}-start 0\\n"; timeout -s KILL {int(limit)} bash -c {q(cmd)}; rc=$?; [ $rc != 137 ] || rc=124; printf "\\n@@scorecard {nonce} {label}-end %s\\n" $rc\n')
+    s = phase("cold", t["command"], t["timeout_seconds"])
+    if t["warm_command"]: s += '[ $rc = 0 ] || exit $rc\n' + phase("change", t["warm_change_cmd"], t["warm_timeout_seconds"]) + '[ $rc = 0 ] || exit $rc\n' + phase("warm", t["warm_command"], t["warm_timeout_seconds"])
+    return s + "exit $rc\n"
+
+
+def tier1_run(ctx):   # memoised: the closure gate runs after it (on a build of its own); returns the COLD run (rc, output, seconds); ctx["phases"] holds every phase
+    if "tier1" not in ctx:
+        t = ctx["adapter"]["tier1"]; nonce = secrets.token_hex(8); marks = []
+        total = t["timeout_seconds"] + (2 * t["warm_timeout_seconds"] if t["warm_command"] else 0)
+        rc, out, secs = run_cmd(ctx, tier1_script(t, nonce), total, nonce=nonce, marks=marks)
+        ph, cur, rx = {}, None, re.compile(rf"@@scorecard {nonce} (cold|change|warm)-(start|end) (-?\d+)$")
+        for line in out.split("\n"):
+            m = rx.match(line)
+            if m and m.group(2) == "start": cur = m.group(1); ph[cur] = {"out": [], "rc": None, "secs": None}
+            elif m: cur = None
+            elif cur: ph[cur]["out"].append(line)
+        stamp = {}   # the FIRST start line and the LAST end line of a phase count: the wrapper's own lines bracket the subject's command, so a line the subject prints (it can read the nonce from its parent's command line) can only widen a phase, never shorten it
+        for l, r, tm in marks:
+            if l.endswith("-start"): stamp.setdefault(l, (r, tm))
+            else: stamp[l] = (r, tm)
+        for name, d in ph.items():
+            d["out"] = "\n".join(d["out"]).strip("\n")
+            if name + "-end" in stamp:
+                r, te = stamp[name + "-end"]; d["rc"] = None if r == 124 else r; d["secs"] = round(te - stamp[name + "-start"][1], 1)
+        if "cold" not in ph: ph["cold"] = {"out": out, "rc": rc, "secs": secs}   # the wrapper never ran (a launcher failure): the whole run is the cold one, as before
+        elif ph["cold"]["secs"] is None: ph["cold"].update(rc=rc, secs=secs)   # the run ended inside the cold phase (a flood or the outer limit)
+        ctx["phases"], ctx["tier1"] = ph, (ph["cold"]["rc"], ph["cold"]["out"], ph["cold"]["secs"])
+    return ctx["tier1"]
+
+
+@measure("verified.unproved_escapes")
+def _(ctx):
+    pr = ctx["adapter"]["proof"]; rx = re.compile(pr["sorry_pattern"]); files, hits = matching(ctx, ctx["adapter"]["source"]["globs"]), []
+    if not files: raise NotMeasurable("source.globs matches no tracked file")
+    scanned = 0
+    for p in files:
+        data = safe_read(ctx, p)
+        if data is None: continue
+        scanned += 1
+        for n, line in enumerate(data.decode(errors="replace").split("\n"), 1):
+            if rx.search(line) and not (pr["allow_marker"] and pr["allow_marker"] in line): hits.append(f"{p}:{n}")
+    if not scanned: raise NotMeasurable("no declared source file could be read (all matched files were skipped by the read guard)")
+    return len(hits), {"findings": hits[:50], "files_scanned": scanned}
+
+
+@measure("verified.specified_share")
+def _(ctx):
+    c = ctx["adapter"]["proof"]
+    if not c["closure_cmd"]: raise NotMeasurable("the subject has no closure gate (adapter [proof] closure_cmd is empty)")
+    tier1_run(ctx)
+    rc, out, _ = run_cmd(ctx, c["closure_cmd"], c["closure_timeout_seconds"])
+    if rc in (None, 124): raise Fail(f"closure gate timed out after {c['closure_timeout_seconds']} s")
+    if rc: raise Fail(f"closure gate exited {rc}: ...{tail(out)}")
+    m = re.search(c["closure_regex"], out)
+    if not m: raise NotMeasurable("closure gate output did not match [proof] closure_regex")
+    return float(m.group(1)), {}
+
+
+@measure("verified.nonstandard_axioms")
+def _(ctx):
+    c = ctx["adapter"]["proof"]
+    if not c["axiom_cmd"]: raise NotMeasurable("the subject has no axiom gate (adapter [proof] axiom_cmd is empty)")
+    rc, out, _ = run_cmd(ctx, c["axiom_cmd"], c["axiom_timeout_seconds"])
+    if rc in (None, 124): raise Fail(f"axiom gate timed out after {c['axiom_timeout_seconds']} s")
+    m = re.search(c["axiom_regex"], out)
+    if m: return int(m.group(1)), {}
+    if rc: raise Fail(f"axiom gate exited {rc} and printed no count: ...{tail(out)}")
+    raise NotMeasurable("axiom gate output did not match [proof] axiom_regex")
+
+
+@measure("bare_metal.freestanding_build")
+def _(ctx):
+    b = ctx["adapter"]["bare_metal"]
+    if not b["build_cmd"]: raise NotMeasurable("the subject declares no freestanding build (adapter [bare_metal] build_cmd is empty)")
+    rc, out, _ = run_cmd(ctx, b["build_cmd"], b["timeout_seconds"])
+    if rc in (None, 124): raise Fail(f"freestanding build timed out after {b['timeout_seconds']} s")
+    return (1 if rc == 0 else 0), {"exit": rc, "output_tail": out[-300:] if rc else ""}
+
+
+@measure("bare_metal.wasm_freestanding_build")
+def _(ctx):
+    b = ctx["adapter"]["bare_metal"]
+    rc, out, _ = run_cmd(ctx, b["wasm_cmd"], b["timeout_seconds"])
+    if rc in (None, 124): raise Fail(f"wasm build timed out after {b['timeout_seconds']} s")
+    m = re.search(b["wasm_bytes_regex"], out) if b["wasm_bytes_regex"] and rc == 0 else None
+    return (1 if rc == 0 else 0), ({"bytes": int(m.group(1))} if m else {"exit": rc, "output_tail": out[-300:] if rc else ""})
+
+
+@measure("bare_metal.libc_symbols")
+def _(ctx):
+    b = ctx["adapter"]["bare_metal"]
+    if not b["symbols_cmd"]: raise NotMeasurable("the subject declares no symbols command (adapter [bare_metal] symbols_cmd is empty)")
+    rc, out, _ = run_cmd(ctx, b["symbols_cmd"], b["timeout_seconds"])
+    if rc in (None, 124): raise Fail(f"symbols command timed out after {b['timeout_seconds']} s")
+    lines = [l.strip() for l in out.splitlines()]
+    if "--end-of-symbols--" not in lines: raise NotMeasurable("the symbols command did not print --end-of-symbols--: a silent failure must not read as zero")
+    syms = sorted({l.split("@")[0] for l in lines[:lines.index("--end-of-symbols--")] if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_.$@]*", l)} - set(b["allowed_symbols"]))
+    return len(syms), {"symbols": syms[:100]}
+
+
+@measure("verified.trusted_c_lines")
+def _(ctx):
+    files = matching(ctx, ctx["adapter"]["trust"]["c_files"])
+    n = {p: d.count(b"\n") for p in files if (d := safe_read(ctx, p)) is not None}
+    return sum(n.values()), {"files": n}
+
+
+@measure("verified.trust_ledger_entries")
+def _(ctx):
+    t = ctx["adapter"]["trust"]
+    if t["ledger"] not in matching(ctx, [t["ledger"]]): raise NotMeasurable(f"the trust ledger {t['ledger']} is not tracked at the pinned commit")
+    data = safe_read(ctx, t["ledger"])
+    if data is None: raise NotMeasurable(f"the trust ledger {t['ledger']} was skipped by the read guard (symlink, not a regular file, or too large)")
+    return sum(1 for l in data.decode(errors="replace").split("\n") if re.search(t["entry_regex"], l)), {}
+
+
+MUT_OPS = {"==": "!=", "!=": "==", "<=": "<", ">=": ">", "<": "<=", ">": ">=", "&&": "||", "||": "&&", "+": "-", "-": "+"}
+MUT_TOKEN = re.compile(r"<<=|>>=|\+\+|--|->|<<|>>|\+=|-=|==|!=|<=|>=|&&|\|\||<|>|\+|-")   # compound operators are consumed so they are never mutated as their parts
+# the in-sandbox loop (the only thing sent to the sandbox): apply one mutant at a time to a COPY of the subject, run the harness, restore. rc 0 = survived, 99 = not viable, anything else (a timeout included) = killed
+MUT_LOOP = """import base64, json, os, shutil, subprocess, sys, tempfile
+spec = json.loads(base64.b64decode(sys.argv[1]))
+src = os.getcwd(); w = os.path.join(tempfile.mkdtemp(), "w"); shutil.copytree(src, w, symlinks=True); os.chdir(w)
+def run(cmd, t):
+    try: return subprocess.run(["bash", "-c", cmd], timeout=t, capture_output=True).returncode
+    except subprocess.TimeoutExpired: return 124
+if spec["setup"] and run(spec["setup"], spec["total"]): print("SETUP-FAILED"); sys.exit(0)
+print("BASELINE", run(spec["kill"], spec["kt"]), flush=True)
+for i, (f, line, col, old, new) in enumerate(spec["mutants"]):
+    lines = open(f).read().split("\\n"); orig = lines[line]
+    if orig[col:col + len(old)] != old: print("MUTANT", i, 99, flush=True); continue
+    lines[line] = orig[:col] + new + orig[col + len(old):]; open(f, "w").write("\\n".join(lines))
+    rc = run(spec["kill"], spec["kt"]); lines[line] = orig; open(f, "w").write("\\n".join(lines)); print("MUTANT", i, rc, flush=True)
+"""
+
+
+def mutation_sites(ctx, files, comment):
+    sites = []
+    for f in files:
+        data = safe_read(ctx, f)
+        if data is None: continue
+        for ln, line in enumerate(data.decode(errors="replace").split("\n")):
+            code, q, k = "", None, 0
+            for ch in line:   # blank out comments' tails and string/char literals so only code is mutated
+                if q: q = None if ch == q else q; code += " "
+                elif ch in "\"'": q = ch; code += " "
+                else: code += ch
+            cut = code.find(comment) if comment else -1; code = code if cut < 0 else code[:cut]
+            if code.lstrip().startswith(("*", "/*", "#")): continue
+            for m in MUT_TOKEN.finditer(code):
+                if m.group() in MUT_OPS: sites.append((f, ln, m.start(), m.group(), MUT_OPS[m.group()]))
+    return sites
+
+
+def run_mutation(ctx, sec):
+    mu = ctx["adapter"][sec]
+    if not mu["kill_cmd"]: raise NotMeasurable(f"the subject declares no mutation harness (adapter [{sec}] kill_cmd is empty)")
+    sites = mutation_sites(ctx, matching(ctx, mu["files"]), mu["comment"])
+    if not sites: raise NotMeasurable(f"no mutable operator site in the declared [{sec}] files")
+    picked = sorted(random.Random(mu["seed"]).sample(sites, min(mu["mutants"], len(sites))))
+    total = min(mu["timeout_seconds"], MAX_SECONDS)
+    arg = base64.b64encode(json.dumps({"setup": mu["setup_cmd"], "kill": mu["kill_cmd"], "kt": mu["kill_timeout_seconds"], "total": total, "mutants": picked}).encode()).decode()
+    rc, out, _ = run_cmd(ctx, "python3 -c " + shlex.quote(MUT_LOOP) + " " + arg, total)
+    if rc in (None, 124): raise Fail(f"{sec} run timed out after {total} s")
+    if "SETUP-FAILED" in out: raise NotMeasurable(f"the {sec} setup command failed on the unmutated subject")
+    base = re.search(r"^BASELINE (\d+)$", out, re.M)
+    if not base or base.group(1) != "0": raise NotMeasurable("the harness fails on the UNMUTATED subject (or did not run): a kill proves nothing")
+    res = {int(i): int(c) for i, c in re.findall(r"^MUTANT (\d+) (\d+)$", out, re.M)}
+    if len(res) != len(picked): raise NotMeasurable(f"only {len(res)} of {len(picked)} mutant results came back before the time limit")
+    killed = sum(1 for c in res.values() if c not in (0, 99)); surv = [i for i, c in res.items() if c == 0]; nonviable = sum(1 for c in res.values() if c == 99)
+    if killed + len(surv) == 0: raise NotMeasurable("no viable mutants (every mutant was reported not viable)")
+    eq, rejected = equivalents(ctx, mu["equivalent"], {mutant_id(picked[i]): i for i in surv})
+    open_ = [i for i in surv if mutant_id(picked[i]) not in eq]
+    return round(100 * killed / (killed + len(open_)), 1), {"mutants": len(picked), "killed": killed, "survived": len(surv), "not_viable": nonviable, "sites_total": len(sites), "equivalent": sorted(eq), "rejected_equivalents": rejected,
+                                                            "survivors": [f"{picked[i][0]}:{picked[i][1] + 1} {picked[i][3]} -> {picked[i][4]}" for i in sorted(open_)[:20]]}
+
+
+def mutant_id(site): return f"{site[0]}:{site[1] + 1}:{site[2]}:{site[3]}:{site[4]}"   # file:line:col:old:new (line 1-based, column 0-based): two equal swaps on one line differ by the column
+
+
+def equivalents(ctx, path, surviving):
+    """The subject's list of EQUIVALENT mutants (adapter `equivalent`, a tracked file): lines `id TAB reason TAB expiry`, `#` comments. An entry counts only if it has a reason of 20+ characters, an expiry date (YYYY-MM-DD) not before the
+    COMMIT's date (so the card does not depend on when it is computed) and names a mutant that SURVIVED (`surviving`: id -> index); anything else is returned as rejected, with the reason, and the mutant stays a survivor.
+    Returns ({id: reason}, [rejected strings])."""
+    if not path: return {}, []
+    data = safe_read(ctx, path)
+    if data is None: return {}, [f"{path}: not readable at the pinned commit"]
+    day, ok, bad = ctx["commit_date"][:10], {}, []
+    for n, raw in enumerate(data.decode(errors="replace").split("\n"), 1):
+        if not raw.strip() or raw.lstrip().startswith("#"): continue
+        f = raw.split("\t")
+        if len(f) != 3 or len(f[1].strip()) < 20: bad.append(f"line {n}: needs `id TAB reason (20+ characters) TAB expiry`")
+        elif not re.fullmatch(r"\d{4}-\d{2}-\d{2}", f[2].strip()): bad.append(f"line {n}: the expiry is not YYYY-MM-DD")
+        elif f[2].strip() < day: bad.append(f"line {n}: expired {f[2].strip()} (the commit is of {day})")
+        elif f[0] not in surviving: bad.append(f"line {n}: {f[0]} is not a surviving mutant (stale id, or the tests kill it)")
+        else: ok[f[0]] = f[1].strip()
+    return ok, bad
+
+
+@measure("efficiency.throughput_vs_best")
+def _(ctx):
+    b = ctx["adapter"]["bench"]
+    if not b["cmd"]: raise NotMeasurable("the subject declares no bench (adapter [bench] cmd is empty)")
+    rc, out, _ = run_cmd(ctx, b["cmd"], b["timeout_seconds"])
+    if rc in (None, 124): raise Fail(f"bench timed out after {b['timeout_seconds']} s")
+    if rc: raise Fail(f"bench exited {rc}: ...{tail(out)}")
+    subj = re.findall(r"^subject (\d+(?:\.\d+)?)$", out, re.M); comp = {n: float(v) for n, v in re.findall(r"^comparator (\S+) (\d+(?:\.\d+)?)$", out, re.M)}
+    prov = {n: {"version": v, "sha256": h, "inputs_sha256": i} for n, v, h, i in re.findall(r"^provenance (\S+) (\S+) ([0-9a-f]{64}) (\S+)$", out, re.M)}
+    corpus = re.search(r"^corpus ([0-9a-f]{64}) (\d+)$", out, re.M)
+    if not subj: raise NotMeasurable("the bench printed no `subject MB_PER_S` line")
+    if not corpus: raise NotMeasurable("the bench did not name its corpus (`corpus SHA256 BYTES`): the same corpus for every number must be shown")
+    names = [c["name"] for c in b["comparators"]]
+    s = float(subj[0]); extra = {"subject_mb_s": s, "comparators_mb_s": comp, "comparator_provenance": prov, "corpus": {"sha256": corpus.group(1), "bytes": int(corpus.group(2))}}
+    missing = [n for n in names if n not in comp or n not in prov]
+    if missing: raise NotMeasurable("comparators without a number and a pinned version and hash: " + ", ".join(missing) + " (partial numbers: subject " + subj[0] + " MB/s, " + (", ".join(f"{k} {v}" for k, v in sorted(comp.items())) or "none") + ")")
+    best = max((comp[c["name"]], c["name"]) for c in b["comparators"] if c["scalar"])
+    rows = re.findall(r"^corpusrow (\S+) ([0-9a-f]{64}) (\d+)((?: [A-Za-z0-9._-]+=\d+(?:\.\d+)?)+)$", out, re.M)   # reported, never floored: the same measurement on more corpora (the floor is the primary corpus above)
+    if rows:
+        scal = [c["name"] for c in b["comparators"] if c["scalar"]]; fl = next(m["floor"][1] for m in METRICS if m["id"] == "efficiency.throughput_vs_best"); cor = []
+        for name, sha, nbytes, kv in rows:
+            mb = {k: float(v) for k, v in (x.split("=") for x in kv.split())}
+            lack = [n for n in ["subject"] + names if n not in mb]
+            if lack: raise NotMeasurable(f"corpus row {name} lacks: {', '.join(lack)}")
+            bs = max((mb[n], n) for n in scal)
+            cor.append({"name": name, "sha256": sha, "bytes": int(nbytes), "mb_s": mb, "best_scalar": bs[1], "percent_of_best_scalar": round(100 * mb["subject"] / bs[0], 1) if bs[0] else 0.0})
+        extra["corpora"] = cor; extra["corpora_at_or_above_floor"] = sum(1 for c in cor if c["percent_of_best_scalar"] >= fl); extra["corpora_floor_percent"] = fl
+    extra.update(best_scalar=best[1], gap_to_best_scalar_x=round(best[0] / s, 2) if s else None,
+                 gap_to_non_scalar_x={c["name"]: round(comp[c["name"]] / s, 1) if s else None for c in b["comparators"] if not c["scalar"]})
+    return round(100 * s / best[0], 1) if best[0] else 0.0, extra
+
+
+@measure("construction.mutation_score")
+def _(ctx): return run_mutation(ctx, "mutation")
+
+
+@measure("verified.non_vacuity")
+def _(ctx): return run_mutation(ctx, "nonvacuity")
+
+
+def case_calls(text, names):
+    """Count the calls to one of `names` whose arguments contain a string or bytes literal: the hand-written input cases of a test file (calls whose arguments are variables, as in a vector-loading driver, are not)."""
+    n = 0
+    for m in re.finditer(r"(?<![\w$])(?:[\w$]+(?:\.|::))*(?:" + "|".join(map(re.escape, names)) + r")\s*\(", text):
+        if re.search(r"\b(?:fn|def|function)\s+$", text[max(0, m.start() - 20):m.start()]): continue   # a definition, not a call
+        j, depth, q, lit = m.end(), 1, None, False
+        while j < len(text) and depth:
+            ch = text[j]
+            if q:
+                if ch == "\\": j += 1
+                elif ch == q: q = None
+            elif ch in "\"'`": q, lit = ch, True
+            elif ch == "(": depth += 1
+            elif ch == ")": depth -= 1
+            j += 1
+        n += lit
+    return n
+
+
+@measure("construction.hand_written_tests")
+def _(ctx):
+    t = ctx["adapter"]["tests"]; gen = set(matching(ctx, t["generated"]))
+    gate = set(matching(ctx, t["gate_selftests"]))
+    files = sorted((set(matching(ctx, TEST_PATTERNS)) | set(matching(ctx, t["extra"]))) - gen - gate)
+    cases = {}
+    for f in files:
+        data = safe_read(ctx, f)
+        cases[f] = 1 if not t["entry_points"] or data is None else case_calls(data.decode(errors="replace"), t["entry_points"])   # an unreadable file is counted (one case), never waved through
+    for f in t["scenario_files"]:
+        if f in cases: cases[f] = max(cases[f], 1)
+    tests = {f: n for f, n in cases.items() if n}
+    return sum(tests.values()), {"files": sorted(tests), "cases_by_file": tests, "drivers": sorted(f for f, n in cases.items() if not n), "generated_excluded": len(gen), "gate_selftests_excluded": len(gate)}
+
+
+@measure("honesty.gate_selftests")
+def _(ctx):
+    files = matching(ctx, ctx["adapter"]["tests"]["gate_selftests"]); script = ctx["adapter"]["tier1"]["script"]
+    if not files: raise NotMeasurable("no file matches [tests] gate_selftests: the subject shows no gate watched to fail")
+    data = safe_read(ctx, script)
+    if data is None: raise NotMeasurable(f"the fast-gate script {script} was not readable (missing, a symlink, or too large)")
+    text = data.decode(errors="replace"); named = [f for f in files if f in text]
+    return round(100 * len(named) / len(files), 1), {"files": files, "not_named_by_the_fast_gate": [f for f in files if f not in text]}
+
+
+@measure("honesty.gates_self_tested")
+def _(ctx):
+    gs = ctx["adapter"]["tier1"]["gates"]
+    if not gs: raise NotMeasurable("the adapter declares no gates ([tier1] gates is empty): there is nothing to count (a gate not watched to fail is decoration)")
+    rc, out, _ = tier1_run(ctx)
+    if rc in (None, 124): raise Fail(f"tier1 timed out after {ctx['adapter']['tier1']['timeout_seconds']} s: no self-test evidence")
+    if rc: raise Fail(f"tier1 exited {rc}: no self-test evidence from a failing fast gate")
+    seen = [g["name"] for g in gs if re.search(g["selftest"], out, re.M)]
+    return round(100 * len(seen) / len(gs), 1), {"gates": [g["name"] for g in gs], "self_test_ran": seen, "no_evidence": [g["name"] for g in gs if g["name"] not in seen]}
+
+
+@measure("honesty.selftests_ran_cases")
+def _(ctx):
+    t = ctx["adapter"]["tier1"]
+    if not t["ran_names"]: raise NotMeasurable("the adapter declares no [tier1] ran_names: the evidence lines must name exactly the declared gates (DECISIONS 19), so a subject without them is not measured (and fails its floor)")
+    rc, out, _ = tier1_run(ctx)
+    if rc in (None, 124): raise Fail(f"tier1 timed out after {t['timeout_seconds']} s: no ran-evidence")
+    if rc: raise Fail(f"tier1 exited {rc}: no ran-evidence from a failing fast gate")
+    by = {}
+    for name, n in RAN_LINE.findall(out): by[name] = by.get(name, 0) + int(n)
+    total, skipped = sum(by.values()), [l.strip()[:120] for l in out.splitlines() if "SKIPPED" in l]
+    cov = {"evidence_names": len(by), "cases": total, "cases_by_name": dict(sorted(by.items())[:60]), "zero_case_names": sorted(n for n, c in by.items() if not c)[:60], "skipped_lines": skipped[:10], "ran_names_declared": t["ran_names"], "weakness": RAN_WEAKNESS}
+    if skipped: raise Fail(f"the fast-gate log has {len(skipped)} line(s) with SKIPPED (a gate that did not run is not evidence): {skipped[0]}", total, cov)
+    if not by: raise Fail("no evidence: the fast-gate log has no `ran: NAME: N cases` line (a self-test that does not say how many cases it ran may have run none)", 0, cov)
+    if not total: raise Fail("zero cases: every `ran:` evidence line of the fast-gate log reports 0 cases (the gates ran nothing)", 0, cov)
+    invented = sorted(n for n in by if n not in t["ran_names"])
+    if invented: raise Fail("the fast-gate log has `ran:` evidence for name(s) the adapter does not declare in [tier1] ran_names (a subject cannot invent a gate): " + ", ".join(invented[:10]), total, cov)
+    lack = [n for n in t["ran_names"] if not by.get(n)]
+    if lack: raise Fail("the fast-gate log has no positive `ran:` evidence for the declared name(s): " + ", ".join(lack), total, cov)
+    return total, cov
+
+
+@measure("honesty.attack_suite")
+def _(ctx):
+    t = ctx["adapter"]["tier1"]
+    if not t["attack_cmd"]: raise NotMeasurable("the adapter declares no attack suite ([tier1] attack_cmd is empty)")
+    secs = t["attack_timeout_seconds"] or t["timeout_seconds"]
+    def last(out): return (out.strip().splitlines() or [""])[-1]
+    rc, out, _ = run_cmd(ctx, t["attack_cmd"], secs)
+    if rc in (None, 124): raise Fail(f"the attack suite timed out after {secs} s")
+    if rc or not last(out).startswith("PASS"): raise Fail(f"the attack suite does not pass (exit {rc}): ...{tail(out)}", 0)
+    ok_line = last(out)
+    rc2, out2, _ = run_cmd(ctx, t["attack_sabotage_cmd"], secs)
+    if rc2 in (None, 124): raise Fail(f"the sabotage run timed out after {secs} s")
+    if rc2 == 0 or not last(out2).startswith("FAIL"): raise Fail(f"the attack suite still passes (exit {rc2}) with its gates stubbed: it cannot fail", 0)
+    return 1, {"pass_line": ok_line[:200], "sabotage_line": last(out2)[:200]}
+
+
+@measure("velocity.tier1_seconds_cold")
+def _(ctx):
+    rc, out, secs = tier1_run(ctx)
+    if rc is None: raise Fail(f"tier1 timed out after {ctx['adapter']['tier1']['timeout_seconds']} s")
+    if rc: raise Fail(f"tier1 exited {rc}: ...{tail(out)}", secs)
+    return secs, {"command": ctx["adapter"]["tier1"]["command"][:200], "measured": True}   # a wall-clock measurement: the one kind of value that varies between two runs of the same commits (SPEC rule 1)
+
+
+@measure("velocity.tier1_seconds_warm")
+def _(ctx):
+    t = ctx["adapter"]["tier1"]
+    if not t["warm_command"]: raise NotMeasurable("the adapter declares no warm run ([tier1] warm_change_cmd, warm_command, warm_timeout_seconds): what a landing costs was not measured")
+    rc, out, _ = tier1_run(ctx); ph = ctx["phases"]; w, ch = ph.get("warm"), ph.get("change")
+    if rc != 0: raise Fail("the cold run, which primes the cache the warm run needs, did not pass: no warm run")
+    if ch is None or ch["rc"] != 0: raise Fail(f"the typical change (warm_change_cmd) failed (exit {None if ch is None else ch['rc']}): no warm run")
+    if w is None or w["secs"] is None or w["rc"] is None: raise Fail(f"the warm run timed out after {t['warm_timeout_seconds']} s")
+    if w["rc"]: raise Fail(f"the warm gate exited {w['rc']}: ...{tail(w['out'])}", w["secs"])
+    names = [g["name"] for g in t["gates"] if g["name"] not in t["warm_skips"]]
+    missing = [g["name"] for g in t["gates"] if g["name"] in names and not re.search(g["selftest"], w["out"], re.M)]
+    if missing: raise Fail(f"the warm gate exited 0 without the self-test evidence of: {', '.join(missing)} (a fast run that does not show its gates ran is not the gate)", w["secs"])
+    return w["secs"], {"change_command": t["warm_change_cmd"][:200], "command": t["warm_command"][:200], "gates_shown": names, "gates_skipped": list(t["warm_skips"]), "measured": True}
+
+
+@measure("velocity.open_prs")
+def _(ctx):
+    m = re.search(r"github[^:/]*[:/]([^/]+/[^/]+?)(?:\.git)?$", git(ctx["repo"], "remote", "get-url", "origin", check=False).strip())
+    if not m: raise NotMeasurable("the subject has no GitHub origin remote")
+    try: r = subprocess.run([os.environ.get("SCORECARD_GH", "gh"), "pr", "list", "-R", m.group(1), "--state", "open", "--json", "number", "--limit", "500"], capture_output=True, text=True, timeout=60)
+    except (OSError, subprocess.TimeoutExpired) as e: raise NotMeasurable(f"gh unavailable: {e}")
+    if r.returncode: raise NotMeasurable("gh pr list failed: " + (r.stderr.strip().splitlines() or ["?"])[-1])
+    return len(json.loads(r.stdout)), {"repo": m.group(1)}
+
+
+def window(ctx):   # (committer time, author time) of first-parent commits within window_hours before the pinned commit's committer date
+    rows = [tuple(map(int, l.split())) for l in git(ctx["repo"], "log", "--first-parent", "--format=%ct %at", ctx["commit"]).splitlines()]
+    return [r for r in rows if r[0] >= rows[0][0] - ctx["adapter"]["velocity"]["window_hours"] * 3600]
+
+
+@measure("velocity.commits_per_hour")
+def _(ctx):
+    w = window(ctx); span = max(3600, max(r[0] for r in w) - min(r[0] for r in w))
+    return round(len(w) / (span / 3600), 3), {"commits": len(w), "span_seconds": span}
+
+
+@measure("velocity.p90_commit_to_main_seconds")
+def _(ctx):
+    rows = [tuple(map(int, l.split())) for l in git(ctx["repo"], "log", "--first-parent", "--format=%ct %at", ctx["commit"]).splitlines()]
+    w = [r for r in rows if r[0] >= rows[0][0] - ctx["adapter"]["velocity"]["window_hours"] * 3600]   # newest first
+    batches, cur = [], [w[0]]
+    for r in w[1:]:
+        if cur[-1][0] - r[0] <= 120: cur.append(r)
+        else: batches.append(cur); cur = [r]
+    batches.append(cur)
+    d = sorted(max(0, max(c for c, _ in b) - min(a for _, a in b)) for b in batches)
+    if not any(d): raise NotMeasurable("every change in the window reads 0 s: the history records no authoring start before the landing (squash merges and commits made on main rewrite or equal the dates)")
+    return d[-(-9 * len(d) // 10) - 1], {"changes": len(d), "changes_with_a_recorded_start": sum(1 for x in d if x)}
+
+
+def open_subject(a):
+    """Common to both levels: refuse a repo that is not allowlisted, resolve the pinned commit, check the launcher, clone the commit into a scratch dir (nothing of it is run). Returns (repo, commit, launcher, scratch, wt)."""
+    repo = os.path.abspath(a.repo)
+    if not os.path.isdir(repo): raise Reject(f"no such repo: {repo}")
+    refused = scorecard_policy.check(repo, GIT_ENV, a.allowlist or scorecard_policy.ALLOWLIST)
+    if refused: raise Reject(refused)
+    commit = git(repo, "rev-parse", "--verify", "-q", a.commit + "^{commit}", check=False).strip()
+    if not commit: raise Reject(f"no such commit in {repo}: {a.commit}")
+    launcher = os.path.abspath(a.sandbox) if a.sandbox else None
+    if launcher and not (os.path.isfile(launcher) and os.access(launcher, os.X_OK)): raise Reject(f"the sandbox launcher is not an executable file: {launcher}")
+    scratch = tempfile.mkdtemp(prefix="scorecard-")
+    try:
+        r = subprocess.run(["git", "-c", "core.fsmonitor=false", "-c", "core.hooksPath=/dev/null", "clone", "-q", "--no-checkout", "--", repo, scratch + "/wt"], capture_output=True, text=True, env=GIT_ENV)
+        if r.returncode: raise Reject(f"cannot clone {repo}: {r.stderr.strip()}")
+        git(scratch + "/wt", "checkout", "-q", "--detach", commit)
+    except BaseException: shutil.rmtree(scratch, ignore_errors=True); raise
+    return repo, commit, launcher, scratch, scratch + "/wt"
+
+
+def cmd_run(a):
+    repo, commit, launcher, scratch, wt = open_subject(a)
+    try:
+        text = open(a.adapter).read() if a.adapter else git(wt, "show", "HEAD:scorecard.toml", check=False)
+        if not text: raise Reject(f"no adapter: {commit[:12]} has no scorecard.toml and --adapter was not given")
+        adapter = load_adapter(text)
+        sc_sha = git(HERE, "rev-parse", "HEAD", check=False).strip() or None
+        dirty = bool(git(HERE, "status", "--porcelain", "--", ".", check=False).strip()) if sc_sha else None
+        ctx = dict(repo=repo, wt=wt, commit=commit, commit_date=git(repo, "log", "-1", "--format=%cI", commit).strip(), adapter=adapter, adapter_sha=hashlib.sha256(text.encode()).hexdigest(), scorecard={"sha": sc_sha, "dirty": dirty},
+                   scratch=scratch, sandbox=launcher, n_exec=0, attestations=[], skipped=set(), sandbox_info=None)
+        if launcher: ctx["sandbox_info"] = {"launcher_sha256": hashlib.sha256(open(launcher, "rb").read()).hexdigest(), "limits": LIMITS, "attestations": ctx["attestations"]}
+        card = build_card(ctx)
+    finally:
+        if a.keep: print(f"scorecard: scratch kept at {scratch}", file=sys.stderr)
+        else: shutil.rmtree(scratch, ignore_errors=True)
+    out = json.dumps(card, indent=2) + "\n"
+    if a.out: open(a.out, "w").write(out)
+    else: sys.stdout.write(out)
+    return 0
+
+
+def main(argv):
+    p = argparse.ArgumentParser(prog="scorecard"); sub = p.add_subparsers(dest="cmd", required=True)
+    r = sub.add_parser("run"); r.add_argument("--repo", required=True); r.add_argument("--commit", required=True); r.add_argument("--adapter"); r.add_argument("--out")
+    r.add_argument("--sandbox"); r.add_argument("--keep", action="store_true"); r.add_argument("--allowlist", help="the allowlist file (self-test only; default registry/allowlist.toml)")
+    c = sub.add_parser("certify", help="Level 1: Certified (runs no code of the subject)"); c.add_argument("--repo", required=True); c.add_argument("--commit", required=True); c.add_argument("--manifest", default="vbm-proof.toml"); c.add_argument("--out")
+    c.add_argument("--sandbox"); c.add_argument("--keep", action="store_true"); c.add_argument("--allowlist")
+    a = p.parse_args(argv)
+    try: return cmd_run(a) if a.cmd == "run" else scorecard_certify.run(a, sys.modules[__name__])
+    except Reject as e: print(f"scorecard: {e}", file=sys.stderr); return 2
+
+
+if __name__ == "__main__": sys.exit(main(sys.argv[1:]))

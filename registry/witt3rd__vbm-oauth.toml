@@ -1,0 +1,5 @@
+kind = "library"
+status = "planned"
+what = "OAuth client flows as a state machine"
+milestone = "device authorization grant"
+depends_on = ["vbm-json", "vbm-uri", "vbm-baseN"]

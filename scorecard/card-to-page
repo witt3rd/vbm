@@ -1,0 +1,115 @@
+#!/usr/bin/env python3
+"""Render a scorecard JSON card (scorecard/scorecard run) as ONE house page: a one-slide deck (slides.py) for `publishing build` (a 1920x1080 page, so the table stays dense and the notes fit beside it).
+  scorecard/card-to-page CARD.json [-o slides.py] [--footer TEXT] [--as-of ISO-DATETIME] [--note TEXT]
+Deterministic (same card, same bytes). Every metric is a table row (none is dropped), each unmeasured one carries its reason (a numbered note); a `not-measurable` metric with no reason, and a card with no subject
+commit date, are refused (exit 1). The footer names the subject commit, its date and its age at --as-of (default: now). EVERYTHING taken from the card is HTML-escaped: the card holds text the subject controls
+(file names, reasons, symbols). The generated slides.py holds only string literals."""
+import argparse, datetime, html, json, os, sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import scorecard_verdicts
+
+DIMS = {"verified": "Verified", "bare_metal": "Bare metal", "construction": "By construction", "efficiency": "Efficiency", "velocity": "Velocity", "honesty": "Honesty"}
+LABEL = {"pass": ("pass", "good"), "fail": ("FAIL", "bad"), "not-measurable": ("not measurable", "mid")}
+VERDICT = {"pass": ("PASS", "good"), "fail": ("FAIL", "bad"), "pending": ("PENDING", "mid")}
+TITLES = {"correctness": "Correctness", "landedness": "Landedness", "profile": "Profile (in neither verdict)"}
+e = lambda x: html.escape(str(x), quote=True)
+code = lambda x: f"<code>{e(x)}</code>"
+
+
+def fmt(v): return "-" if v is None else (f"{v:g}" if isinstance(v, float) else str(v))
+def floor(m): return "tracked" if not m["floor"] else e(f"{m['floor']['op']} {fmt(m['floor']['value'])}")
+def age(then, now):
+    mins = max(0, round((now - then).total_seconds() / 60))
+    return f"{mins} min" if mins < 90 else f"{mins // 60} h" if mins < 48 * 60 else f"{mins // 1440} days"
+def base(f): return f.rsplit("/", 1)[-1]
+
+
+def render(c, footer, as_of, note=""):
+    ms = c["metrics"]
+    bad = [m["id"] for m in ms if m["status"] == "not-measurable" and not m.get("reason")]
+    if bad: raise SystemExit(f"card-to-page: not-measurable without a reason: {', '.join(bad)}")
+    sub, sc = c["subject"], c["scorecard"]
+    if not sub.get("commit_date"): raise SystemExit("card-to-page: the card has no subject commit date: it must say what it scored and when that was committed")
+    then = datetime.datetime.fromisoformat(sub["commit_date"])
+    n = {s: sum(1 for m in ms if m["status"] == s) for s in LABEL}
+    vd = scorecard_verdicts.verdicts(c)   # the verdicts are derived from the dimensions, for a card of any age; a card that carries its own must agree
+    if "verdicts" in c and c["verdicts"] != vd: raise SystemExit("card-to-page: the card's verdicts disagree with its dimensions")
+    order = sorted(range(len(ms)), key=lambda i: (list(scorecard_verdicts.GROUPS).index(scorecard_verdicts.group_of(ms[i]["dimension"])), i))
+    ms = [ms[i] for i in order]
+    why = {}
+    for m in ms:
+        if m["status"] == "not-measurable": why.setdefault(m["reason"], []).append(m["id"])
+    num = {r: str(k + 1) for k, r in enumerate(sorted(why, key=lambda r: why[r]))}
+    def row(m):
+        txt, cls = LABEL[m["status"]]
+        if m["status"] == "not-measurable": txt += f" ({num[m['reason']]})"
+        val = fmt(m["value"]) if m.get("bytes") is None else f"{m['bytes']} B"
+        if m["id"] == "velocity.tier1_seconds_warm" and "gates_shown" in m: val += f" (skipped {len(m['gates_skipped'])} of {len(m['gates_shown']) + len(m['gates_skipped'])} gates)"   # beside the warm number, on the card page only
+        return f"<tr><td>{e(DIMS.get(m['dimension'], m['dimension']))}</td><td>{e(m['id'].split('.', 1)[1].replace('_', ' '))}</td><td class=\"{cls}\">{e(txt)}</td><td>{e(val)}</td><td>{floor(m)}</td></tr>"
+    head = "<tr><th>Ideal</th><th>Metric</th><th>Status</th><th>Value</th><th>Floor</th></tr>"
+    def title(g, cont=False):
+        v = vd[g].get("status"); txt = f"{TITLES[g]}{' (continued)' if cont else ''}: {scorecard_verdicts.label(vd[g], short=True)}" if v else TITLES[g] + ": " + ", ".join(f"{DIMS.get(k, k)} {x}" for k, x in vd[g]["dimensions"].items())
+        return f'<tr><th colspan="5" style="padding:0 6px;font-size:11.5px;line-height:1.05" class="{VERDICT[v][1] if v else ""}">{e(txt)}' + (f" · {e(vd[g]['why'])}" if vd[g].get("why") else "") + "</th></tr>"
+    items = []   # a title row before the first metric of each group; a group split across the two columns repeats its title
+    for m in ms:
+        g = scorecard_verdicts.group_of(m["dimension"])
+        if not items or items[-1][0] != g: items.append((g, None))
+        items.append((g, m))
+    half = (len(items) + 1) // 2
+    def col(part):
+        lead = [(part[0][0], "cont")] if part[0][1] is not None else []   # a group split across the two columns repeats its title there
+        return "".join(title(g, m == "cont") if m is None or m == "cont" else row(m) for g, m in lead + part)
+    tables = "".join(f'<table class="dense">{head}{col(part)}</table>' for part in (items[:half], items[half:]) if part)
+    notes = []; eff = []
+    if why: notes.append("<p><b>Not measurable.</b> " + " ".join(f"({num[r]}) {e(r)}." for r in sorted(num, key=num.get)) + "</p>")
+    for m in ms:
+        if m["id"] == "efficiency.throughput_vs_best" and m.get("comparators_mb_s") and m.get("subject_mb_s") is not None:
+            nums = ", ".join(f"{e(k)} {v:g}" for k, v in sorted({**m["comparators_mb_s"], sub["name"]: m["subject_mb_s"]}.items(), key=lambda kv: -kv[1]))
+            gaps = "; ".join(f"Gap to {e(k)}: {v:g}x (non-scalar, not floored)" for k, v in sorted((m.get("gap_to_non_scalar_x") or {}).items()))
+            pins = ", ".join(f"{e(k)} {e(v['version'])}" for k, v in sorted((m.get("comparator_provenance") or {}).items()))
+            notes.insert(0, f"<p><b>Throughput</b> MB/s, the floored corpus {code(m['corpus']['sha256'][:8])}: {nums}. {gaps}; best scalar {e(m['best_scalar'])} is {m['gap_to_best_scalar_x']:g}x faster (floor: within 2x). Pinned: {pins}.</p>")
+            if m.get("corpora"):
+                names = sorted({k for r in m["corpora"] for k in r["mb_s"] if k != "subject"}); sn = sub["name"]
+                rows = "".join(f"<tr class=\"corp\"><td style=\"white-space:nowrap\">{e(r['name'])}</td><td>{r['bytes'] // 1000}</td><td>{r['mb_s']['subject']:g}</td>" + "".join(f"<td>{r['mb_s'].get(k, 0):g}</td>" for k in names)
+                               + f"<td class=\"{'good' if r['percent_of_best_scalar'] >= m['corpora_floor_percent'] else 'bad'}\">{r['percent_of_best_scalar']:g}%</td></tr>" for r in m["corpora"])
+                tbl = (f"<table class=\"dense\" style=\"white-space:nowrap\"><tr><th>Corpus</th><th>KB</th><th>{e(sn)}</th>" + "".join(f"<th>{e(k)}</th>" for k in names) + f"<th>% best</th></tr>{rows}</table>")
+                eff.append(f"<p><b>{len(m['corpora'])} corpora</b>, MB/s (the first is floored, the rest only reported): {m['corpora_at_or_above_floor']} of {len(m['corpora'])} at or above the {m['corpora_floor_percent']:g}% line.</p>{tbl}")
+        if m["id"] == "bare_metal.libc_symbols" and m.get("symbols"): notes.append("<p><b>Libc symbols needed</b> (" + str(m["value"]) + "): " + ", ".join(code(x) for x in m["symbols"]) + ".</p>")
+        if m["id"] == "construction.hand_written_tests" and m.get("cases_by_file") is not None:
+            notes.append(f"<p><b>Hand-written cases</b> ({m['value']})" + (": " + ", ".join(f"{code(base(f))} {k}" for f, k in m["cases_by_file"].items()) if m["cases_by_file"] else "") + f". Drivers, 0 cases: " + (", ".join(code(base(f)) for f in m["drivers"]) if len(m["drivers"]) <= 3 else f"{len(m['drivers'])} files") + ".</p>")
+        if m["id"] == "velocity.tier1_seconds_warm" and m.get("command"):
+            notes.append("<p><b>Warm run</b> (what a landing costs, floor under 60 s): the fast gate after a typical change, on the cache the cold run left" + (f"; skipped {len(m['gates_skipped'])} of {len(m['gates_shown']) + len(m['gates_skipped'])} gates by design: {', '.join(e(x) for x in m['gates_skipped'])}" if m.get("gates_skipped") else "") + ".</p>")
+        if m["id"] == "velocity.tier1_seconds_cold" and m.get("command"):
+            notes.append("<p><b>Cold run</b> (what an outside contributor pays, ceiling 600 s, shown beside the warm run)" + (f": {e(c['sandbox']['limits'].get('cpus'))} CPUs, {e(c['sandbox']['limits'].get('memory_mb', 0) // 1024)} GB cap" if c.get("sandbox") else "") + ", a fresh clone with no cache.</p>")
+        if m["id"] == "velocity.tier1_seconds" and m.get("command"):
+            notes.append("<p><b>Fast gate</b> timed" + (f": {code(m['command'].split('&&')[-1].split()[-1])}" if len(m["command"]) < 190 else "") + ", cold" + (f", {e(c['sandbox']['limits'].get('cpus'))} CPUs, {e(c['sandbox']['limits'].get('memory_mb', 0) // 1024)} GB cap" if c.get("sandbox") else "") + ".</p>")
+    for m in ms:
+        if m["id"] == "honesty.gates_self_tested" and m.get("gates"): notes.append(f"<p><b>Gates with self-test evidence in the run:</b> {len(m['self_test_ran'])} of {len(m['gates'])}" + (": no evidence for " + ", ".join(e(x) for x in m["no_evidence"]) if m.get("no_evidence") else "") + ".</p>")
+        if m["id"] == "honesty.selftests_ran_cases" and (m.get("cases_by_name") is not None or m["status"] == "fail"):   # coverage of the ran-evidence (DECISIONS 19); the reason is subject output: escaped
+            cov = f"{m['cases']} cases in {m['evidence_names']} evidence lines" + (f", {len(m['ran_names_declared'])} declared names present" if m.get("ran_names_declared") else "") if m.get("cases_by_name") is not None else ""
+            notes.append(f"<p><b>Self-tests that ran (ran-evidence):</b> {cov}" + (f"; FAIL: {e(m.get('reason', ''))}" if m["status"] == "fail" else "") + f". Weakness: {e(m.get('weakness') or 'a count regex proves a count was printed, not that every case was meaningful')}.</p>")
+        if m["id"] == "honesty.attack_suite" and m.get("pass_line"): notes.append(f"<p><b>Attack suite:</b> {e(m['pass_line'])}; gates stubbed: {e(m['sabotage_line'])}.</p>")
+    if c.get("sandbox"): notes.append("<p><b>Level 2 (Measured) card.</b> Level 1, Certified (an independent proof recheck), is not built yet: this is not a certificate.</p>")
+    if note:   # the run's conditions go into the fast-gate paragraph (or stand alone when the card has none)
+        k = next((i for i, x in enumerate(notes) if x.startswith("<p><b>Fast gate</b>")), None)
+        if k is None: notes.append(f"<p><b>Run conditions.</b> {e(note)}</p>")
+        else: notes[k] = notes[k][:-4] + f" {e(note)}</p>"
+    k = len(notes) // 2 + 1 if eff else 0   # the corpora table beside half of the notes, the other half in the right column: the two columns end together
+    groups = ["".join(eff) + "".join(notes[k:]), "".join(notes[:k])] if eff else ["".join(notes[i::2]) for i in range(2)]   # the corpora table beside every other note
+    cards = "".join(f'<div class="card" style="padding:4px 14px"><div style="font-size:12.5px;line-height:1.15;color:var(--ink2)">{x}</div></div>' for x in groups if x)
+    h1 = f"{e(sub['name'])}: scorecard ({'sandboxed run' if c.get('sandbox') else 'static metrics'})"
+    vl = lambda g: f'<b class="{VERDICT[vd[g]["status"]][1]}">{TITLES[g]}: {e(scorecard_verdicts.label(vd[g]))}</b>'
+    h2 = f"{vl('correctness')}<br>{vl('landedness')}" + (f"<br>{e(scorecard_verdicts.PRE_HONESTY)}" if scorecard_verdicts.pre_honesty(c) else "")
+    foot = f"{e(footer)} · {n['pass']} metrics pass, {n['fail']} fail, {n['not-measurable']} not measurable · subject {e(sub['commit'][:12])} committed {e(then.strftime('%Y-%m-%d %H:%M %z'))}, {e(age(then, as_of))} before this card · scorecard {e((sc['sha'] or 'unknown')[:12])} · adapter {e(c['adapter']['sha256'][:12])}"
+    body = f'<style>table.dense td{{padding:3px 10px}}table.dense{{font-size:16px}}</style><div class="cols c2" style="height:auto;gap:24px">{tables}</div><div class="cols c2" style="height:auto;gap:24px;margin-top:0">{cards}</div>'
+    return ("from publishing.page import Deck\n\n" f"d = Deck(__file__, {footer!r})\n" f"d.slide({'Scorecard · one card'!r}, {h1!r}, {h2!r},\n        {body!r},\n        {foot!r}, cls=\"tight\")\nTITLE, S = d.TITLE, d.S\n")
+
+
+def main():
+    a = argparse.ArgumentParser(); a.add_argument("card"); a.add_argument("-o"); a.add_argument("--footer", default="scorecard"); a.add_argument("--as-of"); a.add_argument("--note", default="")
+    a = a.parse_args(); text = render(json.load(open(a.card)), a.footer, datetime.datetime.fromisoformat(a.as_of) if a.as_of else datetime.datetime.now(datetime.timezone.utc), a.note)
+    open(a.o, "w").write(text) if a.o else sys.stdout.write(text)
+
+
+if __name__ == "__main__": main()

@@ -1,0 +1,5 @@
+kind = "foundation"
+status = "planned"
+what = "The shared foundation bundle: gates, runtime and ABI generators"
+milestone = "gates extracted; a third library scaffolds from it"
+depends_on = ["vbm-gates", "vbm-rt", "vbm-abi"]

@@ -1,0 +1,5 @@
+kind = "library"
+status = "planned"
+what = "Agent client protocol, pinned core profile"
+milestone = "pinned core profile"
+depends_on = ["vbm-jsonrpc", "vbm-uri", "vbm-baseN"]

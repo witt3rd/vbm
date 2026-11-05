@@ -1,0 +1,768 @@
+{
+  "schema": "scorecard-3",
+  "scorecard": {
+    "sha": "01ae90b1de092a98b98f5da54665d4fae350b85b",
+    "dirty": false
+  },
+  "subject": {
+    "name": "vbm-json",
+    "kind": "library",
+    "commit": "0a6696caa7c2eee79b6c323a900c51405193a392",
+    "commit_date": "2026-11-05T03:06:01-08:00"
+  },
+  "adapter": {
+    "sha256": "b6ba23ff3ae9b66f2ab23e9515c15e4b83d0e55e16b35a99f9e583dd7b974555"
+  },
+  "sandbox": {
+    "launcher_sha256": "9d2c6418e11cb0f709b2db4a2d981e07d0b276fb35354048628c110c1cb3b6bb",
+    "limits": {
+      "cpus": 2,
+      "memory_mb": 4096,
+      "disk_mb": 2048,
+      "pids": 512
+    },
+    "attestations": [
+      {
+        "kind": "bwrap",
+        "image_digest": "sha256:772754a4d62be5b36694d153ae0a77ef366992f06ee37fa66805d04e9da3fe27",
+        "network": "none",
+        "subject_mount": "ro",
+        "enforcement": "cgroup",
+        "limits": {
+          "cpus": 2,
+          "memory_mb": 4096,
+          "disk_mb": 2048,
+          "pids": 512,
+          "timeout_seconds": 3600
+        }
+      },
+      {
+        "kind": "bwrap",
+        "image_digest": "sha256:772754a4d62be5b36694d153ae0a77ef366992f06ee37fa66805d04e9da3fe27",
+        "network": "none",
+        "subject_mount": "ro",
+        "enforcement": "cgroup",
+        "limits": {
+          "cpus": 2,
+          "memory_mb": 4096,
+          "disk_mb": 2048,
+          "pids": 512,
+          "timeout_seconds": 900
+        }
+      },
+      {
+        "kind": "bwrap",
+        "image_digest": "sha256:772754a4d62be5b36694d153ae0a77ef366992f06ee37fa66805d04e9da3fe27",
+        "network": "none",
+        "subject_mount": "ro",
+        "enforcement": "cgroup",
+        "limits": {
+          "cpus": 2,
+          "memory_mb": 4096,
+          "disk_mb": 2048,
+          "pids": 512,
+          "timeout_seconds": 900
+        }
+      },
+      {
+        "kind": "bwrap",
+        "image_digest": "sha256:772754a4d62be5b36694d153ae0a77ef366992f06ee37fa66805d04e9da3fe27",
+        "network": "none",
+        "subject_mount": "ro",
+        "enforcement": "cgroup",
+        "limits": {
+          "cpus": 2,
+          "memory_mb": 4096,
+          "disk_mb": 2048,
+          "pids": 512,
+          "timeout_seconds": 3500
+        }
+      },
+      {
+        "kind": "bwrap",
+        "image_digest": "sha256:772754a4d62be5b36694d153ae0a77ef366992f06ee37fa66805d04e9da3fe27",
+        "network": "none",
+        "subject_mount": "ro",
+        "enforcement": "cgroup",
+        "limits": {
+          "cpus": 2,
+          "memory_mb": 4096,
+          "disk_mb": 2048,
+          "pids": 512,
+          "timeout_seconds": 900
+        }
+      },
+      {
+        "kind": "bwrap",
+        "image_digest": "sha256:772754a4d62be5b36694d153ae0a77ef366992f06ee37fa66805d04e9da3fe27",
+        "network": "none",
+        "subject_mount": "ro",
+        "enforcement": "cgroup",
+        "limits": {
+          "cpus": 2,
+          "memory_mb": 4096,
+          "disk_mb": 2048,
+          "pids": 512,
+          "timeout_seconds": 900
+        }
+      },
+      {
+        "kind": "bwrap",
+        "image_digest": "sha256:772754a4d62be5b36694d153ae0a77ef366992f06ee37fa66805d04e9da3fe27",
+        "network": "none",
+        "subject_mount": "ro",
+        "enforcement": "cgroup",
+        "limits": {
+          "cpus": 2,
+          "memory_mb": 4096,
+          "disk_mb": 2048,
+          "pids": 512,
+          "timeout_seconds": 900
+        }
+      },
+      {
+        "kind": "bwrap",
+        "image_digest": "sha256:772754a4d62be5b36694d153ae0a77ef366992f06ee37fa66805d04e9da3fe27",
+        "network": "none",
+        "subject_mount": "ro",
+        "enforcement": "cgroup",
+        "limits": {
+          "cpus": 2,
+          "memory_mb": 4096,
+          "disk_mb": 2048,
+          "pids": 512,
+          "timeout_seconds": 1800
+        }
+      },
+      {
+        "kind": "bwrap",
+        "image_digest": "sha256:772754a4d62be5b36694d153ae0a77ef366992f06ee37fa66805d04e9da3fe27",
+        "network": "none",
+        "subject_mount": "ro",
+        "enforcement": "cgroup",
+        "limits": {
+          "cpus": 2,
+          "memory_mb": 4096,
+          "disk_mb": 2048,
+          "pids": 512,
+          "timeout_seconds": 1200
+        }
+      },
+      {
+        "kind": "bwrap",
+        "image_digest": "sha256:772754a4d62be5b36694d153ae0a77ef366992f06ee37fa66805d04e9da3fe27",
+        "network": "none",
+        "subject_mount": "ro",
+        "enforcement": "cgroup",
+        "limits": {
+          "cpus": 2,
+          "memory_mb": 4096,
+          "disk_mb": 2048,
+          "pids": 512,
+          "timeout_seconds": 1800
+        }
+      },
+      {
+        "kind": "bwrap",
+        "image_digest": "sha256:772754a4d62be5b36694d153ae0a77ef366992f06ee37fa66805d04e9da3fe27",
+        "network": "none",
+        "subject_mount": "ro",
+        "enforcement": "cgroup",
+        "limits": {
+          "cpus": 2,
+          "memory_mb": 4096,
+          "disk_mb": 2048,
+          "pids": 512,
+          "timeout_seconds": 1800
+        }
+      }
+    ]
+  },
+  "skipped_files": [],
+  "metrics": [
+    {
+      "id": "verified.unproved_escapes",
+      "dimension": "verified",
+      "dir": "down",
+      "definition": "lines matching the adapter's [proof] sorry_pattern in its source globs (a line containing [proof] allow_marker is skipped)",
+      "implemented": true,
+      "value": 0,
+      "floor": {
+        "op": "==",
+        "value": 0
+      },
+      "status": "pass",
+      "findings": [],
+      "files_scanned": 31
+    },
+    {
+      "id": "verified.specified_share",
+      "dimension": "verified",
+      "dir": "up",
+      "definition": "percent specified, read from the subject's closure gate output; not-measurable when the subject has no closure gate",
+      "implemented": true,
+      "value": 100.0,
+      "floor": {
+        "op": ">=",
+        "value": 100
+      },
+      "status": "pass"
+    },
+    {
+      "id": "verified.nonstandard_axioms",
+      "dimension": "verified",
+      "dir": "down",
+      "definition": "constants that depend on an axiom beyond the standard three (a placeholder proof included), from the adapter's [proof] axiom_cmd, in the sandbox",
+      "implemented": true,
+      "value": 0,
+      "floor": {
+        "op": "==",
+        "value": 0
+      },
+      "status": "pass"
+    },
+    {
+      "id": "verified.trusted_c_lines",
+      "dimension": "verified",
+      "dir": "down",
+      "definition": "newline count of the files matching trust.c_files",
+      "implemented": true,
+      "value": 430,
+      "floor": null,
+      "status": "pass",
+      "files": {
+        "abi/vbm_json.c": 107,
+        "runtime/rt.c": 323
+      }
+    },
+    {
+      "id": "verified.trust_ledger_entries",
+      "dimension": "verified",
+      "dir": "down",
+      "definition": "lines of the trust ledger matching trust.entry_regex",
+      "implemented": true,
+      "value": 13,
+      "floor": null,
+      "status": "pass"
+    },
+    {
+      "id": "verified.non_vacuity",
+      "dimension": "verified",
+      "dir": "up",
+      "definition": "percent of viable SPECIFICATION mutants (the same operator swaps, at seeded sites of the adapter's [nonvacuity] files, at most 200) that break a proof (the adapter's kill_cmd exits non-zero; 99 = the mutated specification itself does not build, excluded); the unmutated baseline must pass; in the sandbox",
+      "implemented": true,
+      "value": 100.0,
+      "floor": {
+        "op": ">=",
+        "value": 100
+      },
+      "status": "pass",
+      "mutants": 20,
+      "killed": 10,
+      "survived": 0,
+      "not_viable": 10,
+      "sites_total": 179,
+      "equivalent": [],
+      "rejected_equivalents": [],
+      "survivors": []
+    },
+    {
+      "id": "bare_metal.freestanding_build",
+      "dimension": "bare_metal",
+      "dir": "up",
+      "definition": "1 if the adapter's [bare_metal] build_cmd (a build with -ffreestanding -nostdlib) exits 0, else 0; in the sandbox",
+      "implemented": true,
+      "value": 1,
+      "floor": {
+        "op": "==",
+        "value": 1
+      },
+      "status": "pass",
+      "exit": 0,
+      "output_tail": ""
+    },
+    {
+      "id": "bare_metal.wasm_freestanding_build",
+      "dimension": "bare_metal",
+      "dir": "up",
+      "definition": "1 if the adapter's [bare_metal] wasm_cmd (a freestanding wasm32 build, no libc, no imports) exits 0, else 0; its size in bytes is read with wasm_bytes_regex. Listed only when the adapter declares a wasm target",
+      "implemented": true,
+      "value": 1,
+      "floor": {
+        "op": "==",
+        "value": 1
+      },
+      "status": "pass",
+      "bytes": 54230
+    },
+    {
+      "id": "bare_metal.libc_symbols",
+      "dimension": "bare_metal",
+      "dir": "down",
+      "definition": "distinct undefined symbols printed by [bare_metal] symbols_cmd (nm -u of the artifact, the subject's own prefixes filtered by the adapter) minus allowed_symbols; the command must end with --end-of-symbols-- (a silent failure is not zero); in the sandbox",
+      "implemented": true,
+      "value": 0,
+      "floor": {
+        "op": "==",
+        "value": 0
+      },
+      "status": "pass",
+      "symbols": []
+    },
+    {
+      "id": "construction.hand_written_tests",
+      "dimension": "construction",
+      "dir": "down",
+      "definition": "CASE LITERALS written by hand in the subject's test files (DECISIONS 5): in each candidate file (default test patterns plus tests.extra, minus tests.generated and minus the declared gate self-tests) the calls to a declared tests.entry_points name that have a string or bytes literal in their arguments. A DRIVER (it loads generated vectors and compares verdicts, no input literal of its own) has 0 cases and is listed as a driver, not counted; with no entry_points every candidate file counts as one case",
+      "implemented": true,
+      "value": 0,
+      "floor": {
+        "op": "==",
+        "value": 0
+      },
+      "status": "pass",
+      "files": [],
+      "cases_by_file": {},
+      "drivers": [
+        "bindings/rust/tests/vectors.rs",
+        "tests/abi_dump.c",
+        "tests/abi_test.c",
+        "tests/bindings/test_python.py",
+        "tests/lean_layout.c",
+        "tests/native_rt.c",
+        "tests/wasm/vbm_json.mjs",
+        "tests/wasm/wasm_test.mjs"
+      ],
+      "generated_excluded": 322,
+      "gate_selftests_excluded": 14
+    },
+    {
+      "id": "construction.mutation_score",
+      "dimension": "construction",
+      "dir": "up",
+      "definition": "percent of viable code mutants (the scorecard's operator swaps at seeded sites of the adapter's [mutation] files, at most 200) that the adapter's kill_cmd harness kills (non-zero exit; 99 = not viable, excluded); the unmutated baseline must pass; in the sandbox",
+      "implemented": true,
+      "value": 100.0,
+      "floor": {
+        "op": ">=",
+        "value": 100
+      },
+      "status": "pass",
+      "mutants": 42,
+      "killed": 37,
+      "survived": 3,
+      "not_viable": 2,
+      "sites_total": 42,
+      "equivalent": [
+        "abi/vbm_json.c:60:95:-:+",
+        "abi/vbm_json.c:85:39:-:+",
+        "abi/vbm_json.c:85:55:<=:<"
+      ],
+      "rejected_equivalents": [],
+      "survivors": []
+    },
+    {
+      "id": "efficiency.throughput_vs_best",
+      "dimension": "efficiency",
+      "dir": "up",
+      "definition": "the subject's MB/s as a percent of the BEST SCALAR comparator's (the adapter marks each comparator scalar or not; the floor 50 is 'within 2x'), on one corpus named by its sha256, from the adapter's [bench] cmd in the sandbox (cgroup-capped); every declared comparator must report a number AND a pinned version with the sha256 of its binary and inputs, or the metric is not-measurable and names the gap. The gap to each non-scalar comparator (SIMD) is reported openly, not floored",
+      "implemented": true,
+      "value": 71.2,
+      "floor": {
+        "op": ">=",
+        "value": 50
+      },
+      "status": "pass",
+      "subject_mb_s": 26.2,
+      "comparators_mb_s": {
+        "python-json": 23.0,
+        "serde_json": 36.8,
+        "simdjson": 374.8
+      },
+      "comparator_provenance": {
+        "python-json": {
+          "version": "3.14.8",
+          "sha256": "375532f83be620283ab780c14ca6bcc5907dc379d2b621de0c5d0a112cf5458b",
+          "inputs_sha256": "-"
+        },
+        "serde_json": {
+          "version": "1.0.150",
+          "sha256": "abc637868d85afc79549ffc09f95a829055ef8a5761a1f9f40f9e819ff631eaf",
+          "inputs_sha256": "72a70cb24cc3098871b7cf5effb0732de76c287a917dbd813d5ac05fa806d071"
+        },
+        "simdjson": {
+          "version": "5.0.5",
+          "sha256": "8cda3b76dabcd3eb4f53ddd641fef2bfea2884c46a1b945e461c8531b69c5638",
+          "inputs_sha256": "75b8b7ba17c318f4de173168280ce6f4d029adfd3aaad748cc095ffe86680240"
+        }
+      },
+      "corpus": {
+        "sha256": "857fc854d687e2f3881fd7f3a700d58659902a5edb91e156484726f1204f202c",
+        "bytes": 1033424
+      },
+      "corpora": [
+        {
+          "name": "scorecard-corpus",
+          "sha256": "857fc854d687e2f3881fd7f3a700d58659902a5edb91e156484726f1204f202c",
+          "bytes": 1033424,
+          "mb_s": {
+            "subject": 26.2,
+            "python-json": 23.0,
+            "serde_json": 36.8,
+            "simdjson": 374.8
+          },
+          "best_scalar": "serde_json",
+          "percent_of_best_scalar": 71.2
+        },
+        {
+          "name": "twitter",
+          "sha256": "30721e496a8d73cfc50658923c34eb2c0fbe15ee6835005e43ee624d8dedf200",
+          "bytes": 631515,
+          "mb_s": {
+            "subject": 45.0,
+            "python-json": 58.7,
+            "serde_json": 83.4,
+            "simdjson": 1231.9
+          },
+          "best_scalar": "serde_json",
+          "percent_of_best_scalar": 54.0
+        },
+        {
+          "name": "canada",
+          "sha256": "f83b3b354030d5dd58740c68ac4fecef64cb730a0d12a90362a7f23077f50d78",
+          "bytes": 2251051,
+          "mb_s": {
+            "subject": 33.7,
+            "python-json": 23.6,
+            "serde_json": 91.2,
+            "simdjson": 362.9
+          },
+          "best_scalar": "serde_json",
+          "percent_of_best_scalar": 37.0
+        },
+        {
+          "name": "citm_catalog",
+          "sha256": "a73e7a883f6ea8de113dff59702975e60119b4b58d451d518a929f31c92e2059",
+          "bytes": 1727204,
+          "mb_s": {
+            "subject": 64.6,
+            "python-json": 65.4,
+            "serde_json": 147.0,
+            "simdjson": 1233.7
+          },
+          "best_scalar": "serde_json",
+          "percent_of_best_scalar": 43.9
+        },
+        {
+          "name": "small-objects",
+          "sha256": "12b0bc9c4c312449ce677f4fd03e6b693ba7f232f5b1332219bddc2b049af2c8",
+          "bytes": 2412355,
+          "mb_s": {
+            "subject": 21.0,
+            "python-json": 27.3,
+            "serde_json": 29.1,
+            "simdjson": 541.8
+          },
+          "best_scalar": "serde_json",
+          "percent_of_best_scalar": 72.2
+        },
+        {
+          "name": "string-heavy",
+          "sha256": "e42cabee744c0288079e5eb037aefb069f1e3efda8dd15263fbe4081e5e73228",
+          "bytes": 2915939,
+          "mb_s": {
+            "subject": 117.6,
+            "python-json": 146.2,
+            "serde_json": 161.0,
+            "simdjson": 1712.6
+          },
+          "best_scalar": "serde_json",
+          "percent_of_best_scalar": 73.0
+        }
+      ],
+      "corpora_at_or_above_floor": 4,
+      "corpora_floor_percent": 50,
+      "best_scalar": "serde_json",
+      "gap_to_best_scalar_x": 1.4,
+      "gap_to_non_scalar_x": {
+        "simdjson": 14.3
+      }
+    },
+    {
+      "id": "velocity.tier1_seconds_warm",
+      "dimension": "velocity",
+      "dir": "down",
+      "definition": "WARM: what a landing costs. Wall seconds, measured by the runner, of the adapter's [tier1] warm_command (the fast gate on a typical change) run in the same sandbox right after the cold run, on the cache that run left, after warm_change_cmd applied the typical change (untimed). It must exit 0 and its output must carry the self-test evidence of every declared gate except the named warm_skips; a warm run that does not show the gates ran is a fail, and a missing warm run is not-measurable",
+      "implemented": true,
+      "value": 91.2,
+      "floor": {
+        "op": "<",
+        "value": 60
+      },
+      "status": "fail",
+      "change_command": "cd /tmp/w && printf \"\\n-- warm-run change: a comment\\n\" >> LeanJsonProofs/Policy.lean",
+      "command": "cd /tmp/w && PATH=/tmp/shim:$PATH TEST_JOBS=1 scripts/tier1.sh",
+      "gates_shown": [
+        "forbidden-constructs scan",
+        "Init-only import scan",
+        "pipefail lint",
+        "proof-evaluation lint",
+        "zero-warning build",
+        "axiom gate",
+        "obligation ledger gate",
+        "closure gate",
+        "trust ledger",
+        "JSONTestSuite check",
+        "vectors check"
+      ],
+      "gates_skipped": [
+        "C ABI test",
+        "wasm32 build test",
+        "freestanding native test",
+        "language bindings test",
+        "workflow lint",
+        "protected-set gate",
+        "lander",
+        "commit-on-main guard",
+        "parallel test runner",
+        "delta test selection",
+        "crash-record check",
+        "gate-diff judge",
+        "relabel-attack suite"
+      ],
+      "measured": true
+    },
+    {
+      "id": "velocity.tier1_seconds_cold",
+      "dimension": "velocity",
+      "dir": "down",
+      "definition": "COLD: what an outside contributor pays. Wall seconds, measured by the runner, of the adapter's [tier1] command in a fresh clone and a fresh sandbox with no cache (it must exit 0). A CEILING (<= 600), shown beside the warm number and never hidden or averaged with it",
+      "implemented": true,
+      "value": 300.6,
+      "floor": {
+        "op": "<=",
+        "value": 600
+      },
+      "status": "pass",
+      "command": "cp -a /subject /tmp/w && cd /tmp/w && git config core.hooksPath scripts/githooks &&\nR=$(command -v lake) && mkdir /tmp/shim &&\ncat > /tmp/shim/lake <<SH\n#!/bin/bash\ncase \" \\$* \" in *\" --run \"*) exec f",
+      "measured": true
+    },
+    {
+      "id": "velocity.open_prs",
+      "dimension": "velocity",
+      "dir": "down",
+      "definition": "open pull requests of the subject's origin repo (gh pr list)",
+      "implemented": true,
+      "value": 0,
+      "floor": {
+        "op": "==",
+        "value": 0
+      },
+      "status": "pass",
+      "repo": "witt3rd/vbm-json"
+    },
+    {
+      "id": "velocity.commits_per_hour",
+      "dimension": "velocity",
+      "dir": "up",
+      "definition": "first-parent commits in the window ending at the pinned commit, per hour of their span (span at least 1 h)",
+      "implemented": true,
+      "value": 4.301,
+      "floor": null,
+      "status": "pass",
+      "commits": 9,
+      "span_seconds": 7534
+    },
+    {
+      "id": "velocity.p90_commit_to_main_seconds",
+      "dimension": "velocity",
+      "dir": "down",
+      "definition": "p90 (nearest rank) over the changes in the window of: last landing time minus FIRST AUTHORED commit time. A change is the run of first-parent commits landed within 120 s of each other; author dates survive a direct landing's rebase, squash merges rewrite them (those read 0). Not-measurable when every change reads 0 (no authoring start is recorded), never a silent zero",
+      "implemented": true,
+      "value": 1301,
+      "floor": null,
+      "status": "pass",
+      "changes": 8,
+      "changes_with_a_recorded_start": 4
+    },
+    {
+      "id": "honesty.gate_selftests",
+      "dimension": "honesty",
+      "dir": "up",
+      "definition": "percent of the declared gate self-test files (adapter [tests] gate_selftests, under scripts/) that the fast-gate script names; zero such files is not-measurable (a gate not watched to fail is decoration). Presence and coverage only: that each can fail is shown by the subject's own run",
+      "implemented": true,
+      "value": 100.0,
+      "floor": {
+        "op": ">=",
+        "value": 100
+      },
+      "status": "pass",
+      "files": [
+        "scripts/test_abi.sh",
+        "scripts/test_bindings.sh",
+        "scripts/test_gate_diff_improving.sh",
+        "scripts/test_githook.sh",
+        "scripts/test_land_direct.sh",
+        "scripts/test_lint_workflows.sh",
+        "scripts/test_mutants.sh",
+        "scripts/test_native.sh",
+        "scripts/test_no_crash_record.sh",
+        "scripts/test_protected_set.sh",
+        "scripts/test_relabel_attacks.sh",
+        "scripts/test_run_parallel.sh",
+        "scripts/test_select_tests.sh",
+        "scripts/test_wasm.sh"
+      ],
+      "not_named_by_the_fast_gate": []
+    },
+    {
+      "id": "honesty.gates_self_tested",
+      "dimension": "honesty",
+      "dir": "up",
+      "definition": "percent of the gates the adapter declares ([tier1] gates = [{name, selftest}]) whose negative self-test LEFT EVIDENCE in this run: the selftest pattern matches the output of the fast gate, run in the sandbox (it must exit 0). The evidence is the subject's own output, so it shows the self-test was reached, never that it is sound (that is the attack suite); no declared gate is not-measurable",
+      "implemented": true,
+      "value": 100.0,
+      "floor": {
+        "op": ">=",
+        "value": 100
+      },
+      "status": "pass",
+      "gates": [
+        "forbidden-constructs scan",
+        "Init-only import scan",
+        "pipefail lint",
+        "proof-evaluation lint",
+        "zero-warning build",
+        "axiom gate",
+        "obligation ledger gate",
+        "closure gate",
+        "trust ledger",
+        "JSONTestSuite check",
+        "vectors check",
+        "C ABI test",
+        "wasm32 build test",
+        "freestanding native test",
+        "language bindings test",
+        "workflow lint",
+        "protected-set gate",
+        "lander",
+        "commit-on-main guard",
+        "parallel test runner",
+        "delta test selection",
+        "crash-record check",
+        "gate-diff judge",
+        "relabel-attack suite"
+      ],
+      "self_test_ran": [
+        "forbidden-constructs scan",
+        "Init-only import scan",
+        "pipefail lint",
+        "proof-evaluation lint",
+        "zero-warning build",
+        "axiom gate",
+        "obligation ledger gate",
+        "closure gate",
+        "trust ledger",
+        "JSONTestSuite check",
+        "vectors check",
+        "C ABI test",
+        "wasm32 build test",
+        "freestanding native test",
+        "language bindings test",
+        "workflow lint",
+        "protected-set gate",
+        "lander",
+        "commit-on-main guard",
+        "parallel test runner",
+        "delta test selection",
+        "crash-record check",
+        "gate-diff judge",
+        "relabel-attack suite"
+      ],
+      "no_evidence": []
+    },
+    {
+      "id": "honesty.attack_suite",
+      "dimension": "honesty",
+      "dir": "up",
+      "definition": "the subject's relabel-attack suite (adapter [tier1] attack_cmd) exits 0 and its last line starts with PASS, and its sabotage run (attack_sabotage_cmd: every gate an attack relies on replaced by a stub) exits non-zero with a last line starting FAIL: a suite that cannot fail is decoration; both run in the sandbox; none declared is not-measurable",
+      "implemented": true,
+      "value": 1,
+      "floor": {
+        "op": "==",
+        "value": 1
+      },
+      "status": "pass",
+      "pass_line": "PASS relabel-attacks: 46 of 46 attacks refused (35 s)",
+      "sabotage_line": "FAIL relabel-attacks: 0 of 46 attacks refused (3 s)"
+    }
+  ],
+  "dimensions": {
+    "verified": {
+      "status": "pass",
+      "below_floor": [],
+      "below_floor_implemented": []
+    },
+    "bare_metal": {
+      "status": "pass",
+      "below_floor": [],
+      "below_floor_implemented": []
+    },
+    "construction": {
+      "status": "pass",
+      "below_floor": [],
+      "below_floor_implemented": []
+    },
+    "efficiency": {
+      "status": "pass",
+      "below_floor": [],
+      "below_floor_implemented": []
+    },
+    "velocity": {
+      "status": "fail",
+      "below_floor": [
+        "velocity.tier1_seconds_warm"
+      ],
+      "below_floor_implemented": [
+        "velocity.tier1_seconds_warm"
+      ]
+    },
+    "honesty": {
+      "status": "pass",
+      "below_floor": [],
+      "below_floor_implemented": []
+    }
+  },
+  "verdicts": {
+    "correctness": {
+      "dimensions": {
+        "verified": "pass",
+        "construction": "pass",
+        "honesty": "pass"
+      },
+      "below_floor": [],
+      "status": "pass",
+      "not_defined_yet": [
+        "generation"
+      ],
+      "measured": 3,
+      "of": 4
+    },
+    "landedness": {
+      "dimensions": {
+        "velocity": "fail"
+      },
+      "below_floor": [
+        "velocity.tier1_seconds_warm"
+      ],
+      "status": "fail"
+    },
+    "profile": {
+      "dimensions": {
+        "bare_metal": "pass",
+        "efficiency": "pass"
+      },
+      "below_floor": []
+    }
+  }
+}

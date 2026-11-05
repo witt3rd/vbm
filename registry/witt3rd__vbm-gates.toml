@@ -1,0 +1,5 @@
+kind = "foundation"
+status = "planned"
+what = "The Lean gates: specified share, axioms, ledgers, protected set, attack suite"
+milestone = "after vbm-land's hook interface"
+depends_on = ["vbm-land"]

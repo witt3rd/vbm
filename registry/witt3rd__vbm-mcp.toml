@@ -1,0 +1,5 @@
+kind = "library"
+status = "planned"
+what = "Model context protocol client, pinned profile over stdio"
+milestone = "pinned client profile over stdio"
+depends_on = ["vbm-jsonrpc", "vbm-uri", "vbm-baseN", "vbm-sse", "vbm-http1"]

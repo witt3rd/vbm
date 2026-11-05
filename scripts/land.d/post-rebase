@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# On the rebased tree: report whether the change touches the protected set (scripts/protected-paths.txt, read by scripts/protected-set.sh as of origin/main). Touching it is allowed; every gate must pass.
+set -euo pipefail
+tool="$LAND_STATE_DIR/protected-set.sh"
+git -C "$LAND_TOP" show "$LAND_BASE_REF:scripts/protected-set.sh" > "$tool" 2>/dev/null || { echo "land.d/post-rebase: protected set: no scripts/protected-set.sh on $LAND_BASE_REF: not reported"; exit 0; }
+rc=0; prot=$(bash "$tool" "$LAND_BASE_REF" HEAD 2>/dev/null) || rc=$?
+case $rc in 0) echo "land.d/post-rebase: protected set: none touched";; 1) echo "land.d/post-rebase: protected set: TOUCHED ($(echo $prot)): allowed, every gate must pass";; *) echo "land.d/post-rebase: protected set: could not be decided";; esac

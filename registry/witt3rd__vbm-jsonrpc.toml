@@ -1,0 +1,5 @@
+kind = "library"
+status = "planned"
+what = "JSON-RPC 2.0 codec and request/response matching"
+milestone = "codec + peer machine"
+depends_on = ["vbm-json", "vbm-kit"]

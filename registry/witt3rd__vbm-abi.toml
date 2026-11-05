@@ -1,0 +1,5 @@
+kind = "foundation"
+status = "planned"
+what = "Interface description in Lean and generators for the C header and language bindings"
+milestone = "at the second library"
+depends_on = []

@@ -1,0 +1,9 @@
+# Reports, built with witt3rd/publishing (docs/<kind>/<topic>-vN/ -> <topic>-vN.pdf).
+publishing = "0.14.0"
+project = "VBM"
+
+[scan]
+words = []
+
+[publish]
+cards = "VBM/Cards"

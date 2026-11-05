@@ -1,0 +1,315 @@
+{
+  "schema": "scorecard-1",
+  "scorecard": {
+    "sha": "459c5ce10e46e7b1a906361f4b54611cdaf72c83",
+    "dirty": false
+  },
+  "subject": {
+    "name": "vbm-json",
+    "kind": "library",
+    "commit": "6b239dea3bf9ba6f59ad5c710d619871d9462cae"
+  },
+  "adapter": {
+    "sha256": "dc397582256a55c3b94479a748573cf536b2cc033718e6c34222acedb6e71dca"
+  },
+  "sandbox": null,
+  "skipped_files": [],
+  "metrics": [
+    {
+      "id": "verified.unproved_escapes",
+      "dimension": "verified",
+      "dir": "down",
+      "definition": "lines matching the adapter's [proof] sorry_pattern in its source globs (a line containing [proof] allow_marker is skipped)",
+      "implemented": true,
+      "value": 0,
+      "floor": {
+        "op": "==",
+        "value": 0
+      },
+      "status": "pass",
+      "findings": [],
+      "files_scanned": 24
+    },
+    {
+      "id": "verified.specified_share",
+      "dimension": "verified",
+      "dir": "up",
+      "definition": "percent specified, read from the subject's closure gate output; not-measurable when the subject has no closure gate",
+      "implemented": true,
+      "value": null,
+      "floor": {
+        "op": ">=",
+        "value": 100
+      },
+      "status": "not-measurable",
+      "reason": "subject code runs only inside the sandbox and no launcher is configured (--sandbox): nothing was executed"
+    },
+    {
+      "id": "verified.trusted_c_lines",
+      "dimension": "verified",
+      "dir": "down",
+      "definition": "newline count of the files matching trust.c_files",
+      "implemented": true,
+      "value": 76,
+      "floor": null,
+      "status": "pass",
+      "files": {
+        "abi/lean_json.c": 76
+      }
+    },
+    {
+      "id": "verified.trust_ledger_entries",
+      "dimension": "verified",
+      "dir": "down",
+      "definition": "lines of the trust ledger matching trust.entry_regex",
+      "implemented": true,
+      "value": 9,
+      "floor": null,
+      "status": "pass"
+    },
+    {
+      "id": "verified.non_vacuity",
+      "dimension": "verified",
+      "dir": "up",
+      "definition": "percent of spec/code mutants that break a proof",
+      "implemented": false,
+      "value": null,
+      "floor": {
+        "op": ">=",
+        "value": 100
+      },
+      "status": "not-measurable",
+      "reason": "not implemented in this runner version"
+    },
+    {
+      "id": "bare_metal.freestanding_build",
+      "dimension": "bare_metal",
+      "dir": "up",
+      "definition": "the artifact builds with -ffreestanding -nostdlib",
+      "implemented": false,
+      "value": null,
+      "floor": {
+        "op": "==",
+        "value": 1
+      },
+      "status": "not-measurable",
+      "reason": "not implemented in this runner version"
+    },
+    {
+      "id": "bare_metal.libc_symbols",
+      "dimension": "bare_metal",
+      "dir": "down",
+      "definition": "undefined libc symbols of the artifact (nm -u)",
+      "implemented": false,
+      "value": null,
+      "floor": {
+        "op": "==",
+        "value": 0
+      },
+      "status": "not-measurable",
+      "reason": "not implemented in this runner version"
+    },
+    {
+      "id": "construction.hand_written_tests",
+      "dimension": "construction",
+      "dir": "down",
+      "definition": "tracked files that are hand-written TESTS OF THE SUBJECT'S CODE by DECISIONS 5 (default test patterns plus tests.extra, minus tests.generated and minus the declared gate self-tests)",
+      "implemented": true,
+      "value": 1,
+      "floor": {
+        "op": "==",
+        "value": 0
+      },
+      "status": "fail",
+      "files": [
+        "tests/abi_test.c"
+      ],
+      "generated_excluded": 322,
+      "gate_selftests_excluded": 5
+    },
+    {
+      "id": "construction.mutation_score",
+      "dimension": "construction",
+      "dir": "up",
+      "definition": "percent of code mutants killed by the proofs or the generated vectors",
+      "implemented": false,
+      "value": null,
+      "floor": {
+        "op": ">=",
+        "value": 100
+      },
+      "status": "not-measurable",
+      "reason": "not implemented in this runner version"
+    },
+    {
+      "id": "efficiency.throughput_vs_best",
+      "dimension": "efficiency",
+      "dir": "up",
+      "definition": "percent of the best comparator's throughput on the fixed corpus",
+      "implemented": false,
+      "value": null,
+      "floor": {
+        "op": ">=",
+        "value": 80
+      },
+      "status": "not-measurable",
+      "reason": "not implemented in this runner version"
+    },
+    {
+      "id": "velocity.tier1_seconds",
+      "dimension": "velocity",
+      "dir": "down",
+      "definition": "wall seconds of the adapter's tier1 command in the scratch clone (it must exit 0)",
+      "implemented": true,
+      "value": null,
+      "floor": {
+        "op": "<",
+        "value": 60
+      },
+      "status": "not-measurable",
+      "reason": "subject code runs only inside the sandbox and no launcher is configured (--sandbox): nothing was executed"
+    },
+    {
+      "id": "velocity.open_prs",
+      "dimension": "velocity",
+      "dir": "down",
+      "definition": "open pull requests of the subject's origin repo (gh pr list)",
+      "implemented": true,
+      "value": 0,
+      "floor": {
+        "op": "==",
+        "value": 0
+      },
+      "status": "pass",
+      "repo": "witt3rd/vbm-json"
+    },
+    {
+      "id": "velocity.commits_per_hour",
+      "dimension": "velocity",
+      "dir": "up",
+      "definition": "first-parent commits in the window ending at the pinned commit, per hour of their span (span at least 1 h)",
+      "implemented": true,
+      "value": 1.218,
+      "floor": null,
+      "status": "pass",
+      "commits": 11,
+      "span_seconds": 32513
+    },
+    {
+      "id": "velocity.p90_commit_to_main_seconds",
+      "dimension": "velocity",
+      "dir": "down",
+      "definition": "p90 of the time from a change's FIRST AUTHORED commit (or the worker's start) to its landing on main; not-measurable until that start is recorded (never zero)",
+      "implemented": true,
+      "value": null,
+      "floor": null,
+      "status": "not-measurable",
+      "reason": "a change's first authored commit is not recorded on main (squash merges and rebases rewrite author and committer dates, so a date difference reads 0 under direct landing): the lander's start-to-landing log is needed"
+    },
+    {
+      "id": "honesty.gate_selftests",
+      "dimension": "honesty",
+      "dir": "up",
+      "definition": "percent of the declared gate self-test files (adapter [tests] gate_selftests, under scripts/) that the fast-gate script names; zero such files is not-measurable (a gate not watched to fail is decoration). Presence and coverage only: that each can fail is shown by the subject's own run",
+      "implemented": true,
+      "value": 100.0,
+      "floor": {
+        "op": ">=",
+        "value": 100
+      },
+      "status": "pass",
+      "files": [
+        "scripts/test_abi.sh",
+        "scripts/test_githook.sh",
+        "scripts/test_land_direct.sh",
+        "scripts/test_protected_set.sh",
+        "scripts/test_run_parallel.sh"
+      ],
+      "not_named_by_the_fast_gate": []
+    },
+    {
+      "id": "honesty.gates_self_tested",
+      "dimension": "honesty",
+      "dir": "up",
+      "definition": "percent of the subject's gates with a negative self-test that ran",
+      "implemented": false,
+      "value": null,
+      "floor": {
+        "op": ">=",
+        "value": 100
+      },
+      "status": "not-measurable",
+      "reason": "not implemented in this runner version"
+    },
+    {
+      "id": "honesty.attack_suite",
+      "dimension": "honesty",
+      "dir": "up",
+      "definition": "the relabel-attack suite passes, and fails under --sabotage",
+      "implemented": false,
+      "value": null,
+      "floor": {
+        "op": "==",
+        "value": 1
+      },
+      "status": "not-measurable",
+      "reason": "not implemented in this runner version"
+    }
+  ],
+  "dimensions": {
+    "verified": {
+      "status": "fail",
+      "below_floor": [
+        "verified.specified_share",
+        "verified.non_vacuity"
+      ],
+      "below_floor_implemented": [
+        "verified.specified_share"
+      ]
+    },
+    "bare_metal": {
+      "status": "fail",
+      "below_floor": [
+        "bare_metal.freestanding_build",
+        "bare_metal.libc_symbols"
+      ],
+      "below_floor_implemented": []
+    },
+    "construction": {
+      "status": "fail",
+      "below_floor": [
+        "construction.hand_written_tests",
+        "construction.mutation_score"
+      ],
+      "below_floor_implemented": [
+        "construction.hand_written_tests"
+      ]
+    },
+    "efficiency": {
+      "status": "fail",
+      "below_floor": [
+        "efficiency.throughput_vs_best"
+      ],
+      "below_floor_implemented": []
+    },
+    "velocity": {
+      "status": "fail",
+      "below_floor": [
+        "velocity.tier1_seconds"
+      ],
+      "below_floor_implemented": [
+        "velocity.tier1_seconds"
+      ]
+    },
+    "honesty": {
+      "status": "fail",
+      "below_floor": [
+        "honesty.gates_self_tested",
+        "honesty.attack_suite"
+      ],
+      "below_floor_implemented": []
+    }
+  },
+  "result": "fail",
+  "implemented_result": "fail"
+}

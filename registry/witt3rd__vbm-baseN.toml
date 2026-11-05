@@ -1,0 +1,5 @@
+kind = "library"
+status = "planned"
+what = "base64, base64url and base16"
+milestone = "base64/base64url/base16"
+depends_on = ["vbm-kit"]

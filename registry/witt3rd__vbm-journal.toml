@@ -1,0 +1,5 @@
+kind = "library"
+status = "planned"
+what = "Append-only, hash-chained log and a generic chain checker"
+milestone = "generic chain checker"
+depends_on = ["vbm-kit"]

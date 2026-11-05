@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# Sandbox launcher on bubblewrap (scorecard/SPEC.md, "Untrusted subject code"; DECISIONS 10: the lighter alternative to a container). Called by the runner exactly as scripts/sandbox-conformance.sh calls it:
+#   sandbox-bwrap --subject DIR --out DIR --timeout S --cpus N --memory-mb N --disk-mb N --pids N --net none -- <command>
+# The command runs as `bash -c` with the subject read-only at /subject (the working directory), a fresh user/pid/ipc/uts/cgroup/mount namespace, NO network (loopback only, down), no environment (PATH, HOME, LANG only), every capability dropped,
+# a private tmpfs /tmp and a size-limited tmpfs /out. The host is visible only through read-only /usr (and the host's /bin, /lib, /lib64, /sbin, recreated as they are) plus the toolchain directories listed one per line in sandbox-bwrap.binds next to this file
+# (an absolute path is bound read-only at the same path; `path /abs/dir` prepends that directory to PATH; `env NAME VALUE` sets a variable; absent file: none). Limits: wall time (SIGKILL of the whole namespace; exit 124), CPU time, memory (a cgroup scope when the user manager can make one, else address space), process count (inside the user namespace: the host user's own count would otherwise starve it), per-file size and tmpfs size (disk), CPU set (cpus).
+# Weaker than a container (SPEC): no cgroup memory/disk accounting, and the attestation's image_digest is a digest of the host userland it exposes, not of an image. A podman launcher is the recommended default (DECISIONS 10).
+# Exit: the command's, 124 on the time limit, 2 on a bad call. Writes DIR/attestation.json BEFORE the command runs.
+export LC_ALL=C
+set -uo pipefail
+here=$(cd "$(dirname "$0")" && pwd)
+subject= out= t= cpus= mem= disk= pids= net=
+num() { [[ "$2" =~ ^[0-9]+$ ]] && [ "$2" -gt 0 ] || { echo "sandbox-bwrap: $1 must be a positive integer" >&2; exit 2; }; }
+while [ $# -gt 0 ]; do
+  case $1 in
+    --subject) subject=${2:-}; shift 2;; --out) out=${2:-}; shift 2;; --timeout) t=${2:-}; shift 2;; --cpus) cpus=${2:-}; shift 2;; --memory-mb) mem=${2:-}; shift 2;;
+    --disk-mb) disk=${2:-}; shift 2;; --pids) pids=${2:-}; shift 2;; --net) net=${2:-}; shift 2;; --) shift; break;; *) echo "sandbox-bwrap: unknown argument $1" >&2; exit 2;;
+  esac
+done
+[ $# -eq 1 ] || { echo "sandbox-bwrap: exactly one command after --" >&2; exit 2; }
+cmd=$1
+[ "$net" = none ] || { echo "sandbox-bwrap: only --net none is supported" >&2; exit 2; }
+for v in t cpus mem disk pids; do num "--$v" "${!v}"; done
+[ -d "$subject" ] && [ -d "$out" ] || { echo "sandbox-bwrap: --subject and --out must be directories" >&2; exit 2; }
+subject=$(realpath "$subject"); out=$(realpath "$out")
+command -v bwrap >/dev/null || { echo "sandbox-bwrap: bwrap is not installed" >&2; exit 2; }
+sbpath=/usr/bin:/bin
+envs=(); binds=(); if [ -f "$here/sandbox-bwrap.binds" ]; then while IFS= read -r p; do case $p in /*) [ -e "$p" ] && binds+=(--ro-bind "$p" "$p");; "path /"*) sbpath=${p#path }:$sbpath;; "env "*) read -r _ en ev <<<"$p"; [[ "$en" =~ ^[A-Z_][A-Z0-9_]*$ ]] && envs+=(--setenv "$en" "$ev");; esac; done < "$here/sandbox-bwrap.binds"; fi
+# the host's own /bin /sbin /lib /lib64 layout (a symlink into /usr on merged-usr systems, with different targets per distribution): recreate each symlink as it is, bind each real directory read-only
+layout=(); for d in bin sbin lib lib64; do if [ -L "/$d" ]; then layout+=(--symlink "$(readlink "/$d")" "/$d"); elif [ -d "/$d" ]; then layout+=(--ro-bind "/$d" "/$d"); fi; done
+digest=$( { bwrap --version; cat /etc/os-release 2>/dev/null; sha256sum < "$0"; printf '%s\n' "${binds[@]:-}" "$sbpath" "${envs[@]:-}"; } | sha256sum | cut -d' ' -f1)
+# memory and process limits: a cgroup scope (MemoryMax, no swap, TasksMax, CPUQuota) where the user manager can make one, else RLIMIT_AS at 16x the memory (an address-space limit is a poor memory limit: toolchains reserve address space)
+export XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR:-/run/user/$(id -u)}   # the runner passes a clean environment; the launcher is host-side code and finds the user manager itself
+if systemd-run --user --scope --quiet true 2>/dev/null; then enforce=cgroup; limit=(systemd-run --user --scope --quiet -p "MemoryMax=${mem}M" -p MemorySwapMax=0 -p "TasksMax=$pids" -p "CPUQuota=$((cpus * 100))%" --)
+else enforce=rlimit-as; limit=(prlimit --as=$((mem * 16 * 1024 * 1024)) --); fi
+printf '{"kind":"bwrap","image_digest":"sha256:%s","network":"none","subject_mount":"ro","enforcement":"%s","limits":{"cpus":%s,"memory_mb":%s,"disk_mb":%s,"pids":%s,"timeout_seconds":%s}}\n' "$digest" "$enforce" "$cpus" "$mem" "$disk" "$pids" "$t" > "$out/attestation.json"
+timeout -s KILL "$t" taskset -c "0-$((cpus - 1))" "${limit[@]}" prlimit --cpu="$t" --fsize=$((disk * 1024 * 1024)) -- \
+  bwrap --unshare-all --die-with-parent --new-session --cap-drop ALL --clearenv \
+    --ro-bind /usr /usr "${layout[@]}" "${binds[@]}" \
+    --proc /proc --dev /dev --size $((disk * 1024 * 1024)) --tmpfs /tmp --size $((disk * 1024 * 1024)) --tmpfs /out --ro-bind "$subject" /subject --chdir /subject \
+    --setenv PATH "$sbpath" --setenv HOME /tmp --setenv LANG C "${envs[@]}" -- prlimit --nproc="$pids" -- bash -c "$cmd"
+rc=$?
+[ "$rc" != 137 ] || rc=124
+exit "$rc"

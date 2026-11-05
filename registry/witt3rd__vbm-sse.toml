@@ -1,0 +1,5 @@
+kind = "library"
+status = "planned"
+what = "Server-sent event streams"
+milestone = "reference + whole-buffer theorems"
+depends_on = ["vbm-kit"]

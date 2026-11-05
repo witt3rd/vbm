@@ -1,0 +1,5 @@
+kind = "library"
+status = "coming soon"
+what = "The wire contract of the LLM provider conventions (OpenAI, Anthropic, OpenRouter): codecs, stream fold, tool-call turns, usage and finish-reason arithmetic"
+milestone = "OpenAI, OpenRouter and the Anthropic reply proved; Anthropic request, turns and stream next"
+depends_on = ["vbm-json", "vbm-sse"]

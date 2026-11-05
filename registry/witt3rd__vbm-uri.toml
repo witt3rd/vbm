@@ -1,0 +1,5 @@
+kind = "library"
+status = "planned"
+what = "URI parsing and resolution (RFC 3986)"
+milestone = "RFC 3986 parse + resolve"
+depends_on = ["vbm-kit"]

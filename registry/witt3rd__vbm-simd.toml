@@ -1,0 +1,5 @@
+kind = "foundation"
+status = "coming soon"
+what = "Bit-vector model of vector instructions, a trusted shim per instruction set, proved kernels"
+milestone = "after the first SIMD measurements"
+depends_on = []

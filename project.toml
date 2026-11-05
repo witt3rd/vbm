@@ -1,0 +1,3 @@
+# The project name lives HERE and nowhere else: rename the project by editing this one line. (scripts/lint-public flags retired names.)
+[project]
+name = "vbm"
