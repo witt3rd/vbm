@@ -44,7 +44,7 @@ The adapter for the first row runs its subject as described in these [notes](sco
 
 ## Build and check
 
-Everything runs through `mise` (it pins the Python of the runner, which is stdlib-only). You need `git`, `jq`, `bash` and `python3`; the sandboxed metrics also need `bwrap` (bubblewrap). The gate that every change passes, the same one CI runs:
+Everything runs through `mise` (it pins the Python of the runner, which is stdlib-only). You need `git`, `jq`, `bash`, `flock`, `python3` (with PyYAML), a C compiler, `ps`, `ssh-keygen`, `bwrap` (bubblewrap) and `coredumpctl` (systemd-coredump); a missing tool fails the gate rather than skipping a check. The gate that every change passes, the same one CI runs:
 
 ```
 mise exec -- scripts/tier1.sh
