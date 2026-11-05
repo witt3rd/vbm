@@ -25,7 +25,7 @@ eff = next(x for x in bad["metrics"] if x["id"] == "efficiency.throughput_vs_bes
 eff.update(corpora=[{"name": "primary", "sha256": "d" * 64, "bytes": 1033424, "mb_s": {"subject": 120.0, "serde": 160.0, "simd": 1500.0}, "best_scalar": "serde", "percent_of_best_scalar": 75.0},
                     {"name": "<b>big</b>", "sha256": "e" * 64, "bytes": 2251051, "mb_s": {"subject": 40.0, "serde": 331.0, "simd": 1439.5}, "best_scalar": "serde", "percent_of_best_scalar": 12.1}], corpora_at_or_above_floor=1, corpora_floor_percent=50)
 bad["metrics"] += [m("honesty.gates_self_tested", "honesty", "fail", 50.0, {"op": ">=", "value": 100}, gates=["a", "<i>b</i>"], self_test_ran=["a"], no_evidence=["<i>b</i>"]),
-                   m("honesty.selftests_ran_cases", "honesty", "fail", 0, {"op": ">=", "value": 1}, reason="the fast-gate log has 1 line(s) with SKIPPED: <b>x</b>", cases=3, evidence_names=2, cases_by_name={"a": 3, "b": 0}, ran_names_declared=[], weakness="a count regex proves a count was printed, not that every case was meaningful"),
+                   m("honesty.selftests_ran_cases", "honesty", "fail", 0, {"op": ">=", "value": 1}, reason="the fast-gate log has 1 line(s) with SKIPPED: <b>x</b>", cases=3, evidence_names=2, warm_cases=0, warm_evidence_names=1, cases_by_name={"a": 3, "b": 0}, ran_names_declared=[], weakness="a count regex proves a count was printed, not that every case was meaningful"),
                    m("honesty.attack_suite", "honesty", "pass", 1, {"op": "==", "value": 1}, pass_line="PASS relabel-attacks: 3 of 3", sabotage_line="FAIL relabel-attacks: 0 of 3")]
 bad["sandbox"] = {"limits": {"cpus": 2}}
 noreason = json.loads(json.dumps(bad)); del noreason["metrics"][1]["reason"]
@@ -65,7 +65,7 @@ PY
 for s in "Correctness: FAIL" "Landedness: PENDING" "scored before the warm/cold split" "Profile (in neither verdict)" "specified share" "unproved escapes" "libc symbols" "wasm freestanding build" "60740 B" "tier1 seconds" "not measurable (1)" "<code>malloc</code>, <code>pthread_once</code>" \
          "Hand-written cases</b> (4)" "<code>b_test.py</code> 1" "Drivers, 0 cases: <code>load.py</code>" "Gap to simd: 30x (non-scalar, not floored)" "best scalar serde is 3.2x faster (floor: within 2x)" "serde 1.2.3" "<code>scripts/tier1.sh</code>, cold" \
          "committed 2026-11-04 11:56 -0800, 14 min before this card" "subject bbbbbbbbbbbb" "tight" \
-         "<b>2 corpora</b>" "1 of 2 at or above the 50% line" "75%" "12.1%" "Gates with self-test evidence in the run:</b> 1 of 2: no evidence for &lt;i&gt;b&lt;/i&gt;" "Self-tests that ran (ran-evidence):</b> 3 cases in 2 evidence lines; FAIL: the fast-gate log has 1 line(s) with SKIPPED: &lt;b&gt;x&lt;/b&gt;. Weakness: a count regex proves a count was printed, not that every case was meaningful." "Attack suite:</b> PASS relabel-attacks: 3 of 3" \
+         "<b>2 corpora</b>" "1 of 2 at or above the 50% line" "75%" "12.1%" "Gates with self-test evidence in the run:</b> 1 of 2: no evidence for &lt;i&gt;b&lt;/i&gt;" "Self-tests that ran (ran-evidence):</b> 3 cases in 2 evidence lines; warm run 0 cases in 1 evidence lines; FAIL: the fast-gate log has 1 line(s) with SKIPPED: &lt;b&gt;x&lt;/b&gt;. Weakness: a count regex proves a count was printed, not that every case was meaningful." "Attack suite:</b> PASS relabel-attacks: 3 of 3" \
          "Level 1, Certified" "is not built yet"; do has "$s"; done
 python3 - "$T/bad.json.out" <<'PY' && ran_case || fail "a metric row is missing, or a hostile string was injected as markup"
 import json, sys

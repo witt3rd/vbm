@@ -64,7 +64,7 @@ METRICS = [
     dict(id="velocity.p90_commit_to_main_seconds", dim="velocity", floor=None, dir="down", desc="p90 (nearest rank) over the changes in the window of: last landing time minus FIRST AUTHORED commit time. A change is the run of first-parent commits landed within 120 s of each other; author dates survive a direct landing's rebase, squash merges rewrite them (those read 0). Not-measurable when every change reads 0 (no authoring start is recorded), never a silent zero"),
     dict(id="honesty.gate_selftests", dim="honesty", floor=(">=", 100), dir="up", desc="percent of the declared gate self-test files (adapter [tests] gate_selftests, under scripts/) that the fast-gate script names; zero such files is not-measurable (a gate not watched to fail is decoration). Presence and coverage only: that each can fail is shown by the subject's own run"),
     dict(id="honesty.gates_self_tested", dim="honesty", floor=(">=", 100), dir="up", desc="percent of the gates the adapter declares ([tier1] gates = [{name, selftest}]) whose negative self-test LEFT EVIDENCE in this run: the selftest pattern matches the output of the fast gate, run in the sandbox (it must exit 0). The evidence is the subject's own output, so it shows the self-test was reached, never that it is sound (that is the attack suite); no declared gate is not-measurable"),
-    dict(id="honesty.selftests_ran_cases", dim="honesty", floor=(">=", 1), dir="up", desc="the ran-evidence of the fast gate (DECISIONS 19): the cases its gates and self-tests EXECUTED, summed over the lines `ran: NAME: N cases` (NAME [A-Za-z0-9_.-]+, N at most 15 digits) of the fast-gate log (its stdout and stderr, run in the sandbox, exit 0 required). Fails, with the reason, when the log has a line containing SKIPPED, no evidence line at all, or a sum of 0 cases, or a name that the adapter does not declare in [tier1] ran_names (a subject cannot invent a gate), or a declared name that is missing or shows 0 cases; no declared ran_names is not-measurable. A self-test that never ran is not a self-test: this closes the vacuous pass that honesty.gates_self_tested cannot see. Honest weakness: a count regex proves a count was printed, not that every case was meaningful; the evidence is the subject's own output, so soundness is the attack suite's question"),
+    dict(id="honesty.selftests_ran_cases", dim="honesty", floor=(">=", 1), dir="up", desc="the ran-evidence of the fast gate (DECISIONS 19): the cases its gates and self-tests EXECUTED, summed over the lines `ran: NAME: N cases` (NAME [A-Za-z0-9_.-]+, N at most 15 digits) of the fast-gate log (its stdout and stderr, run in the sandbox, exit 0 required). Fails, with the reason, when the log has a line containing SKIPPED, no evidence line at all, or a sum of 0 cases, or a name that the adapter does not declare in [tier1] ran_names (a subject cannot invent a gate), or a declared name that is missing or shows 0 cases; no declared ran_names is not-measurable. A self-test that never ran is not a self-test: this closes the vacuous pass that honesty.gates_self_tested cannot see. The same check runs on the log of the WARM run (the one velocity.tier1_seconds_warm times) when the adapter declares a warm run: same format, same exactness against ran_names, the reason prefixed `warm run:`, and a failing or unfinished warm gate fails it too; the cold check is unchanged. Honest weakness: a count regex proves a count was printed, not that every case was meaningful; the evidence is the subject's own output, so soundness is the attack suite's question"),
     dict(id="honesty.attack_suite", dim="honesty", floor=("==", 1), dir="up", desc="the subject's relabel-attack suite (adapter [tier1] attack_cmd) exits 0 and its last line starts with PASS, and its sabotage run (attack_sabotage_cmd: every gate an attack relies on replaced by a stub) exits non-zero with a last line starting FAIL: a suite that cannot fail is decoration; both run in the sandbox; none declared is not-measurable"),
 ]
 for _m in METRICS: _m["plain"] = scorecard_plain.PLAIN.get(_m["id"], "")   # data about each metric for a plain reader; not part of its definition
@@ -564,6 +564,21 @@ def _(ctx):
     return round(100 * len(seen) / len(gs), 1), {"gates": [g["name"] for g in gs], "self_test_ran": seen, "no_evidence": [g["name"] for g in gs if g["name"] not in seen]}
 
 
+def ran_evidence(out, declared, what):
+    """Read the ran-evidence of one log (DECISIONS 19) with the runner's own code: returns (coverage, None) or (coverage, (reason, value)) for the first thing wrong."""
+    by = {}
+    for name, n in RAN_LINE.findall(out): by[name] = by.get(name, 0) + int(n)
+    total, skipped = sum(by.values()), [l.strip()[:120] for l in out.splitlines() if "SKIPPED" in l]
+    cov = {"evidence_names": len(by), "cases": total, "cases_by_name": dict(sorted(by.items())[:60]), "zero_case_names": sorted(n for n, c in by.items() if not c)[:60], "skipped_lines": skipped[:10], "ran_names_declared": declared, "weakness": RAN_WEAKNESS}
+    invented, lack = sorted(n for n in by if n not in declared), [n for n in declared if not by.get(n)]
+    if skipped: return cov, (f"{what} has {len(skipped)} line(s) with SKIPPED (a gate that did not run is not evidence): {skipped[0]}", total)
+    if not by: return cov, (f"no evidence: {what} has no `ran: NAME: N cases` line (a self-test that does not say how many cases it ran may have run none)", 0)
+    if not total: return cov, (f"zero cases: every `ran:` evidence line of {what} reports 0 cases (the gates ran nothing)", 0)
+    if invented: return cov, (f"{what} has `ran:` evidence for name(s) the adapter does not declare in [tier1] ran_names (a subject cannot invent a gate): " + ", ".join(invented[:10]), total)
+    if lack: return cov, (f"{what} has no positive `ran:` evidence for the declared name(s): " + ", ".join(lack), total)
+    return cov, None
+
+
 @measure("honesty.selftests_ran_cases")
 def _(ctx):
     t = ctx["adapter"]["tier1"]
@@ -571,18 +586,16 @@ def _(ctx):
     rc, out, _ = tier1_run(ctx)
     if rc in (None, 124): raise Fail(f"tier1 timed out after {t['timeout_seconds']} s: no ran-evidence")
     if rc: raise Fail(f"tier1 exited {rc}: no ran-evidence from a failing fast gate")
-    by = {}
-    for name, n in RAN_LINE.findall(out): by[name] = by.get(name, 0) + int(n)
-    total, skipped = sum(by.values()), [l.strip()[:120] for l in out.splitlines() if "SKIPPED" in l]
-    cov = {"evidence_names": len(by), "cases": total, "cases_by_name": dict(sorted(by.items())[:60]), "zero_case_names": sorted(n for n, c in by.items() if not c)[:60], "skipped_lines": skipped[:10], "ran_names_declared": t["ran_names"], "weakness": RAN_WEAKNESS}
-    if skipped: raise Fail(f"the fast-gate log has {len(skipped)} line(s) with SKIPPED (a gate that did not run is not evidence): {skipped[0]}", total, cov)
-    if not by: raise Fail("no evidence: the fast-gate log has no `ran: NAME: N cases` line (a self-test that does not say how many cases it ran may have run none)", 0, cov)
-    if not total: raise Fail("zero cases: every `ran:` evidence line of the fast-gate log reports 0 cases (the gates ran nothing)", 0, cov)
-    invented = sorted(n for n in by if n not in t["ran_names"])
-    if invented: raise Fail("the fast-gate log has `ran:` evidence for name(s) the adapter does not declare in [tier1] ran_names (a subject cannot invent a gate): " + ", ".join(invented[:10]), total, cov)
-    lack = [n for n in t["ran_names"] if not by.get(n)]
-    if lack: raise Fail("the fast-gate log has no positive `ran:` evidence for the declared name(s): " + ", ".join(lack), total, cov)
-    return total, cov
+    cov, why = ran_evidence(out, t["ran_names"], "the fast-gate log")
+    if why: raise Fail(why[0], why[1], cov)
+    if t["warm_command"]:   # the WARM run is the one the Landedness metric times: it must not pass vacuously either (DECISIONS 19, main's condition 2); same format, same exactness, same ran_names; the cold check above is unchanged
+        w = ctx["phases"].get("warm")
+        if w is None or w["rc"] is None: raise Fail("the warm run did not finish: no ran-evidence from the warm run", cov["cases"], cov)
+        if w["rc"]: raise Fail(f"warm run: the warm gate exited {w['rc']}: no ran-evidence from a failing warm run", cov["cases"], cov)
+        wcov, why = ran_evidence(w["out"], t["ran_names"], "the warm-run log")
+        cov.update(warm_cases=wcov["cases"], warm_evidence_names=wcov["evidence_names"], warm_cases_by_name=wcov["cases_by_name"], warm_zero_case_names=wcov["zero_case_names"], warm_skipped_lines=wcov["skipped_lines"])
+        if why: raise Fail("warm run: " + why[0], cov["cases"], cov)
+    return cov["cases"], cov
 
 
 @measure("honesty.attack_suite")
