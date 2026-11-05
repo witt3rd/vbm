@@ -115,5 +115,13 @@ echo 'repos = ["witt3rd/vbm-json", "evil/widget"]' >> "$R/registry/allowlist.tom
 ( cd "$R" && PROTECTED_PATHS_FILE= bash "$OLDPWD/scripts/protected-set.sh" main feat ) > "$T/out" 2>&1 && fail "negative self-test: widening the allowlist was not reported as a protected-set change"; grep -qx 'registry/allowlist.toml' "$T/out" && ran_case || fail "the protected-set gate did not name the allowlist: $(cat "$T/out")"
 sed -i '/allowlist/d' "$R/scripts/protected-paths.txt"; g commit -qam "unprotect"
 ( cd "$R" && bash "$OLDPWD/scripts/protected-set.sh" main feat ) > "$T/out" 2>&1 && fail "negative self-test: dropping the allowlist from the protected list in the same change was not caught"
+# a tool on the allowlist is NOT scored automatically: scoring is only ever an explicit run (scorecard run|certify --repo --commit, a manifest for certify), no code enumerates registry/ to pick subjects,
+# and a tool entry has no commit, manifest or card to score, so its row stays unscored however the allowlist reads
+grep -q '"witt3rd/vbm-land"' registry/allowlist.toml && grep -q '^kind = "tool"' registry/witt3rd__vbm-land.toml && ran_case || fail "the real registry no longer lists vbm-land as an allowlisted tool (the cases below read it)"
+for k in commit manifest targets latest measured; do ! grep -q "^\[\?$k" registry/witt3rd__vbm-land.toml && ran_case || fail "the vbm-land tool entry carries $k: a tool is never scored"; done
+readers=$(grep -l 'registry/\|\*__\*\.toml' scorecard/scorecard scorecard/scorecard_*.py scorecard/registry-* .github/workflows/*.yml 2>/dev/null | sed 's#.*/##' | sort | tr '\n' ' ')
+case "$readers" in "registry-table registry-validate scorecard ") ran_case ;; *) fail "a new reader of registry/ appeared ($readers): a scoring job must not pick subjects from the registry or allowlist without a test here" ;; esac
+grep -n 'registry/\|__\*\.toml' scorecard/scorecard scorecard/scorecard_policy.py | grep -v -i 'allowlist\|#\|"""' > "$T/enum" || true; [ ! -s "$T/enum" ] && ran_case || fail "the scorer reads registry entries: $(cat "$T/enum")"
+scorecard/registry-table --root "$(pwd)" | grep '^| \[vbm-land\]' | grep -q '| tool | live | unscored | unscored | - |$' && ran_case || fail "the vbm-land row is not an unscored tool row with no card"
 ran_done test_registry
 echo "tier1: registry: entries validate; bad names, keys, URLs, commits, adapter paths, contributor-written scores and multi-file PRs are rejected; a non-allowlisted repo, a self-approved or over-cap Level 2 request and an allowlist edit (protected-set) are refused: ok"
