@@ -37,10 +37,12 @@ def check(path, bad, allow):
     try: d = load(path)
     except (OSError, tomllib.TOMLDecodeError) as e: return bad.append(f"{path}: not readable TOML: {e}")
     live = d.get("status") == "live"
+    listed = live and d.get("kind") == "tool"   # a live TOOL is listed and linked (repo) and never scored: the scoring keys are for a library or foundation piece
     for k, t in SCHEMA.items():
         if k not in d:
-            if k in COMMON or live: bad.append(f"{path}: missing key {k}")
+            if k in COMMON or (live and (k == "repo" or not listed)): bad.append(f"{path}: missing key {k}")
             continue
+        if listed and k in SCORING and k != "repo": bad.append(f"{path}: {k} is not allowed on a tool entry (a tool is listed and linked, never scored)"); continue
         if k in SCORING and not live: bad.append(f"{path}: {k} is only allowed when status is live (a private repo is never linked or scored)"); continue
         if isinstance(t, dict):
             if not isinstance(d[k], dict): bad.append(f"{path}: [{k}] must be a table"); continue
@@ -54,7 +56,7 @@ def check(path, bad, allow):
             bad += [f"{path}: [measured] {kk} missing or not a string" for kk, tt in MEASURED.items() if not isinstance(d["measured"].get(kk), tt)]
             bad += [f"{path}: unknown key [measured] {x}" for x in d["measured"] if x not in MEASURED]
     bad += [f"{path}: unknown key {x}" for x in d if x not in SCHEMA and x != "measured"]
-    if "measured" in d and not live: bad.append(f"{path}: [measured] is only allowed when status is live")
+    if "measured" in d and (not live or listed): bad.append(f"{path}: [measured] is only allowed when status is live and the kind is not tool")
     if d.get("kind") not in KINDS: bad.append(f"{path}: kind must be one of {', '.join(KINDS)}")
     if d.get("status") not in STATUS: bad.append(f"{path}: status must be one of {', '.join(STATUS)}")
     if bad and any(b.startswith(path) for b in bad): return
@@ -65,6 +67,7 @@ def check(path, bad, allow):
         return
     if d["repo"] != f"https://github.com/{owner}/{repo}": bad.append(f"{path}: repo must be https://github.com/{owner}/{repo} (the file name says so)")
     if f"{owner}/{repo}" not in allow["repos"]: bad.append(f"{path}: {owner}/{repo} is {REFUSED}")
+    if listed: return
     if not re.fullmatch(r"[0-9a-f]{40}", d["commit"]): bad.append(f"{path}: commit must be a full 40-hex SHA")
     if not d["targets"] or not all(isinstance(t, str) and re.fullmatch(r"[A-Za-z0-9+#. -]{1,24}", t) for t in d["targets"]): bad.append(f"{path}: targets must be a non-empty list of short language names (the languages the repo claims to build for)")
     rel = lambda v: not v.startswith("/") and ".." not in v.split("/") and "\0" not in v and v.endswith(".toml")

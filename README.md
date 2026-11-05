@@ -24,7 +24,7 @@ Also: [flip-checklist](skills/flip-checklist/SKILL.md) (publishing a repo), [wri
 | vbm-abi | Interface description in Lean and generators for the C header and language bindings | foundation | planned | unscored | unscored | - |
 | vbm-gates | The Lean gates: specified share, axioms, ledgers, protected set, attack suite | foundation | planned | unscored | unscored | - |
 | vbm-kit | The shared foundation bundle: gates, runtime and ABI generators | foundation | planned | unscored | unscored | - |
-| vbm-land | The landing tool and its skills: one lander, one red definition, freeze marker | tool | coming soon | unscored | unscored | - |
+| [vbm-land](https://github.com/witt3rd/vbm-land) | The landing tool and its skills: one lander, one red definition, freeze marker | tool | live | unscored | unscored | - |
 | vbm-rt | Freestanding Lean runtime shim: allocator, mem* replacements, WebAssembly and native | foundation | planned | unscored | unscored | - |
 | vbm-simd | Bit-vector model of vector instructions, a trusted shim per instruction set, proved kernels | foundation | coming soon | unscored | unscored | - |
 | vbm-acp | Agent client protocol, pinned core profile | library | planned | unscored | unscored | - |

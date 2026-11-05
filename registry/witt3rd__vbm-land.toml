@@ -1,5 +1,6 @@
 kind = "tool"
-status = "coming soon"
+status = "live"
 what = "The landing tool and its skills: one lander, one red definition, freeze marker"
 milestone = "install by one command, pinned copy, drift check"
 depends_on = []
+repo = "https://github.com/witt3rd/vbm-land"

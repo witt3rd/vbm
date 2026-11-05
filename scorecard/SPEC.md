@@ -167,6 +167,7 @@ The registry is `registry/`: one entry file per submitted repo, named `<owner>__
 ```
 kind = "library|foundation|tool"                 # every entry; entries are listed before they are public
 status = "live|coming soon|planned"              # live = public; only a live entry has the keys below, and without a card it is shown as unscored
+                                                 # a live TOOL has `repo` only (listed and linked, never scored): commit, manifest, targets, [latest] and [measured] are refused on it; the kind never relaxes the rules for a library or foundation piece
 what = "..."                                     # one line
 milestone = "..."
 depends_on = ["vbm-x"]                           # names of other entries
