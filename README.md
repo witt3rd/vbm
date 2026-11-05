@@ -4,7 +4,7 @@ VBM is a standard for software that is specified and proved in Lean, builds free
 
 [**Read the manifesto**](MANIFESTO.md): what the standard is, what it claims and what it does not.
 
-**Status: early.** This repository is the standard and its tooling: the [guidelines](guidelines/INDEX.md), the scorecard program, and the registry of scored repositories. One library, [vbm-json](https://github.com/witt3rd/vbm-json), is scored so far, and its card is honest: Correctness passes the three ideals that are measured (the fourth has no metric yet), and Landedness fails. The other registry rows are plans, not releases. Nothing here is a finished product, and the scorecard says what it cannot measure instead of guessing.
+**Status: early.** This repository is the standard and its tooling: the [guidelines](guidelines/INDEX.md), the scorecard program, and the registry of scored repositories. One library, [vbm-json](https://github.com/witt3rd/vbm-json), is scored so far, and its card says what it found: Correctness **fails** (three of the four ideals are measured; the check that its gates really ran is not yet measured for this subject, because its adapter does not declare the evidence lines to look for) and Landedness **fails** (the cold fast gate took 626 s against a 600 s ceiling, on a loaded shared host). The other registry rows are plans, not releases. Nothing here is a finished product, and the scorecard says what it cannot measure instead of guessing.
 
 ## Start here
 
@@ -31,7 +31,7 @@ Also: [flip-checklist](skills/flip-checklist/SKILL.md) (publishing a repo), [wri
 | vbm-baseN | base64, base64url and base16 | library | planned | unscored | unscored | - |
 | vbm-http1 | HTTP/1.1 message framing and body length | library | planned | unscored | unscored | - |
 | vbm-journal | Append-only, hash-chained log and a generic chain checker | library | planned | unscored | unscored | - |
-| [vbm-json](https://github.com/witt3rd/vbm-json) | Verified JSON codec | library | live | **PASS** (3 of 4; Trusted generation not yet defined) | **FAIL** | [card](registry/scores/witt3rd__vbm-json.md) |
+| [vbm-json](https://github.com/witt3rd/vbm-json) | Verified JSON codec | library | live | **FAIL** (3 of 4; Trusted generation not yet defined) | **FAIL** | [card](registry/scores/witt3rd__vbm-json.md) |
 | vbm-jsonrpc | JSON-RPC 2.0 codec and request/response matching | library | planned | unscored | unscored | - |
 | vbm-llm | The wire contract of the LLM provider conventions (OpenAI, Anthropic, OpenRouter): codecs, stream fold, tool-call turns, usage and finish-reason arithmetic | library | coming soon | unscored | unscored | - |
 | vbm-mcp | Model context protocol client, pinned profile over stdio | library | planned | unscored | unscored | - |
@@ -40,7 +40,7 @@ Also: [flip-checklist](skills/flip-checklist/SKILL.md) (publishing a repo), [wri
 | vbm-uri | URI parsing and resolution (RFC 3986) | library | planned | unscored | unscored | - |
 <!-- registry:end -->
 
-The adapter for the first row runs its subject as described in these [notes](scorecard/adapters/vbm-json.notes.md); its [card page](registry/scores/witt3rd__vbm-json.md) shows every metric, and its [one-page PDF](docs/cards/vbm-json-v9.pdf) is one page.
+The adapter for the first row runs its subject as described in these [notes](scorecard/adapters/vbm-json.notes.md); its [card page](registry/scores/witt3rd__vbm-json.md) shows every metric, and its [one-page PDF](docs/cards/vbm-json-v10.pdf) is one page.
 
 ## Build and check
 
