@@ -1,5 +1,5 @@
 kind = "foundation"
 status = "planned"
-what = "Freestanding Lean runtime shim: allocator, mem* replacements, WebAssembly and native"
-milestone = "at the second library"
+what = "The freestanding runtime shim: allocator, mem* replacements, WebAssembly and native; consumers vbm-json and vbm-sse"
+milestone = "not started"
 depends_on = []
