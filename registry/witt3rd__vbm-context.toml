@@ -1,0 +1,16 @@
+kind = "library"
+status = "live"
+what = "A typed, verified agent context state (goal, obligations, facts with provenance, bounded compaction) for long-horizon LLM agents"
+milestone = "pre-release; not scored yet"
+depends_on = []
+repo = "https://github.com/witt3rd/vbm-context"
+commit = "b905617ea65de39e0db344d52bbe797a8a5dfa27"
+targets = ["Lean"]
+manifest = "vbm-proof.toml"
+
+[latest]
+date = ""
+correctness = "unscored"
+landedness = "unscored"
+level = "unscored"
+card = ""

@@ -1,5 +1,16 @@
 kind = "library"
-status = "planned"
+status = "live"
 what = "Server-sent event streams"
-milestone = "reference + whole-buffer theorems"
+milestone = "pre-release: reference, incremental and array readers proved; C, WebAssembly, Python and Rust bindings generated; not scored yet"
 depends_on = ["vbm-kit"]
+repo = "https://github.com/witt3rd/vbm-sse"
+commit = "167db51adb02a482cd04af948ef30d9e3b6584e8"
+targets = ["C", "WebAssembly", "Python", "Rust"]
+manifest = "vbm-proof.toml"
+
+[latest]
+date = ""
+correctness = "unscored"
+landedness = "unscored"
+level = "unscored"
+card = ""

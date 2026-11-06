@@ -4,7 +4,7 @@ VBM is a standard for software that is specified and proved in Lean, builds free
 
 [**Read the manifesto**](MANIFESTO.md): what the standard is, what it claims and what it does not.
 
-**Status: early.** This repository is the standard and its tooling: the [guidelines](guidelines/INDEX.md), the scorecard program, and the registry of scored repositories. One library, [vbm-json](https://github.com/witt3rd/vbm-json), is scored so far, and its card is honest: Correctness passes the three ideals that are measured (the fourth has no metric yet), including the check that its gates really ran (25558 cases), and Landedness passes (the cold fast gate took 270 s against a 600 s ceiling, the warm one 18 s, on a quiet host: load average 1.04 at the start). The other registry rows are plans, not releases. Nothing here is a finished product, and the scorecard says what it cannot measure instead of guessing.
+**Status: early.** This repository is the standard and its tooling: the [guidelines](guidelines/INDEX.md), the scorecard program, and the registry of scored repositories. Six repositories are public: [vbm-json](https://github.com/witt3rd/vbm-json), [vbm-sse](https://github.com/witt3rd/vbm-sse), [vbm-llm](https://github.com/witt3rd/vbm-llm), [vbm-simd](https://github.com/witt3rd/vbm-simd) and [vbm-context](https://github.com/witt3rd/vbm-context) are libraries and kernels (the last four are pre-release and not scored yet), and [vbm-land](https://github.com/witt3rd/vbm-land) is the landing tool (listed, never scored). One library, vbm-json, is scored so far, and its card is honest: Correctness passes the three ideals that are measured (the fourth has no metric yet), including the check that its gates really ran (25558 cases), and Landedness passes (the cold fast gate took 270 s against a 600 s ceiling, the warm one 18 s, on a quiet host: load average 1.04 at the start). The rows without a link are plans, not releases. Nothing here is a finished product, and the scorecard says what it cannot measure instead of guessing.
 
 ## Start here
 
@@ -26,17 +26,18 @@ Also: [flip-checklist](skills/flip-checklist/SKILL.md) (publishing a repo), [wri
 | vbm-kit | The shared foundation bundle: gates, runtime and ABI generators | foundation | planned | unscored | unscored | - |
 | [vbm-land](https://github.com/witt3rd/vbm-land) | The landing tool and its skills: one lander, one red definition, freeze marker | tool | live | unscored | unscored | - |
 | vbm-rt | Freestanding Lean runtime shim: allocator, mem* replacements, WebAssembly and native | foundation | planned | unscored | unscored | - |
-| vbm-simd | Bit-vector model of vector instructions, a trusted shim per instruction set, proved kernels | foundation | coming soon | unscored | unscored | - |
+| [vbm-simd](https://github.com/witt3rd/vbm-simd) | Bit-vector model of vector instructions, a trusted shim per instruction set, proved kernels | foundation | live | unscored | unscored | - |
 | vbm-acp | Agent client protocol, pinned core profile | library | planned | unscored | unscored | - |
 | vbm-baseN | base64, base64url and base16 | library | planned | unscored | unscored | - |
+| [vbm-context](https://github.com/witt3rd/vbm-context) | A typed, verified agent context state (goal, obligations, facts with provenance, bounded compaction) for long-horizon LLM agents | library | live | unscored | unscored | - |
 | vbm-http1 | HTTP/1.1 message framing and body length | library | planned | unscored | unscored | - |
 | vbm-journal | Append-only, hash-chained log and a generic chain checker | library | planned | unscored | unscored | - |
 | [vbm-json](https://github.com/witt3rd/vbm-json) | Verified JSON codec | library | live | **PASS** (3 of 4; Trusted generation not yet defined) | **PASS** | [card](registry/scores/witt3rd__vbm-json.md) |
 | vbm-jsonrpc | JSON-RPC 2.0 codec and request/response matching | library | planned | unscored | unscored | - |
-| vbm-llm | The wire contract of the LLM provider conventions (OpenAI, Anthropic, OpenRouter): codecs, stream fold, tool-call turns, usage and finish-reason arithmetic | library | coming soon | unscored | unscored | - |
+| [vbm-llm](https://github.com/witt3rd/vbm-llm) | The wire contract of the LLM provider conventions (OpenAI, Anthropic, OpenRouter): codecs, stream fold, tool-call turns, usage and finish-reason arithmetic | library | live | unscored | unscored | - |
 | vbm-mcp | Model context protocol client, pinned profile over stdio | library | planned | unscored | unscored | - |
 | vbm-oauth | OAuth client flows as a state machine | library | planned | unscored | unscored | - |
-| vbm-sse | Server-sent event streams | library | planned | unscored | unscored | - |
+| [vbm-sse](https://github.com/witt3rd/vbm-sse) | Server-sent event streams | library | live | unscored | unscored | - |
 | vbm-uri | URI parsing and resolution (RFC 3986) | library | planned | unscored | unscored | - |
 <!-- registry:end -->
 

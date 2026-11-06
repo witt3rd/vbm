@@ -1,5 +1,16 @@
 kind = "foundation"
-status = "coming soon"
+status = "live"
 what = "Bit-vector model of vector instructions, a trusted shim per instruction set, proved kernels"
-milestone = "after the first SIMD measurements"
+milestone = "pre-release: six kernels proved; not scored yet"
 depends_on = []
+repo = "https://github.com/witt3rd/vbm-simd"
+commit = "40dd4d8c0fd18b6088c70e3f51354ae742300809"
+targets = ["C"]
+manifest = "vbm-proof.toml"
+
+[latest]
+date = ""
+correctness = "unscored"
+landedness = "unscored"
+level = "unscored"
+card = ""

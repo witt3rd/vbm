@@ -1,5 +1,16 @@
 kind = "library"
-status = "coming soon"
+status = "live"
 what = "The wire contract of the LLM provider conventions (OpenAI, Anthropic, OpenRouter): codecs, stream fold, tool-call turns, usage and finish-reason arithmetic"
-milestone = "OpenAI, OpenRouter and the Anthropic reply proved; Anthropic request, turns and stream next"
+milestone = "pre-release: OpenAI, OpenRouter and the Anthropic reply proved; Anthropic request, turns and stream next; not scored yet"
 depends_on = ["vbm-json", "vbm-sse"]
+repo = "https://github.com/witt3rd/vbm-llm"
+commit = "7af9cfcc1eceedfdfa6b36ae1f4e3ac0d9bd1d2d"
+targets = ["Lean"]
+manifest = "vbm-proof.toml"
+
+[latest]
+date = ""
+correctness = "unscored"
+landedness = "unscored"
+level = "unscored"
+card = ""
