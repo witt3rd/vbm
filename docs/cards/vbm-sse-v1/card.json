@@ -1,0 +1,967 @@
+{
+  "schema": "scorecard-3",
+  "scorecard": {
+    "sha": "a4bdb39580e0c825685cfc32645e777b5e6fbe46",
+    "dirty": false
+  },
+  "subject": {
+    "name": "vbm-sse",
+    "kind": "library",
+    "commit": "1829fc470376e5d6c25d4e29c8dedb7c8a5eeed9",
+    "commit_date": "2026-11-06T01:03:46-09:00"
+  },
+  "adapter": {
+    "sha256": "520db9a1849a4076b686e5390a1e61c3fd367a106770c72b616fc28b698c76d6"
+  },
+  "sandbox": {
+    "launcher_sha256": "9d2c6418e11cb0f709b2db4a2d981e07d0b276fb35354048628c110c1cb3b6bb",
+    "limits": {
+      "cpus": 2,
+      "memory_mb": 4096,
+      "disk_mb": 2048,
+      "pids": 512
+    },
+    "attestations": [
+      {
+        "kind": "bwrap",
+        "image_digest": "sha256:26075c297e46f8dbfd2a8ce5b644e36094d1c5da6a28823bb82289fc8ac428f5",
+        "network": "none",
+        "subject_mount": "ro",
+        "enforcement": "cgroup",
+        "limits": {
+          "cpus": 2,
+          "memory_mb": 4096,
+          "disk_mb": 2048,
+          "pids": 512,
+          "timeout_seconds": 3600
+        }
+      },
+      {
+        "kind": "bwrap",
+        "image_digest": "sha256:26075c297e46f8dbfd2a8ce5b644e36094d1c5da6a28823bb82289fc8ac428f5",
+        "network": "none",
+        "subject_mount": "ro",
+        "enforcement": "cgroup",
+        "limits": {
+          "cpus": 2,
+          "memory_mb": 4096,
+          "disk_mb": 2048,
+          "pids": 512,
+          "timeout_seconds": 900
+        }
+      },
+      {
+        "kind": "bwrap",
+        "image_digest": "sha256:26075c297e46f8dbfd2a8ce5b644e36094d1c5da6a28823bb82289fc8ac428f5",
+        "network": "none",
+        "subject_mount": "ro",
+        "enforcement": "cgroup",
+        "limits": {
+          "cpus": 2,
+          "memory_mb": 4096,
+          "disk_mb": 2048,
+          "pids": 512,
+          "timeout_seconds": 900
+        }
+      },
+      {
+        "kind": "bwrap",
+        "image_digest": "sha256:26075c297e46f8dbfd2a8ce5b644e36094d1c5da6a28823bb82289fc8ac428f5",
+        "network": "none",
+        "subject_mount": "ro",
+        "enforcement": "cgroup",
+        "limits": {
+          "cpus": 2,
+          "memory_mb": 4096,
+          "disk_mb": 2048,
+          "pids": 512,
+          "timeout_seconds": 3500
+        }
+      },
+      {
+        "kind": "bwrap",
+        "image_digest": "sha256:26075c297e46f8dbfd2a8ce5b644e36094d1c5da6a28823bb82289fc8ac428f5",
+        "network": "none",
+        "subject_mount": "ro",
+        "enforcement": "cgroup",
+        "limits": {
+          "cpus": 2,
+          "memory_mb": 4096,
+          "disk_mb": 2048,
+          "pids": 512,
+          "timeout_seconds": 900
+        }
+      },
+      {
+        "kind": "bwrap",
+        "image_digest": "sha256:26075c297e46f8dbfd2a8ce5b644e36094d1c5da6a28823bb82289fc8ac428f5",
+        "network": "none",
+        "subject_mount": "ro",
+        "enforcement": "cgroup",
+        "limits": {
+          "cpus": 2,
+          "memory_mb": 4096,
+          "disk_mb": 2048,
+          "pids": 512,
+          "timeout_seconds": 900
+        }
+      },
+      {
+        "kind": "bwrap",
+        "image_digest": "sha256:26075c297e46f8dbfd2a8ce5b644e36094d1c5da6a28823bb82289fc8ac428f5",
+        "network": "none",
+        "subject_mount": "ro",
+        "enforcement": "cgroup",
+        "limits": {
+          "cpus": 2,
+          "memory_mb": 4096,
+          "disk_mb": 2048,
+          "pids": 512,
+          "timeout_seconds": 900
+        }
+      },
+      {
+        "kind": "bwrap",
+        "image_digest": "sha256:26075c297e46f8dbfd2a8ce5b644e36094d1c5da6a28823bb82289fc8ac428f5",
+        "network": "none",
+        "subject_mount": "ro",
+        "enforcement": "cgroup",
+        "limits": {
+          "cpus": 2,
+          "memory_mb": 4096,
+          "disk_mb": 2048,
+          "pids": 512,
+          "timeout_seconds": 1800
+        }
+      },
+      {
+        "kind": "bwrap",
+        "image_digest": "sha256:26075c297e46f8dbfd2a8ce5b644e36094d1c5da6a28823bb82289fc8ac428f5",
+        "network": "none",
+        "subject_mount": "ro",
+        "enforcement": "cgroup",
+        "limits": {
+          "cpus": 2,
+          "memory_mb": 4096,
+          "disk_mb": 2048,
+          "pids": 512,
+          "timeout_seconds": 1200
+        }
+      },
+      {
+        "kind": "bwrap",
+        "image_digest": "sha256:26075c297e46f8dbfd2a8ce5b644e36094d1c5da6a28823bb82289fc8ac428f5",
+        "network": "none",
+        "subject_mount": "ro",
+        "enforcement": "cgroup",
+        "limits": {
+          "cpus": 2,
+          "memory_mb": 4096,
+          "disk_mb": 2048,
+          "pids": 512,
+          "timeout_seconds": 1800
+        }
+      },
+      {
+        "kind": "bwrap",
+        "image_digest": "sha256:26075c297e46f8dbfd2a8ce5b644e36094d1c5da6a28823bb82289fc8ac428f5",
+        "network": "none",
+        "subject_mount": "ro",
+        "enforcement": "cgroup",
+        "limits": {
+          "cpus": 2,
+          "memory_mb": 4096,
+          "disk_mb": 2048,
+          "pids": 512,
+          "timeout_seconds": 1800
+        }
+      }
+    ]
+  },
+  "skipped_files": [],
+  "metrics": [
+    {
+      "id": "verified.unproved_escapes",
+      "dimension": "verified",
+      "dir": "down",
+      "definition": "lines matching the adapter's [proof] sorry_pattern in its source globs (a line containing [proof] allow_marker is skipped)",
+      "implemented": true,
+      "value": 0,
+      "floor": {
+        "op": "==",
+        "value": 0
+      },
+      "status": "pass",
+      "findings": [],
+      "files_scanned": 15
+    },
+    {
+      "id": "verified.specified_share",
+      "dimension": "verified",
+      "dir": "up",
+      "definition": "percent specified, read from the subject's closure gate output; not-measurable when the subject has no closure gate",
+      "implemented": true,
+      "value": 100.0,
+      "floor": {
+        "op": ">=",
+        "value": 100
+      },
+      "status": "pass",
+      "carveouts": [
+        {
+          "name": "VbmSimd.findAvx2",
+          "ledger": "T13",
+          "entry": "The pinned verified library vbm-simd (the line-end search)",
+          "reason": "verify. The kernel is proved and the shim is tested in its own repository; the part that stays trust is the shim's C and the CPU, listed there.",
+          "protected_by": "scripts/pinned-libs.lock"
+        },
+        {
+          "name": "VbmSimd.hasAvx2",
+          "ledger": "T13",
+          "entry": "The pinned verified library vbm-simd (the line-end search)",
+          "reason": "verify. The kernel is proved and the shim is tested in its own repository; the part that stays trust is the shim's C and the CPU, listed there.",
+          "protected_by": "scripts/pinned-libs.lock"
+        },
+        {
+          "name": "VbmSimd.ld64",
+          "ledger": "T13",
+          "entry": "The pinned verified library vbm-simd (the line-end search)",
+          "reason": "verify. The kernel is proved and the shim is tested in its own repository; the part that stays trust is the shim's C and the CPU, listed there.",
+          "protected_by": "scripts/pinned-libs.lock"
+        },
+        {
+          "name": "VbmSimd.ctz",
+          "ledger": "T13",
+          "entry": "The pinned verified library vbm-simd (the line-end search)",
+          "reason": "verify. The kernel is proved and the shim is tested in its own repository; the part that stays trust is the shim's C and the CPU, listed there.",
+          "protected_by": "scripts/pinned-libs.lock"
+        }
+      ],
+      "carveout_nodes": 36,
+      "carveout_baseline_nodes": 36
+    },
+    {
+      "id": "verified.nonstandard_axioms",
+      "dimension": "verified",
+      "dir": "down",
+      "definition": "constants that depend on an axiom beyond the standard three (a placeholder proof included), from the adapter's [proof] axiom_cmd, in the sandbox",
+      "implemented": true,
+      "value": 0,
+      "floor": {
+        "op": "==",
+        "value": 0
+      },
+      "status": "pass"
+    },
+    {
+      "id": "verified.trusted_c_lines",
+      "dimension": "verified",
+      "dir": "down",
+      "definition": "newline count of the files matching trust.c_files",
+      "implemented": true,
+      "value": 464,
+      "floor": null,
+      "status": "pass",
+      "files": {
+        "abi/vbm_sse.c": 82,
+        "runtime/rt.c": 382
+      }
+    },
+    {
+      "id": "verified.trust_ledger_entries",
+      "dimension": "verified",
+      "dir": "down",
+      "definition": "lines of the trust ledger matching trust.entry_regex",
+      "implemented": true,
+      "value": 13,
+      "floor": null,
+      "status": "pass"
+    },
+    {
+      "id": "verified.non_vacuity",
+      "dimension": "verified",
+      "dir": "up",
+      "definition": "percent of viable SPECIFICATION mutants (the same operator swaps, at seeded sites of the adapter's [nonvacuity] files, at most 200) that break a proof (the adapter's kill_cmd exits non-zero; 99 = the mutated specification itself does not build, excluded); the unmutated baseline must pass; in the sandbox",
+      "implemented": true,
+      "value": 100.0,
+      "floor": {
+        "op": ">=",
+        "value": 100
+      },
+      "status": "pass",
+      "mutants": 20,
+      "killed": 6,
+      "survived": 2,
+      "not_viable": 12,
+      "sites_total": 147,
+      "equivalent": [
+        "LeanSse/Spec.lean:10:12:-:+",
+        "LeanSse/Spec.lean:1:15:-:+"
+      ],
+      "rejected_equivalents": [
+        "line 4: LeanSse/Spec.lean:8:10:-:+ is not a surviving mutant (stale id, or the tests kill it)",
+        "line 5: LeanSse/Spec.lean:8:54:-:+ is not a surviving mutant (stale id, or the tests kill it)"
+      ],
+      "survivors": []
+    },
+    {
+      "id": "bare_metal.freestanding_build",
+      "dimension": "bare_metal",
+      "dir": "up",
+      "definition": "1 if the adapter's [bare_metal] build_cmd (a build with -ffreestanding -nostdlib) exits 0, else 0; in the sandbox",
+      "implemented": true,
+      "value": 1,
+      "floor": {
+        "op": "==",
+        "value": 1
+      },
+      "status": "pass",
+      "exit": 0,
+      "output_tail": ""
+    },
+    {
+      "id": "bare_metal.wasm_freestanding_build",
+      "dimension": "bare_metal",
+      "dir": "up",
+      "definition": "1 if the adapter's [bare_metal] wasm_cmd (a freestanding wasm32 build, no libc, no imports) exits 0, else 0; its size in bytes is read with wasm_bytes_regex. Listed only when the adapter declares a wasm target",
+      "implemented": true,
+      "value": 1,
+      "floor": {
+        "op": "==",
+        "value": 1
+      },
+      "status": "pass",
+      "bytes": 46526
+    },
+    {
+      "id": "bare_metal.libc_symbols",
+      "dimension": "bare_metal",
+      "dir": "down",
+      "definition": "distinct undefined symbols printed by [bare_metal] symbols_cmd (nm -u of the artifact, the subject's own prefixes filtered by the adapter) minus allowed_symbols; the command must end with --end-of-symbols-- (a silent failure is not zero); in the sandbox",
+      "implemented": true,
+      "value": 0,
+      "floor": {
+        "op": "==",
+        "value": 0
+      },
+      "status": "pass",
+      "symbols": []
+    },
+    {
+      "id": "construction.hand_written_tests",
+      "dimension": "construction",
+      "dir": "down",
+      "definition": "CASE LITERALS written by hand in the subject's test files (DECISIONS 5): in each candidate file (default test patterns plus tests.extra, minus tests.generated and minus the declared gate self-tests) the calls to a declared tests.entry_points name that have a string or bytes literal in their arguments. A DRIVER (it loads generated vectors and compares verdicts, no input literal of its own) has 0 cases and is listed as a driver, not counted; with no entry_points every candidate file counts as one case",
+      "implemented": true,
+      "value": 0,
+      "floor": {
+        "op": "==",
+        "value": 0
+      },
+      "status": "pass",
+      "files": [],
+      "cases_by_file": {},
+      "drivers": [
+        "bindings/rust/tests/vectors.rs",
+        "tests/abi_test.c",
+        "tests/bindings/test_python.py",
+        "tests/lean_layout.c",
+        "tests/wasm/vbm_sse.mjs",
+        "tests/wasm/wasm_test.mjs"
+      ],
+      "generated_excluded": 1,
+      "gate_selftests_excluded": 19
+    },
+    {
+      "id": "construction.mutation_score",
+      "dimension": "construction",
+      "dir": "up",
+      "definition": "percent of viable code mutants (the scorecard's operator swaps at seeded sites of the adapter's [mutation] files, at most 200) that the adapter's kill_cmd harness kills (non-zero exit; 99 = not viable, excluded); the unmutated baseline must pass; in the sandbox",
+      "implemented": true,
+      "value": 100.0,
+      "floor": {
+        "op": ">=",
+        "value": 100
+      },
+      "status": "pass",
+      "mutants": 9,
+      "killed": 5,
+      "survived": 0,
+      "not_viable": 4,
+      "sites_total": 9,
+      "equivalent": [],
+      "rejected_equivalents": [],
+      "survivors": []
+    },
+    {
+      "id": "efficiency.throughput_vs_best",
+      "dimension": "efficiency",
+      "dir": "up",
+      "definition": "the subject's MB/s as a percent of the BEST SCALAR comparator's (the adapter marks each comparator scalar or not; the floor 50 is 'within 2x'), on one corpus named by its sha256, from the adapter's [bench] cmd in the sandbox (cgroup-capped); every declared comparator must report a number AND a pinned version with the sha256 of its binary and inputs, or the metric is not-measurable and names the gap. The gap to each non-scalar comparator (SIMD) is reported openly, not floored",
+      "implemented": true,
+      "value": 55.1,
+      "floor": {
+        "op": ">=",
+        "value": 50
+      },
+      "status": "pass",
+      "subject_mb_s": 1408.0,
+      "comparators_mb_s": {
+        "eventsource-parser": 2553.2,
+        "eventsource-stream": 390.7
+      },
+      "comparator_provenance": {
+        "eventsource-parser": {
+          "version": "4.1.3",
+          "sha256": "9f9f60931a7315a7e01508bbcf7bc1c70f54e828d2a1012348a3c3c18704b9d3",
+          "inputs_sha256": "bffce7b31a5a1d5f71fc77b771ed16450cd7d734247eca1e9fa24585399cae28"
+        },
+        "eventsource-stream": {
+          "version": "0.2.3",
+          "sha256": "093a8ef59b54c9a3779f3b6c6db1df6432e8358c7afc305ccd0e32ce6d1fb15a",
+          "inputs_sha256": "7fea2fc6e08126e3a263707a0889595fb27e82882a0482be6dacba3e6d38e55c"
+        }
+      },
+      "corpus": {
+        "sha256": "490f3c117d2f5c347d15eb3833e0a77388e13ee11a50b6fd5a2eebce10e1cbcd",
+        "bytes": 3616788
+      },
+      "corpora": [
+        {
+          "name": "small-events@1",
+          "sha256": "490f3c117d2f5c347d15eb3833e0a77388e13ee11a50b6fd5a2eebce10e1cbcd",
+          "bytes": 3616788,
+          "mb_s": {
+            "eventsource-parser": 29.3,
+            "eventsource-stream": 12.2,
+            "lean-fast": 62.2,
+            "reference": 24.1,
+            "subject": 24.4
+          },
+          "best_scalar": "eventsource-parser",
+          "percent_of_best_scalar": 83.3
+        },
+        {
+          "name": "small-events@7",
+          "sha256": "490f3c117d2f5c347d15eb3833e0a77388e13ee11a50b6fd5a2eebce10e1cbcd",
+          "bytes": 3616788,
+          "mb_s": {
+            "eventsource-parser": 161.9,
+            "eventsource-stream": 68.6,
+            "lean-fast": 226.0,
+            "reference": 24.1,
+            "subject": 120.8
+          },
+          "best_scalar": "eventsource-parser",
+          "percent_of_best_scalar": 74.6
+        },
+        {
+          "name": "small-events@4096",
+          "sha256": "490f3c117d2f5c347d15eb3833e0a77388e13ee11a50b6fd5a2eebce10e1cbcd",
+          "bytes": 3616788,
+          "mb_s": {
+            "eventsource-parser": 2553.2,
+            "eventsource-stream": 390.7,
+            "lean-fast": 1863.7,
+            "reference": 24.1,
+            "subject": 1408.0
+          },
+          "best_scalar": "eventsource-parser",
+          "percent_of_best_scalar": 55.1
+        },
+        {
+          "name": "large-data@1",
+          "sha256": "16c547a49632c7a6f5d92d4a8570b081e89fdc20e540dc0502bb36440bdc5ca2",
+          "bytes": 1500824,
+          "mb_s": {
+            "eventsource-parser": 29.9,
+            "eventsource-stream": 0.3,
+            "lean-fast": 66.7,
+            "reference": 22.6,
+            "subject": 26.2
+          },
+          "best_scalar": "eventsource-parser",
+          "percent_of_best_scalar": 87.6
+        },
+        {
+          "name": "large-data@7",
+          "sha256": "16c547a49632c7a6f5d92d4a8570b081e89fdc20e540dc0502bb36440bdc5ca2",
+          "bytes": 1500824,
+          "mb_s": {
+            "eventsource-parser": 197.8,
+            "eventsource-stream": 2.0,
+            "lean-fast": 324.3,
+            "reference": 22.6,
+            "subject": 159.9
+          },
+          "best_scalar": "eventsource-parser",
+          "percent_of_best_scalar": 80.8
+        },
+        {
+          "name": "large-data@4096",
+          "sha256": "16c547a49632c7a6f5d92d4a8570b081e89fdc20e540dc0502bb36440bdc5ca2",
+          "bytes": 1500824,
+          "mb_s": {
+            "eventsource-parser": 2880.6,
+            "eventsource-stream": 461.3,
+            "lean-fast": 3389.0,
+            "reference": 22.6,
+            "subject": 2458.5
+          },
+          "best_scalar": "eventsource-parser",
+          "percent_of_best_scalar": 85.3
+        },
+        {
+          "name": "ends-crlf@1",
+          "sha256": "52f907184c0ff2acf10dc2b1fecc3d2c0ccd9015f40a967397eea8d5b0d6d101",
+          "bytes": 3681588,
+          "mb_s": {
+            "eventsource-parser": 30.0,
+            "eventsource-stream": 12.3,
+            "lean-fast": 63.6,
+            "reference": 23.9,
+            "subject": 24.8
+          },
+          "best_scalar": "eventsource-parser",
+          "percent_of_best_scalar": 82.7
+        },
+        {
+          "name": "ends-crlf@7",
+          "sha256": "52f907184c0ff2acf10dc2b1fecc3d2c0ccd9015f40a967397eea8d5b0d6d101",
+          "bytes": 3681588,
+          "mb_s": {
+            "eventsource-parser": 157.3,
+            "eventsource-stream": 69.1,
+            "lean-fast": 219.6,
+            "reference": 23.9,
+            "subject": 121.5
+          },
+          "best_scalar": "eventsource-parser",
+          "percent_of_best_scalar": 77.2
+        },
+        {
+          "name": "ends-crlf@4096",
+          "sha256": "52f907184c0ff2acf10dc2b1fecc3d2c0ccd9015f40a967397eea8d5b0d6d101",
+          "bytes": 3681588,
+          "mb_s": {
+            "eventsource-parser": 1388.4,
+            "eventsource-stream": 392.7,
+            "lean-fast": 1597.7,
+            "reference": 23.9,
+            "subject": 1263.3
+          },
+          "best_scalar": "eventsource-parser",
+          "percent_of_best_scalar": 91.0
+        },
+        {
+          "name": "ends-cr@1",
+          "sha256": "69953a24a48edb929e1b15652ef97500b368071aba1fb303a522fddc08c41e12",
+          "bytes": 3616788,
+          "mb_s": {
+            "eventsource-parser": 28.7,
+            "eventsource-stream": 11.8,
+            "lean-fast": 61.9,
+            "reference": 23.5,
+            "subject": 24.1
+          },
+          "best_scalar": "eventsource-parser",
+          "percent_of_best_scalar": 84.0
+        },
+        {
+          "name": "ends-cr@7",
+          "sha256": "69953a24a48edb929e1b15652ef97500b368071aba1fb303a522fddc08c41e12",
+          "bytes": 3616788,
+          "mb_s": {
+            "eventsource-parser": 155.1,
+            "eventsource-stream": 68.7,
+            "lean-fast": 223.1,
+            "reference": 23.5,
+            "subject": 120.5
+          },
+          "best_scalar": "eventsource-parser",
+          "percent_of_best_scalar": 77.7
+        },
+        {
+          "name": "ends-cr@4096",
+          "sha256": "69953a24a48edb929e1b15652ef97500b368071aba1fb303a522fddc08c41e12",
+          "bytes": 3616788,
+          "mb_s": {
+            "eventsource-parser": 1717.4,
+            "eventsource-stream": 381.9,
+            "lean-fast": 1858.4,
+            "reference": 23.5,
+            "subject": 1371.9
+          },
+          "best_scalar": "eventsource-parser",
+          "percent_of_best_scalar": 79.9
+        },
+        {
+          "name": "ends-mixed@1",
+          "sha256": "e0e6a1c024bc8a4b8e6e8698fb86eb08a7b0e522f56154efca64219bcd3726d5",
+          "bytes": 3638365,
+          "mb_s": {
+            "eventsource-parser": 29.3,
+            "eventsource-stream": 12.0,
+            "lean-fast": 62.9,
+            "reference": 23.7,
+            "subject": 24.6
+          },
+          "best_scalar": "eventsource-parser",
+          "percent_of_best_scalar": 84.0
+        },
+        {
+          "name": "ends-mixed@7",
+          "sha256": "e0e6a1c024bc8a4b8e6e8698fb86eb08a7b0e522f56154efca64219bcd3726d5",
+          "bytes": 3638365,
+          "mb_s": {
+            "eventsource-parser": 152.4,
+            "eventsource-stream": 65.5,
+            "lean-fast": 217.6,
+            "reference": 23.7,
+            "subject": 120.1
+          },
+          "best_scalar": "eventsource-parser",
+          "percent_of_best_scalar": 78.8
+        },
+        {
+          "name": "ends-mixed@4096",
+          "sha256": "e0e6a1c024bc8a4b8e6e8698fb86eb08a7b0e522f56154efca64219bcd3726d5",
+          "bytes": 3638365,
+          "mb_s": {
+            "eventsource-parser": 1161.5,
+            "eventsource-stream": 365.9,
+            "lean-fast": 1498.7,
+            "reference": 23.7,
+            "subject": 1206.2
+          },
+          "best_scalar": "eventsource-parser",
+          "percent_of_best_scalar": 103.8
+        }
+      ],
+      "corpora_at_or_above_floor": 15,
+      "corpora_floor_percent": 50,
+      "best_scalar": "eventsource-parser",
+      "gap_to_best_scalar_x": 1.81,
+      "gap_to_non_scalar_x": {}
+    },
+    {
+      "id": "velocity.tier1_seconds_warm",
+      "dimension": "velocity",
+      "dir": "down",
+      "definition": "WARM: what a landing costs. Wall seconds, measured by the runner, of the adapter's [tier1] warm_command (the fast gate on a typical change) run in the same sandbox right after the cold run, on the cache that run left, after warm_change_cmd applied the typical change (untimed). It must exit 0 and its output must carry the self-test evidence of every declared gate except the named warm_skips; a warm run that does not show the gates ran is a fail, and a missing warm run is not-measurable",
+      "implemented": true,
+      "value": 29.5,
+      "floor": {
+        "op": "<",
+        "value": 60
+      },
+      "status": "pass",
+      "change_command": "cd /tmp/w && printf \"\\n-- warm-run change: a comment\\n\" >> LeanSseProofs/Examples.lean",
+      "command": "cd /tmp/w && PATH=/tmp/shim:$PATH TEST_JOBS=1 scripts/tier1.sh",
+      "gates_shown": [
+        "forbidden-constructs scan",
+        "Init-only import scan",
+        "pipefail lint",
+        "proof-evaluation lint",
+        "zero-warning build",
+        "axiom gate",
+        "obligation ledger gate",
+        "closure gate",
+        "trust ledger",
+        "scrub gate"
+      ],
+      "gates_skipped": [
+        "vectors check",
+        "C ABI description check",
+        "freestanding native test",
+        "wasm32 build test",
+        "language bindings test",
+        "workflow lint",
+        "protected-set gate",
+        "lander",
+        "commit-on-main guard",
+        "parallel test runner",
+        "delta test selection",
+        "crash-record check",
+        "gate-diff judge",
+        "relabel-attack suite"
+      ],
+      "measured": true
+    },
+    {
+      "id": "velocity.tier1_seconds_cold",
+      "dimension": "velocity",
+      "dir": "down",
+      "definition": "COLD: what an outside contributor pays. Wall seconds, measured by the runner, of the adapter's [tier1] command in a fresh clone and a fresh sandbox with no cache (it must exit 0). A CEILING (<= 600), shown beside the warm number and never hidden or averaged with it",
+      "implemented": true,
+      "value": 131.5,
+      "floor": {
+        "op": "<=",
+        "value": 600
+      },
+      "status": "pass",
+      "command": "cp -a /subject /tmp/w && cd /tmp/w && git config core.hooksPath scripts/githooks &&\nR=$(command -v lake) && mkdir /tmp/shim &&\ncat > /tmp/shim/lake <<SH\n#!/bin/bash\ncase \" \\$* \" in *\" --run \"*) exec f",
+      "measured": true
+    },
+    {
+      "id": "velocity.open_prs",
+      "dimension": "velocity",
+      "dir": "down",
+      "definition": "open pull requests of the subject's origin repo (gh pr list)",
+      "implemented": true,
+      "value": 0,
+      "floor": {
+        "op": "==",
+        "value": 0
+      },
+      "status": "pass",
+      "repo": "witt3rd/vbm-sse"
+    },
+    {
+      "id": "velocity.commits_per_hour",
+      "dimension": "velocity",
+      "dir": "up",
+      "definition": "first-parent commits in the window ending at the pinned commit, per hour of their span (span at least 1 h)",
+      "implemented": true,
+      "value": 3.139,
+      "floor": null,
+      "status": "pass",
+      "commits": 70,
+      "span_seconds": 80270
+    },
+    {
+      "id": "velocity.p90_commit_to_main_seconds",
+      "dimension": "velocity",
+      "dir": "down",
+      "definition": "p90 (nearest rank) over the changes in the window of: last landing time minus FIRST AUTHORED commit time. A change is the run of first-parent commits landed within 120 s of each other; author dates survive a direct landing's rebase, squash merges rewrite them (those read 0). Not-measurable when every change reads 0 (no authoring start is recorded), never a silent zero",
+      "implemented": true,
+      "value": 7475,
+      "floor": null,
+      "status": "pass",
+      "changes": 49,
+      "changes_with_a_recorded_start": 31
+    },
+    {
+      "id": "honesty.gate_selftests",
+      "dimension": "honesty",
+      "dir": "up",
+      "definition": "percent of the declared gate self-test files (adapter [tests] gate_selftests, under scripts/) that the fast-gate script names; zero such files is not-measurable (a gate not watched to fail is decoration). Presence and coverage only: that each can fail is shown by the subject's own run",
+      "implemented": true,
+      "value": 100.0,
+      "floor": {
+        "op": ">=",
+        "value": 100
+      },
+      "status": "pass",
+      "files": [
+        "scripts/test_abi.sh",
+        "scripts/test_bench.sh",
+        "scripts/test_bindings.sh",
+        "scripts/test_gate_diff_improving.sh",
+        "scripts/test_githook.sh",
+        "scripts/test_land_direct.sh",
+        "scripts/test_lint_workflows.sh",
+        "scripts/test_native.sh",
+        "scripts/test_no_crash_record.sh",
+        "scripts/test_pinned_lib.sh",
+        "scripts/test_protected_set.sh",
+        "scripts/test_ran_evidence.sh",
+        "scripts/test_reap.sh",
+        "scripts/test_relabel_attacks.sh",
+        "scripts/test_run_parallel.sh",
+        "scripts/test_run_scoped.sh",
+        "scripts/test_select_tests.sh",
+        "scripts/test_vectors.sh",
+        "scripts/test_wasm.sh"
+      ],
+      "not_named_by_the_fast_gate": []
+    },
+    {
+      "id": "honesty.gates_self_tested",
+      "dimension": "honesty",
+      "dir": "up",
+      "definition": "percent of the gates the adapter declares ([tier1] gates = [{name, selftest}]) whose negative self-test LEFT EVIDENCE in this run: the selftest pattern matches the output of the fast gate, run in the sandbox (it must exit 0). The evidence is the subject's own output, so it shows the self-test was reached, never that it is sound (that is the attack suite); no declared gate is not-measurable",
+      "implemented": true,
+      "value": 100.0,
+      "floor": {
+        "op": ">=",
+        "value": 100
+      },
+      "status": "pass",
+      "gates": [
+        "forbidden-constructs scan",
+        "Init-only import scan",
+        "pipefail lint",
+        "proof-evaluation lint",
+        "zero-warning build",
+        "axiom gate",
+        "obligation ledger gate",
+        "closure gate",
+        "trust ledger",
+        "scrub gate",
+        "vectors check",
+        "C ABI description check",
+        "freestanding native test",
+        "wasm32 build test",
+        "language bindings test",
+        "workflow lint",
+        "protected-set gate",
+        "lander",
+        "commit-on-main guard",
+        "parallel test runner",
+        "delta test selection",
+        "crash-record check",
+        "gate-diff judge",
+        "relabel-attack suite"
+      ],
+      "self_test_ran": [
+        "forbidden-constructs scan",
+        "Init-only import scan",
+        "pipefail lint",
+        "proof-evaluation lint",
+        "zero-warning build",
+        "axiom gate",
+        "obligation ledger gate",
+        "closure gate",
+        "trust ledger",
+        "scrub gate",
+        "vectors check",
+        "C ABI description check",
+        "freestanding native test",
+        "wasm32 build test",
+        "language bindings test",
+        "workflow lint",
+        "protected-set gate",
+        "lander",
+        "commit-on-main guard",
+        "parallel test runner",
+        "delta test selection",
+        "crash-record check",
+        "gate-diff judge",
+        "relabel-attack suite"
+      ],
+      "no_evidence": []
+    },
+    {
+      "id": "honesty.selftests_ran_cases",
+      "dimension": "honesty",
+      "dir": "up",
+      "definition": "the ran-evidence of the fast gate (DECISIONS 19): the cases its gates and self-tests EXECUTED, summed over the lines `ran: NAME: N cases` (NAME [A-Za-z0-9_.-]+, N at most 15 digits) of the fast-gate log (its stdout and stderr, run in the sandbox, exit 0 required). Fails, with the reason, when the log has a line containing SKIPPED, no evidence line at all, or a sum of 0 cases, or a name that the adapter does not declare in [tier1] ran_names (a subject cannot invent a gate), or a declared name that is missing or shows 0 cases; no declared ran_names is not-measurable. A self-test that never ran is not a self-test: this closes the vacuous pass that honesty.gates_self_tested cannot see. Honest weakness: a count regex proves a count was printed, not that every case was meaningful; the evidence is the subject's own output, so soundness is the attack suite's question",
+      "implemented": true,
+      "value": 2315,
+      "floor": {
+        "op": ">=",
+        "value": 1
+      },
+      "status": "pass",
+      "evidence_names": 7,
+      "cases": 2315,
+      "cases_by_name": {
+        "axiom-gate": 1007,
+        "closure-gate": 38,
+        "ledger-gate": 23,
+        "scrub": 225,
+        "tests": 1006,
+        "trust-ledger": 13,
+        "zero-warning": 3
+      },
+      "zero_case_names": [],
+      "skipped_lines": [],
+      "ran_names_declared": [
+        "zero-warning",
+        "tests",
+        "axiom-gate",
+        "closure-gate",
+        "ledger-gate",
+        "scrub",
+        "trust-ledger"
+      ],
+      "weakness": "a count regex proves a count was printed, not that every case was meaningful"
+    },
+    {
+      "id": "honesty.attack_suite",
+      "dimension": "honesty",
+      "dir": "up",
+      "definition": "the subject's relabel-attack suite (adapter [tier1] attack_cmd) exits 0 and its last line starts with PASS, and its sabotage run (attack_sabotage_cmd: every gate an attack relies on replaced by a stub) exits non-zero with a last line starting FAIL: a suite that cannot fail is decoration; both run in the sandbox; none declared is not-measurable",
+      "implemented": true,
+      "value": 1,
+      "floor": {
+        "op": "==",
+        "value": 1
+      },
+      "status": "pass",
+      "pass_line": "PASS relabel-attacks: 67 of 67 attacks refused (26 s)",
+      "sabotage_line": "FAIL relabel-attacks: 0 of 67 attacks refused (1 s)"
+    }
+  ],
+  "dimensions": {
+    "verified": {
+      "status": "pass",
+      "below_floor": [],
+      "below_floor_implemented": []
+    },
+    "bare_metal": {
+      "status": "pass",
+      "below_floor": [],
+      "below_floor_implemented": []
+    },
+    "construction": {
+      "status": "pass",
+      "below_floor": [],
+      "below_floor_implemented": []
+    },
+    "efficiency": {
+      "status": "pass",
+      "below_floor": [],
+      "below_floor_implemented": []
+    },
+    "velocity": {
+      "status": "pass",
+      "below_floor": [],
+      "below_floor_implemented": []
+    },
+    "honesty": {
+      "status": "pass",
+      "below_floor": [],
+      "below_floor_implemented": []
+    }
+  },
+  "pinned_libs": [
+    {
+      "name": "vbm-simd",
+      "rev": "9c274830d5463169fc8848b5cbf3538cb75c1c4b",
+      "spec_hash": "d7743785d0b9eee78b9f81171b587e4c27c72ba2887061f2747ff182fd69e45d",
+      "url": "https://github.com/witt3rd/vbm-simd"
+    }
+  ],
+  "verdicts": {
+    "correctness": {
+      "dimensions": {
+        "verified": "pass",
+        "construction": "pass",
+        "honesty": "pass"
+      },
+      "below_floor": [],
+      "status": "pass",
+      "not_defined_yet": [
+        "generation"
+      ],
+      "measured": 3,
+      "of": 4
+    },
+    "landedness": {
+      "dimensions": {
+        "velocity": "pass"
+      },
+      "below_floor": [],
+      "status": "pass"
+    },
+    "profile": {
+      "dimensions": {
+        "bare_metal": "pass",
+        "efficiency": "pass"
+      },
+      "below_floor": []
+    }
+  }
+}
