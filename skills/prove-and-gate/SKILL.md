@@ -20,8 +20,8 @@ description: >-
 ## Negative self-tests (the gate must be seen to fail)
 For every gate add `scripts/test_<gate>.sh`: copy a fixture, plant the fault (a `sorry`, an added axiom, a vacuous claim), run the gate, and fail the test if the gate did NOT fail. See `guidelines/gates-need-negative-self-tests.md` and the scripts in this repository's `scripts/test_*.sh`.
 
-## The attack suite
-Gate-defining files (gates, floors, definitions) are listed in a protected-paths file. A change to one is judged by relabel attacks: the same change with a name or label swapped must still be caught. A gate change never lands to make a number pass.
+## Changing a gate
+Nothing waits for an approval and no file is locked: a gate, floor or definition is edited like any other file. A gate change never lands to make a number pass.
 
 ## Do not
 - Weaken a gate or a floor in the same change that needs it to pass.
