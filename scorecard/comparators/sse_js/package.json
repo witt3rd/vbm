@@ -1,0 +1,1 @@
+{ "name": "sse-js-bench", "version": "0.0.0", "private": true, "type": "module", "dependencies": { "eventsource-parser": "4.1.3" } }

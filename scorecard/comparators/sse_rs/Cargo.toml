@@ -1,0 +1,13 @@
+[package]
+name = "sse_rs_bench"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+eventsource-stream = "=0.2.3"
+futures = "=0.3.31"
+bytes = "=1.10.1"
+
+[profile.release]
+opt-level = 3
