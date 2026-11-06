@@ -42,9 +42,14 @@ def spec_hash(pkg, paths):
 def provision(wt, env, allowlist=scorecard_policy.ALLOWLIST, allow_local=False):
     """[] when the subject pins nothing; else the provenance list. ValueError (plain message) on any refusal. allow_local: a local path or file:// URL is accepted (the test and a local fixture only)."""
     lockf = os.path.join(wt, LOCK)
-    if not os.path.isfile(lockf): return []
-    try: lock = parse_lock(open(lockf).read()); pk = {str(p.get("name")).strip("«»"): p for p in json.load(open(os.path.join(wt, MANIFEST)))["packages"]}
+    try:
+        man = json.load(open(os.path.join(wt, MANIFEST)))["packages"] if os.path.isfile(os.path.join(wt, MANIFEST)) else []
+        pk = {str(p.get("name")).strip("«»"): p for p in man}
+        if os.path.isfile(lockf): lock = parse_lock(open(lockf).read())
+        else:   # no lock file (deleted with the approvals): the manifest's own full-sha git packages are what is fetched, once, host-side
+            lock = [{"name": n, "rev": p["rev"], "hash": None, "paths": None} for n, p in pk.items() if p.get("type") == "git" and re.fullmatch(r"[0-9a-f]{40}", str(p.get("rev")))]
     except (OSError, KeyError, TypeError, json.JSONDecodeError) as e: raise ValueError(f"cannot read the pin files: {e}")
+    if not lock: return []
     done = []
     for e in lock:
         p = pk.get(e["name"])
@@ -63,8 +68,8 @@ def provision(wt, env, allowlist=scorecard_policy.ALLOWLIST, allow_local=False):
             r = subprocess.run(argv, capture_output=True, text=True, env=env)
             if r.returncode: shutil.rmtree(dest, ignore_errors=True); raise ValueError(f"{e['name']}: {' '.join(argv[len(g):len(g) + 2])} failed: {r.stderr.strip().splitlines()[-1:] or r.returncode}")
         head = subprocess.run(g + ["-C", dest, "rev-parse", "HEAD"], capture_output=True, text=True, env=env).stdout.strip()
-        try: got = spec_hash(dest, e["paths"])
+        try: got = spec_hash(dest, e["paths"]) if e["hash"] else None
         except ValueError as x: shutil.rmtree(dest, ignore_errors=True); raise ValueError(f"{e['name']}: {x}")
-        if head != e["rev"] or got != e["hash"]: shutil.rmtree(dest, ignore_errors=True); raise ValueError(f"{e['name']}: the fetched checkout is at {head} with spec_hash {got}; the lock says {e['rev']} and {e['hash']}")
+        if head != e["rev"] or (e["hash"] and got != e["hash"]): shutil.rmtree(dest, ignore_errors=True); raise ValueError(f"{e['name']}: the fetched checkout is at {head} with spec_hash {got}; the lock says {e['rev']} and {e['hash']}")
         done.append({"name": e["name"], "rev": e["rev"], "spec_hash": e["hash"], "url": url})
     return done
