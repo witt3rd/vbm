@@ -1,0 +1,12 @@
+# The protected set (read by the lander's structural judge). One entry per line; a trailing "/" is a directory; "#" starts a comment.
+# The runtime is trusted C that no check yet covers: any change to it is a protected change (the owner's say-so, an exact-diff approval).
+# Weakening this list is itself a protected change.
+scripts/protected-paths.txt
+scripts/land.conf
+scripts/land-direct
+scripts/land/
+scripts/land.signers
+scripts/gate-edit-approvals.txt
+scripts/rt/
+.github/workflows/
+AGENTS.md
