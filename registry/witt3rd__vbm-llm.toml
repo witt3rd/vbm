@@ -4,7 +4,7 @@ what = "The wire contract of the LLM provider conventions (OpenAI, Anthropic, Op
 milestone = "pre-release: OpenAI, OpenRouter and the Anthropic reply proved; Anthropic request, turns and stream next; not scored yet"
 depends_on = ["vbm-json", "vbm-sse"]
 repo = "https://github.com/witt3rd/vbm-llm"
-commit = "7af9cfcc1eceedfdfa6b36ae1f4e3ac0d9bd1d2d"
+commit = "7648ec2f9639cfce72ebd895d4fd3d7244a945aa"
 targets = ["Lean"]
 manifest = "vbm-proof.toml"
 

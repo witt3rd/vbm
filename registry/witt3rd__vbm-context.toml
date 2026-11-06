@@ -4,7 +4,7 @@ what = "A typed, verified agent context state (goal, obligations, facts with pro
 milestone = "pre-release; not scored yet"
 depends_on = []
 repo = "https://github.com/witt3rd/vbm-context"
-commit = "b905617ea65de39e0db344d52bbe797a8a5dfa27"
+commit = "43cb99036ea9a7680ed96fe34129e5002271d0c4"
 targets = ["Lean"]
 manifest = "vbm-proof.toml"
 

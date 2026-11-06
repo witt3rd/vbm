@@ -1,5 +1,16 @@
 kind = "foundation"
-status = "planned"
+status = "live"
 what = "The freestanding runtime shim (allocator, mem* replacements, WebAssembly and native) and the ABI description with the C header and binding generators; consumers vbm-json and vbm-sse"
-milestone = "not started; no repository until its first slice starts"
+milestone = "early: the repository exists with a README and a license only, nothing extracted yet; not scored"
 depends_on = []
+repo = "https://github.com/witt3rd/vbm-rt"
+commit = "d7fa8f6d05332ca8a42eb6ab4becda43a3821299"
+targets = ["C", "WebAssembly"]
+manifest = "vbm-proof.toml"
+
+[latest]
+date = ""
+correctness = "unscored"
+landedness = "unscored"
+level = "unscored"
+card = ""

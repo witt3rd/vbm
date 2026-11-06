@@ -1,7 +1,7 @@
 ---
 name: write-a-binding
 description: >-
-  Generate a language binding (Python, Rust, TypeScript, C#) for a VBM library from its ABI description (vbm-rt, planned). Use when a library needs a new language binding.
+  Generate a language binding (Python, Rust, TypeScript, C#) for a VBM library from its ABI description (vbm-rt, early). Use when a library needs a new language binding.
 ---
 
 # Write a binding
