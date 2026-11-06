@@ -19,15 +19,6 @@ def group_of(dim):
     return next((g for g, ds in GROUPS.items() if dim in ds), "profile")       # an unknown dimension is a profile entry: it can never pass a verdict by being new
 
 
-HONESTY_CHECK = "honesty.selftests_ran_cases"   # DECISIONS 19
-PRE_HONESTY = "Scored before the honesty check (ran-evidence): Process honesty here does not include it."
-
-
-def pre_honesty(card):
-    """True for a card written before the ran-evidence metric existed (it has no such metric): its header says so, and it is never re-scored (DECISIONS 19)."""
-    return HONESTY_CHECK not in {m["id"] for m in card["metrics"]}
-
-
 def verdicts(card):
     dims, ids = card["dimensions"], {m["id"] for m in card["metrics"]}
     def block(names):
@@ -36,7 +27,7 @@ def verdicts(card):
     c, l = block(CORRECTNESS), block(LANDEDNESS)
     c["status"] = "fail" if any(s == "fail" for s in c["dimensions"].values()) else "pass" if c["dimensions"] else "pending"
     c["not_defined_yet"] = [n for n in NOT_DEFINED if n not in dims]
-    c["measured"], c["of"] = len(c["dimensions"]), len(CORRECTNESS)
+    c["measured"], c["of"] = len(c["dimensions"]), len([n for n in CORRECTNESS if n != "honesty" or "honesty" in dims])   # Process honesty counts only on a card that has it (the attack suite and gate self-tests are deleted; recorded cards keep theirs)
     if LEGACY in ids and not any(i in ids for i in SPLIT): l["status"], l["why"] = "pending", "scored before the warm/cold split (DECISIONS 17): re-run"
     else: l["status"] = "fail" if any(s == "fail" for s in l["dimensions"].values()) else "pass" if l["dimensions"] else "pending"
     p = {n: dims[n]["status"] for n in PROFILE if n in dims}

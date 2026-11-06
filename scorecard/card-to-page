@@ -84,12 +84,6 @@ def render(c, footer, as_of, note=""):
             notes.append("<p><b>Cold run</b> (what an outside contributor pays, ceiling 600 s, shown beside the warm run)" + (f": {e(c['sandbox']['limits'].get('cpus'))} CPUs, {e(c['sandbox']['limits'].get('memory_mb', 0) // 1024)} GB cap" if c.get("sandbox") else "") + ", a fresh clone with no cache.</p>")
         if m["id"] == "velocity.tier1_seconds" and m.get("command"):
             notes.append("<p><b>Fast gate</b> timed" + (f": {code(m['command'].split('&&')[-1].split()[-1])}" if len(m["command"]) < 190 else "") + ", cold" + (f", {e(c['sandbox']['limits'].get('cpus'))} CPUs, {e(c['sandbox']['limits'].get('memory_mb', 0) // 1024)} GB cap" if c.get("sandbox") else "") + ".</p>")
-    for m in ms:
-        if m["id"] == "honesty.gates_self_tested" and m.get("gates"): notes.append(f"<p><b>Gates with self-test evidence in the run:</b> {len(m['self_test_ran'])} of {len(m['gates'])}" + (": no evidence for " + ", ".join(e(x) for x in m["no_evidence"]) if m.get("no_evidence") else "") + ".</p>")
-        if m["id"] == "honesty.selftests_ran_cases" and (m.get("cases_by_name") is not None or m["status"] == "fail"):   # coverage of the ran-evidence (DECISIONS 19); the reason is subject output: escaped
-            cov = f"{m['cases']} cases in {m['evidence_names']} evidence lines" + (f", {len(m['ran_names_declared'])} declared names present" if m.get("ran_names_declared") else "") if m.get("cases_by_name") is not None else ""
-            notes.append(f"<p><b>Self-tests that ran (ran-evidence):</b> {cov}" + (f"; FAIL: {e(m.get('reason', ''))}" if m["status"] == "fail" else "") + f". Weakness: {e(m.get('weakness') or 'a count regex proves a count was printed, not that every case was meaningful')}.</p>")
-        if m["id"] == "honesty.attack_suite" and m.get("pass_line"): notes.append(f"<p><b>Attack suite:</b> {e(m['pass_line'])}; gates stubbed: {e(m['sabotage_line'])}.</p>")
     if c.get("sandbox"): notes.append("<p><b>Level 2 (Measured) card.</b> Level 1, Certified (an independent proof recheck), is not built yet: this is not a certificate.</p>")
     if note:   # the run's conditions go into the fast-gate paragraph (or stand alone when the card has none)
         k = next((i for i, x in enumerate(notes) if x.startswith("<p><b>Fast gate</b>")), None)
@@ -100,7 +94,7 @@ def render(c, footer, as_of, note=""):
     cards = "".join(f'<div class="card" style="padding:4px 14px"><div style="font-size:12.5px;line-height:1.15;color:var(--ink2)">{x}</div></div>' for x in groups if x)
     h1 = f"{e(sub['name'])}: scorecard ({'sandboxed run' if c.get('sandbox') else 'static metrics'})"
     vl = lambda g: f'<b class="{VERDICT[vd[g]["status"]][1]}">{TITLES[g]}: {e(scorecard_verdicts.label(vd[g]))}</b>'
-    h2 = f"{vl('correctness')}<br>{vl('landedness')}" + (f"<br>{e(scorecard_verdicts.PRE_HONESTY)}" if scorecard_verdicts.pre_honesty(c) else "")
+    h2 = f"{vl('correctness')}<br>{vl('landedness')}"
     foot = f"{e(footer)} · {n['pass']} metrics pass, {n['fail']} fail, {n['not-measurable']} not measurable · subject {e(sub['commit'][:12])} committed {e(then.strftime('%Y-%m-%d %H:%M %z'))}, {e(age(then, as_of))} before this card · scorecard {e((sc['sha'] or 'unknown')[:12])} · adapter {e(c['adapter']['sha256'][:12])}"
     body = f'<style>table.dense td{{padding:3px 10px}}table.dense{{font-size:16px}}</style><div class="cols c2" style="height:auto;gap:24px">{tables}</div><div class="cols c2" style="height:auto;gap:24px;margin-top:0">{cards}</div>'
     return ("from publishing.page import Deck\n\n" f"d = Deck(__file__, {footer!r})\n" f"d.slide({'Scorecard · one card'!r}, {h1!r}, {h2!r},\n        {body!r},\n        {foot!r}, cls=\"tight\")\nTITLE, S = d.TITLE, d.S\n")

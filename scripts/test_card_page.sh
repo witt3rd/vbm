@@ -65,7 +65,7 @@ PY
 for s in "Correctness: FAIL" "Landedness: PENDING" "scored before the warm/cold split" "Profile (in neither verdict)" "specified share" "unproved escapes" "libc symbols" "wasm freestanding build" "60740 B" "tier1 seconds" "not measurable (1)" "<code>malloc</code>, <code>pthread_once</code>" \
          "Hand-written cases</b> (4)" "<code>b_test.py</code> 1" "Drivers, 0 cases: <code>load.py</code>" "Gap to simd: 30x (non-scalar, not floored)" "best scalar serde is 3.2x faster (floor: within 2x)" "serde 1.2.3" "<code>scripts/tier1.sh</code>, cold" \
          "committed 2026-11-04 11:56 -0800, 14 min before this card" "subject bbbbbbbbbbbb" "tight" \
-         "<b>2 corpora</b>" "1 of 2 at or above the 50% line" "75%" "12.1%" "Gates with self-test evidence in the run:</b> 1 of 2: no evidence for &lt;i&gt;b&lt;/i&gt;" "Self-tests that ran (ran-evidence):</b> 3 cases in 2 evidence lines; FAIL: the fast-gate log has 1 line(s) with SKIPPED: &lt;b&gt;x&lt;/b&gt;. Weakness: a count regex proves a count was printed, not that every case was meaningful." "Attack suite:</b> PASS relabel-attacks: 3 of 3" \
+         "<b>2 corpora</b>" "1 of 2 at or above the 50% line" "75%" "12.1%" \
          "Level 1, Certified" "is not built yet"; do has "$s"; done
 python3 - "$T/bad.json.out" <<'PY' && ran_case || fail "a metric row is missing, or a hostile string was injected as markup"
 import json, sys
@@ -82,12 +82,10 @@ PY
 "$cp" "$T/noreason.json" -o "$T/nr.py" 2>"$T/err" && fail "negative self-test: a not-measurable metric without a reason was rendered"; grep -q "without a reason" "$T/err" && ran_case || fail "wrong refusal: $(cat "$T/err")"
 # a scorecard-3 card: the two verdict lines come first and say what the dimensions say; the warm and cold rows and notes are there; a card whose stored verdicts disagree with its dimensions is refused
 "$cp" "$T/v3.json" --as-of 2026-11-04T20:10:00+00:00 -o "$T/v3.py"; page "$T/v3.py" > "$T/v3.out"
-grep -q "Scored before the honesty check (ran-evidence): Process honesty here does not include it" "$T/good.out" && grep -q "Scored before the honesty check" "$T/v3.out" && ran_case || fail "a pre-honesty card does not say so in its header"
-! grep -q "Scored before the honesty check" "$T/note.out" && ran_case || fail "a card WITH the ran-evidence metric carries the pre-honesty header"
 python3 - "$T/v3.out" <<'PY' && ran_case || fail "the scorecard-3 page: the verdict lines, the warm and cold rows or the group titles are wrong"
 import json, re, sys
 p = json.load(open(sys.argv[1])); h2, b = p["h2"], p["body"]
-assert h2.startswith('<b class="good">Correctness: PASS (1 of 4 primary dimensions measured; Trusted generation not yet defined)</b><br><b class="bad">Landedness: FAIL</b>'), h2        # the first line is the correctness verdict, the second the landedness verdict
+assert h2.startswith('<b class="good">Correctness: PASS (1 of 3 primary dimensions measured; Trusted generation not yet defined)</b><br><b class="bad">Landedness: FAIL</b>'), h2        # the first line is the correctness verdict, the second the landedness verdict
 assert "Profile (in neither verdict): Efficiency fail" in b and "Efficiency fail" not in h2   # the profile is shown, and is in neither verdict line
 assert "tier1 seconds warm" in b and "tier1 seconds cold" in b and "494.5" in b and "&lt;= 600" in b and "<b>Warm run</b>" in b and "<b>Cold run</b>" in b and "skipped 1 of 2 gates by design: b" in b and "75 (skipped 1 of 2 gates)" in b
 assert "Correctness: PASS</b>" not in h2 and "Correctness: PASS<" not in b      # NEVER a bare PASS while a primary dimension is undefined (page and title row)

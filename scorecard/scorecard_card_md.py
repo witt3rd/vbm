@@ -5,7 +5,8 @@ import html, os, sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import scorecard_verdicts as V
-from scorecard_plain import PLAIN
+from scorecard_plain import PLAIN as _P, RETIRED
+PLAIN = {**_P, **RETIRED}
 
 DIMS = {"verified": "Verified", "construction": "Correct by construction", "generation": "Trusted code generation", "honesty": "Process honesty", "velocity": "Velocity (landedness)", "bare_metal": "Bare metal", "efficiency": "Resource efficiency"}
 MARK = {"pass": "✅ pass", "fail": "❌ FAIL", "not-measurable": "⚠️ not measurable"}
@@ -48,7 +49,6 @@ def render(c, repo="", pdf="", previous=(), raw="card.json"):
     out += [f"**Correctness: {VMARK[vd['correctness']['status']]}**" + (f" ({vd['correctness']['measured']} of {vd['correctness']['of']} primary dimensions measured; " + ", ".join(V.NAMES.get(n, n) for n in vd["correctness"]["not_defined_yet"]) + " not yet defined)" if vd["correctness"]["not_defined_yet"] and vd["correctness"]["status"] != "pending" else ""), ""]
     out += [f"**Landedness: {VMARK[vd['landedness']['status']]}**" + (f" ({esc(vd['landedness']['why'])})" if vd["landedness"].get("why") else "") + (f" (below its floor: {', '.join(esc(i) for i in vd['landedness']['below_floor'])})" if vd["landedness"]["below_floor"] else ""), ""]
     if vd["correctness"]["below_floor"]: out += ["Correctness below its floor: " + ", ".join(f"`{esc(i)}`" for i in vd["correctness"]["below_floor"]), ""]
-    if V.pre_honesty(c): out += [f"*{V.PRE_HONESTY}*", ""]   # an old record, never re-scored (DECISIONS 19)
     out += ["Two verdicts, no blended score. The profile (bare metal, resource efficiency) is in neither: " + ", ".join(f"{DIMS.get(k, k)} {v}" for k, v in vd["profile"]["dimensions"].items()) + ".", ""]
     out += [f"Subject: [{esc(name)}]({repo}) at commit `{commit[:12]}`, committed {esc(sub.get('commit_date', 'unknown'))}. Scorecard `{sc['sha'][:12]}`, adapter `{c['adapter']['sha256'][:12]}`, schema `{esc(c['schema'])}`.", ""]
     why = {}

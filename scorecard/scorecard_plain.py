@@ -20,10 +20,6 @@ PLAIN = {
     "velocity.open_prs": "How many proposed changes are waiting to be merged; zero means nothing is stuck in review.",
     "velocity.commits_per_hour": "How fast changes land on the main branch, in commits per hour.",
     "velocity.p90_commit_to_main_seconds": "How long, for 9 in 10 changes, from first authoring to landing on main.",
-    "honesty.gate_selftests": "Share of the project's checks that have a test proving the check can fail.",
-    "honesty.gates_self_tested": "Share of the project's checks whose can-it-fail test actually ran in this measurement.",
-    "honesty.selftests_ran_cases": "Whether the project's checks reported how many cases they ran, and ran at least one, with none skipped.",
-    "honesty.attack_suite": "Whether an attempt to cheat the checks is caught, and a sabotaged run is correctly reported as failing.",
 }
 
 
@@ -38,3 +34,12 @@ def problems(plain):
         if re.search(r"[A-Za-z0-9]_[A-Za-z0-9]", t): out.append(f"{i}: snake_case identifier")
         if "\n" in t: out.append(f"{i}: more than one line")
     return out
+
+
+# Metrics the runner no longer measures (the attack suite and the gate self-tests are deleted): kept so the pages of recorded cards still read plainly.
+RETIRED = {
+    "honesty.gate_selftests": "Share of the project's checks that have a test proving the check can fail.",
+    "honesty.gates_self_tested": "Share of the project's checks whose can-it-fail test actually ran in this measurement.",
+    "honesty.selftests_ran_cases": "Whether the project's checks reported how many cases they ran, and ran at least one, with none skipped.",
+    "honesty.attack_suite": "Whether an attempt to cheat the checks is caught, and a sabotaged run is correctly reported as failing.",
+}

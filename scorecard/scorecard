@@ -15,13 +15,13 @@ SCHEMA_VERSION = "scorecard-3"   # 3: velocity.tier1_seconds split into warm and
 
 # The adapter schema (DECISIONS 4): section -> key -> type. Every key is required.
 MUTATION = {"files": list, "comment": str, "setup_cmd": str, "kill_cmd": str, "mutants": int, "seed": int, "kill_timeout_seconds": int, "timeout_seconds": int}
-OPTIONAL = {"proof": {"carveouts": str, "carveouts_protected": str, "carveouts_regex": str, "carveouts_baseline": str}, "mutation": {"equivalent": str}, "nonvacuity": {"equivalent": str},
+OPTIONAL = {"tests": {"gate_selftests": list}, "proof": {"carveouts": str, "carveouts_protected": str, "carveouts_regex": str, "carveouts_baseline": str}, "mutation": {"equivalent": str}, "nonvacuity": {"equivalent": str},
             "tier1": {"gates": list, "attack_cmd": str, "attack_sabotage_cmd": str, "attack_timeout_seconds": int, "warm_change_cmd": str, "warm_command": str, "warm_timeout_seconds": int, "warm_skips": list, "ran_names": list}}   # optional keys (default empty): the subject's list of EQUIVALENT mutants, a path in the subject (see run_mutation); [tier1] gates = [{name, selftest}] (see honesty.gates_self_tested) and the attack-suite commands (see honesty.attack_suite); [tier1] warm_change_cmd, warm_command, warm_timeout_seconds, warm_skips declare the warm run (see velocity.tier1_seconds_warm; none declared: that metric is not-measurable); [tier1] ran_names = evidence names the fast-gate log must carry with a positive case count (see honesty.selftests_ran_cases; REQUIRED for that metric: none declared is not-measurable, so the metric fails its floor)
 ADAPTER = {
     "subject": {"name": str, "kind": str},                                  # kind: library | runtime
     "source": {"globs": list},                                              # files scanned for forbidden constructs
     "trust": {"c_files": list, "ledger": str, "entry_regex": str},          # trusted C files; the trust ledger and the line that opens an entry
-    "tests": {"generated": list, "extra": list, "gate_selftests": list, "entry_points": list, "scenario_files": list},    # generated/boundary-evidence paths (not tests); extra hand-written test paths; the self-tests of gates and process scripts (under scripts/); the names of the calls that run the subject's code ([] = count every test file as one case); scenario files = test files that build their own inputs in code (deep documents, allocator failures) though no literal appears in a call: each counts as one case
+    "tests": {"generated": list, "extra": list, "entry_points": list, "scenario_files": list},    # generated/boundary-evidence paths (not tests); extra hand-written test paths; the self-tests of gates and process scripts (under scripts/); the names of the calls that run the subject's code ([] = count every test file as one case); scenario files = test files that build their own inputs in code (deep documents, allocator failures) though no literal appears in a call: each counts as one case
     "proof": {"sorry_pattern": str, "allow_marker": str, "closure_cmd": str, "closure_regex": str, "closure_timeout_seconds": int,
               "axiom_cmd": str, "axiom_regex": str, "axiom_timeout_seconds": int},   # + the axiom gate ("" = none): its output's group 1 is the count of constants that depend on a non-standard axiom (a placeholder proof included)
     "mutation": MUTATION, "nonvacuity": MUTATION,   # code mutation (killed by the generated vectors) and specification mutation (killed by a broken proof): files to mutate, a one-time setup, the harness whose non-zero exit KILLS a mutant ("" = none)
@@ -40,7 +40,7 @@ PATH_KEYS = [("source", "globs"), ("trust", "c_files"), ("trust", "ledger"), ("t
 LIMITS = dict(cpus=2, memory_mb=4096, disk_mb=2048, pids=512)   # the sandbox limits (SPEC); max_seconds caps any adapter timeout
 MAX_SECONDS, OUT_CAP, MAX_FILE = 3600, 1_000_000, 5_000_000
 METRIC_SECONDS = int(os.environ.get("SCORECARD_METRIC_SECONDS", "20"))   # alarm for every static metric
-EXECUTING = {"efficiency.throughput_vs_best", "construction.mutation_score", "verified.non_vacuity", "verified.specified_share", "verified.nonstandard_axioms", "bare_metal.freestanding_build", "bare_metal.wasm_freestanding_build", "bare_metal.libc_symbols", "velocity.tier1_seconds_warm", "velocity.tier1_seconds_cold", "honesty.gates_self_tested", "honesty.selftests_ran_cases", "honesty.attack_suite"}   # metrics that run subject code (only ever through the sandbox); no alarm: the launcher enforces the time limit
+EXECUTING = {"efficiency.throughput_vs_best", "construction.mutation_score", "verified.non_vacuity", "verified.specified_share", "verified.nonstandard_axioms", "bare_metal.freestanding_build", "bare_metal.wasm_freestanding_build", "bare_metal.libc_symbols", "velocity.tier1_seconds_warm", "velocity.tier1_seconds_cold"}   # metrics that run subject code (only ever through the sandbox); no alarm: the launcher enforces the time limit
 GIT_ENV = {**{k: v for k, v in os.environ.items() if not k.startswith("GIT_")}, "GIT_CONFIG_GLOBAL": "/dev/null", "GIT_CONFIG_SYSTEM": "/dev/null", "GIT_CONFIG_NOSYSTEM": "1", "GIT_TERMINAL_PROMPT": "0"}
 
 # The metrics. floor: None (tracked) or (op, value); "adapter" = the value comes from the adapter's [floors]. dir: which way is better.
@@ -62,10 +62,6 @@ METRICS = [
     dict(id="velocity.open_prs", dim="velocity", floor=("==", 0), dir="down", desc="open pull requests of the subject's origin repo (gh pr list)"),
     dict(id="velocity.commits_per_hour", dim="velocity", floor=None, dir="up", desc="first-parent commits in the window ending at the pinned commit, per hour of their span (span at least 1 h)"),
     dict(id="velocity.p90_commit_to_main_seconds", dim="velocity", floor=None, dir="down", desc="p90 (nearest rank) over the changes in the window of: last landing time minus FIRST AUTHORED commit time. A change is the run of first-parent commits landed within 120 s of each other; author dates survive a direct landing's rebase, squash merges rewrite them (those read 0). Not-measurable when every change reads 0 (no authoring start is recorded), never a silent zero"),
-    dict(id="honesty.gate_selftests", dim="honesty", floor=(">=", 100), dir="up", desc="percent of the declared gate self-test files (adapter [tests] gate_selftests, under scripts/) that the fast-gate script names; zero such files is not-measurable (a gate not watched to fail is decoration). Presence and coverage only: that each can fail is shown by the subject's own run"),
-    dict(id="honesty.gates_self_tested", dim="honesty", floor=(">=", 100), dir="up", desc="percent of the gates the adapter declares ([tier1] gates = [{name, selftest}]) whose negative self-test LEFT EVIDENCE in this run: the selftest pattern matches the output of the fast gate, run in the sandbox (it must exit 0). The evidence is the subject's own output, so it shows the self-test was reached, never that it is sound (that is the attack suite); no declared gate is not-measurable"),
-    dict(id="honesty.selftests_ran_cases", dim="honesty", floor=(">=", 1), dir="up", desc="the ran-evidence of the fast gate (DECISIONS 19): the cases its gates and self-tests EXECUTED, summed over the lines `ran: NAME: N cases` (NAME [A-Za-z0-9_.-]+, N at most 15 digits) of the fast-gate log (its stdout and stderr, run in the sandbox, exit 0 required). Fails, with the reason, when the log has a line containing SKIPPED, no evidence line at all, or a sum of 0 cases, or a name that the adapter does not declare in [tier1] ran_names (a subject cannot invent a gate), or a declared name that is missing or shows 0 cases; no declared ran_names is not-measurable. A self-test that never ran is not a self-test: this closes the vacuous pass that honesty.gates_self_tested cannot see. Honest weakness: a count regex proves a count was printed, not that every case was meaningful; the evidence is the subject's own output, so soundness is the attack suite's question"),
-    dict(id="honesty.attack_suite", dim="honesty", floor=("==", 1), dir="up", desc="the subject's relabel-attack suite (adapter [tier1] attack_cmd) exits 0 and its last line starts with PASS, and its sabotage run (attack_sabotage_cmd: every gate an attack relies on replaced by a stub) exits non-zero with a last line starting FAIL: a suite that cannot fail is decoration; both run in the sandbox; none declared is not-measurable"),
 ]
 for _m in METRICS: _m["plain"] = scorecard_plain.PLAIN.get(_m["id"], "")   # data about each metric for a plain reader; not part of its definition
 MEASURES = {}   # metric id -> function(ctx) -> (value, extra dict); registered below
@@ -125,17 +121,12 @@ def load_adapter(text):
         try: re.compile(g["selftest"])
         except re.error as e: raise Reject(f"adapter: [tier1] gates {g['name']!r}: selftest is not a valid regex: {e}")
         if len(g["selftest"]) < 12: raise Reject(f"adapter: [tier1] gates {g['name']!r}: a selftest pattern shorter than 12 characters would match almost any output")
-    if bool(d["tier1"]["attack_cmd"]) != bool(d["tier1"]["attack_sabotage_cmd"]): raise Reject("adapter: [tier1] attack_cmd and attack_sabotage_cmd are declared together (the suite must be shown able to fail)")
     t1 = d["tier1"]
     if bool(t1["warm_command"]) != bool(t1["warm_change_cmd"]): raise Reject("adapter: [tier1] warm_change_cmd and warm_command are declared together (the warm run is the gate after a typical change)")
     if t1["warm_command"] and not 1 <= t1["warm_timeout_seconds"] <= 1800: raise Reject("adapter: [tier1] warm_timeout_seconds must be 1..1800 when a warm run is declared")
     if t1["warm_command"] and not t1["gates"]: raise Reject("adapter: [tier1] a warm run needs [tier1] gates (the warm output must show the gates ran)")
     if not all(isinstance(x, str) for x in t1["warm_skips"]) or not set(t1["warm_skips"]) <= {g["name"] for g in t1["gates"]}: raise Reject("adapter: [tier1] warm_skips names declared gates only")
     if t1["warm_skips"] and len(set(t1["warm_skips"])) >= len(t1["gates"]): raise Reject("adapter: [tier1] warm_skips cannot name every gate (the warm run must show at least one gate ran)")
-    rn = t1["ran_names"]
-    if not all(re.fullmatch(RAN_NAME, x) for x in rn) or len(set(rn)) != len(rn): raise Reject("adapter: [tier1] ran_names are distinct evidence names matching [A-Za-z0-9_.-]+")
-    for g in d["tests"]["gate_selftests"]:
-        if not g.startswith("scripts/"): raise Reject(f"adapter: [tests] gate_selftests must be under scripts/ (tests of the subject's own code are not gate self-tests): {g!r}")
     if d["subject"]["kind"] not in KINDS: raise Reject(f"adapter: [subject] kind must be one of {KINDS}")
     if d["subject"]["kind"] == "library" and d["floors"]["specified_share"] != 100: raise Reject("adapter: a library's [floors] specified_share is 100 (DECISIONS 1); a boundary that cannot be specified is a documented carve-out (DECISIONS 20), never a lower floor")
     pr = d["proof"]
@@ -570,64 +561,6 @@ def _(ctx):
         if f in cases: cases[f] = max(cases[f], 1)
     tests = {f: n for f, n in cases.items() if n}
     return sum(tests.values()), {"files": sorted(tests), "cases_by_file": tests, "drivers": sorted(f for f, n in cases.items() if not n), "generated_excluded": len(gen), "gate_selftests_excluded": len(gate)}
-
-
-@measure("honesty.gate_selftests")
-def _(ctx):
-    files = matching(ctx, ctx["adapter"]["tests"]["gate_selftests"]); script = ctx["adapter"]["tier1"]["script"]
-    if not files: raise NotMeasurable("no file matches [tests] gate_selftests: the subject shows no gate watched to fail")
-    data = safe_read(ctx, script)
-    if data is None: raise NotMeasurable(f"the fast-gate script {script} was not readable (missing, a symlink, or too large)")
-    text = data.decode(errors="replace"); named = [f for f in files if f in text]
-    return round(100 * len(named) / len(files), 1), {"files": files, "not_named_by_the_fast_gate": [f for f in files if f not in text]}
-
-
-@measure("honesty.gates_self_tested")
-def _(ctx):
-    gs = ctx["adapter"]["tier1"]["gates"]
-    if not gs: raise NotMeasurable("the adapter declares no gates ([tier1] gates is empty): there is nothing to count (a gate not watched to fail is decoration)")
-    rc, out, _ = tier1_run(ctx)
-    if rc in (None, 124): raise Fail(f"tier1 timed out after {ctx['adapter']['tier1']['timeout_seconds']} s: no self-test evidence")
-    if rc: raise Fail(f"tier1 exited {rc}: no self-test evidence from a failing fast gate")
-    seen = [g["name"] for g in gs if re.search(g["selftest"], out, re.M)]
-    return round(100 * len(seen) / len(gs), 1), {"gates": [g["name"] for g in gs], "self_test_ran": seen, "no_evidence": [g["name"] for g in gs if g["name"] not in seen]}
-
-
-@measure("honesty.selftests_ran_cases")
-def _(ctx):
-    t = ctx["adapter"]["tier1"]
-    if not t["ran_names"]: raise NotMeasurable("the adapter declares no [tier1] ran_names: the evidence lines must name exactly the declared gates (DECISIONS 19), so a subject without them is not measured (and fails its floor)")
-    rc, out, _ = tier1_run(ctx)
-    if rc in (None, 124): raise Fail(f"tier1 timed out after {t['timeout_seconds']} s: no ran-evidence")
-    if rc: raise Fail(f"tier1 exited {rc}: no ran-evidence from a failing fast gate")
-    by = {}
-    for name, n in RAN_LINE.findall(out): by[name] = by.get(name, 0) + int(n)
-    total, skipped = sum(by.values()), [l.strip()[:120] for l in out.splitlines() if "SKIPPED" in l]
-    cov = {"evidence_names": len(by), "cases": total, "cases_by_name": dict(sorted(by.items())[:60]), "zero_case_names": sorted(n for n, c in by.items() if not c)[:60], "skipped_lines": skipped[:10], "ran_names_declared": t["ran_names"], "weakness": RAN_WEAKNESS}
-    if skipped: raise Fail(f"the fast-gate log has {len(skipped)} line(s) with SKIPPED (a gate that did not run is not evidence): {skipped[0]}", total, cov)
-    if not by: raise Fail("no evidence: the fast-gate log has no `ran: NAME: N cases` line (a self-test that does not say how many cases it ran may have run none)", 0, cov)
-    if not total: raise Fail("zero cases: every `ran:` evidence line of the fast-gate log reports 0 cases (the gates ran nothing)", 0, cov)
-    invented = sorted(n for n in by if n not in t["ran_names"])
-    if invented: raise Fail("the fast-gate log has `ran:` evidence for name(s) the adapter does not declare in [tier1] ran_names (a subject cannot invent a gate): " + ", ".join(invented[:10]), total, cov)
-    lack = [n for n in t["ran_names"] if not by.get(n)]
-    if lack: raise Fail("the fast-gate log has no positive `ran:` evidence for the declared name(s): " + ", ".join(lack), total, cov)
-    return total, cov
-
-
-@measure("honesty.attack_suite")
-def _(ctx):
-    t = ctx["adapter"]["tier1"]
-    if not t["attack_cmd"]: raise NotMeasurable("the adapter declares no attack suite ([tier1] attack_cmd is empty)")
-    secs = t["attack_timeout_seconds"] or t["timeout_seconds"]
-    def last(out): return (out.strip().splitlines() or [""])[-1]
-    rc, out, _ = run_cmd(ctx, t["attack_cmd"], secs)
-    if rc in (None, 124): raise Fail(f"the attack suite timed out after {secs} s")
-    if rc or not last(out).startswith("PASS"): raise Fail(f"the attack suite does not pass (exit {rc}): ...{tail(out)}", 0)
-    ok_line = last(out)
-    rc2, out2, _ = run_cmd(ctx, t["attack_sabotage_cmd"], secs)
-    if rc2 in (None, 124): raise Fail(f"the sabotage run timed out after {secs} s")
-    if rc2 == 0 or not last(out2).startswith("FAIL"): raise Fail(f"the attack suite still passes (exit {rc2}) with its gates stubbed: it cannot fail", 0)
-    return 1, {"pass_line": ok_line[:200], "sabotage_line": last(out2)[:200]}
 
 
 @measure("velocity.tier1_seconds_cold")

@@ -9,9 +9,6 @@ cd "$(dirname "$0")/.."
 rt=$(pwd)/scorecard/registry-table
 fail() { echo "tier1: readme: $*" >&2; exit 1; }
 "$rt" --check README.md && ran_case || fail "README.md differs from the table generated from registry/*.toml"
-pre='^\*Scored before the honesty check (ran-evidence): Process honesty here does not include it.\*$'   # the header is exactly for a card WITHOUT the ran-evidence metric (DECISIONS 19), and only for one
-if grep -q '"honesty.selftests_ran_cases"' registry/scores/witt3rd__vbm-json.json; then ! grep -q "$pre" registry/scores/witt3rd__vbm-json.md && ran_case || fail "a card with the ran-evidence metric carries the pre-honesty header"
-else grep -q "$pre" registry/scores/witt3rd__vbm-json.md && ran_case || fail "the pre-honesty registry card does not say so in its header (DECISIONS 19)"; fi
 for g in guidelines/*.md; do [ "$g" = guidelines/INDEX.md ] || grep -q "($g)" README.md && ran_case || fail "README.md does not link the guideline $g"; done
 T=$(mktemp -d); trap 'rm -rf "$T"' EXIT; mkdir -p "$T/registry/scores"
 card() {   # card VELOCITY-METRIC COMMIT: a minimal card; correctness: verified passes, honesty fails (so Correctness FAILS); velocity is the given metric's dimension (the retired id: Landedness pending)
