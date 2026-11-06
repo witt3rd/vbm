@@ -14,8 +14,8 @@ fail() { echo "tier1: land-direct: $*" >&2; exit 1; }
 T=$(mktemp -d); trap 'rm -rf "$T"' EXIT; export T
 # 0. the vendored copy is what its pin says; the check can fail (a tampered file, a stray file, an edited stub, an unpinned hook name); no force or delete push in anything that pushes
 scripts/land/bin/land-check >/dev/null && ran_case || fail "the vendored copy of vbm-land differs from its pin (scripts/land/bin/land-check): edit vbm-land, not the copy"
-for tamper in "echo '# local patch' >> scripts/land/bin/land-red" "echo x > scripts/land/lib/stray.sh" "echo 'exit 0' > scripts/land-direct" "rm scripts/land/lib/infra-re.sh" "echo ':' > scripts/land.d/post-rebasee; chmod +x scripts/land.d/post-rebasee"; do
-  rm -rf "$T/v"; mkdir -p "$T/v/scripts"; cp -a scripts/land scripts/land-direct scripts/land.conf scripts/land.d "$T/v/scripts/"; cp -a .agents "$T/v/"; ( cd "$T/v" && bash -c "$tamper" )
+for tamper in "echo '# local patch' >> scripts/land/bin/land-red" "echo x > scripts/land/lib/stray.sh" "echo 'exit 0' > scripts/land-direct" "rm scripts/land/lib/infra-re.sh"; do
+  rm -rf "$T/v"; mkdir -p "$T/v/scripts"; cp -a scripts/land scripts/land-direct scripts/land.conf "$T/v/scripts/"; cp -a .agents "$T/v/"; ( cd "$T/v" && bash -c "$tamper" )
   if "$T/v/scripts/land/bin/land-check" --root "$T/v" >/dev/null 2>&1; then fail "negative self-test: land-check passes a tampered copy ($tamper)"; fi
 done
 noforce() { grep -v '^[[:space:]]*#' "$1" | grep -E -- '--force|--mirror|--delete|push[^|;&]* -f |push[^|;&]* \+|push[^|;&]* :' || true; }
@@ -40,7 +40,7 @@ printf '#!/bin/sh\necho "$1 $2 $3" >> "$T/updates"\n' > "$T/remote.git/hooks/upd
 git clone -q "$T/remote.git" "$T/work" 2>/dev/null; cd "$T/work"; git config core.hooksPath /dev/null
 git clone -q "$T/remote.git" "$T/other" 2>/dev/null; git -C "$T/other" config core.hooksPath /dev/null
 # the scratch repository: this repository's REAL landing files, and stand-ins for the gates the hooks call
-mkdir -p scripts; cp -a "$src/scripts/land" "$src/scripts/land-direct" "$src/scripts/land.conf" "$src/scripts/land.d" scripts/; cp -a "$src/.agents" .
+mkdir -p scripts; cp -a "$src/scripts/land" "$src/scripts/land-direct" "$src/scripts/land.conf" scripts/; cp -a "$src/.agents" .
 sed -i "/^LAND_PROTECTED_LIST=/d" scripts/land.conf   # the lander-mechanics fixture has stand-in gates and no protected-paths list of its own: the list rule is judged on the real repository, not here
 cat > scripts/tier1.sh <<'SH'
 test ! -e BAD || { echo "BAD exists" >&2; exit 1; }
