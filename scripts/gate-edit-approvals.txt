@@ -1,1 +1,0 @@
-registry/allowlist.toml | 8068cdfcf6716cd65da99ede46687bc6a8376b541b0164086e38e7af5b8d9f55 | add vbm-gates and vbm-rt to the registry allowlist (hub foundation update) | 2026-11-06
