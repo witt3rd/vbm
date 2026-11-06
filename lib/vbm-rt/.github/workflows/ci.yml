@@ -1,0 +1,22 @@
+# Tier 1 on a push to main, on x86_64 and aarch64 hosted runners (the runtime's mem* must be byte-identical to libc on both). Hosted runners only, read-only token, no secret.
+name: ci
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  tier1:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: mem* against libc, byte for byte
+        run: tests/test_mem.sh
