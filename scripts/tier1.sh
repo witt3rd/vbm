@@ -9,6 +9,7 @@ cd "$(dirname "$0")/.."
 tests=(); par() { tests+=("$@"); }
 par scripts/test_land_direct.sh scripts/test_scorecard.sh scripts/test_lint_public.sh scripts/test_sandbox_conformance.sh scripts/test_registry.sh scripts/test_card_page.sh scripts/test_plain_meanings.sh scripts/test_cards_one_page.sh scripts/test_sandbox_bwrap.sh scripts/test_readme.sh scripts/test_comparators.sh scripts/test_lint_workflows.sh scripts/test_ci_visibility.sh
 par scripts/test_manifest.sh
+par scripts/test_pins.sh
 par scripts/test_license.sh
 par scripts/test_tmp_preflight.sh
 par scripts/test_export.sh

@@ -17,6 +17,7 @@ scripts/land.signers
 scripts/test_land_direct.sh
 scorecard/
 scripts/test_scorecard.sh
+scripts/test_pins.sh
 scripts/lint-public
 scripts/public-banned-hashes.txt
 scripts/test_lint_public.sh

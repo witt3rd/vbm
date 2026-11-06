@@ -10,7 +10,7 @@ import argparse, base64, hashlib, json, os, random, re, secrets, shlex, shutil, 
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-import scorecard_policy, scorecard_certify, scorecard_verdicts, scorecard_plain   # the registry allowlist (SPEC rule 10); Level 1 (SPEC "Level 1: Certified")
+import scorecard_pins, scorecard_policy, scorecard_certify, scorecard_verdicts, scorecard_plain   # the registry allowlist (SPEC rule 10); Level 1 (SPEC "Level 1: Certified")
 SCHEMA_VERSION = "scorecard-3"   # 3: velocity.tier1_seconds split into warm and cold (DECISIONS 17); `verdicts` instead of `result` (DECISIONS 18)
 
 # The adapter schema (DECISIONS 4): section -> key -> type. Every key is required.
@@ -179,7 +179,7 @@ def build_card(ctx):
             d["status"] = "fail"; d["below_floor"].append(e["id"])
             if e["implemented"]: d["below_floor_implemented"].append(e["id"])
     card = {"schema": SCHEMA_VERSION, "scorecard": ctx["scorecard"], "subject": {"name": ctx["adapter"]["subject"]["name"], "kind": ctx["adapter"]["subject"]["kind"], "commit": ctx["commit"], "commit_date": ctx["commit_date"]},
-            "adapter": {"sha256": ctx["adapter_sha"]}, "sandbox": ctx["sandbox_info"], "skipped_files": sorted(ctx["skipped"]), "metrics": metrics, "dimensions": dims}
+            "adapter": {"sha256": ctx["adapter_sha"]}, "sandbox": ctx["sandbox_info"], "skipped_files": sorted(ctx["skipped"]), "metrics": metrics, "dimensions": dims, **({"pinned_libs": ctx["pins"]} if ctx.get("pins") else {})}
     card["verdicts"] = scorecard_verdicts.verdicts(card)
     return card
 
@@ -681,13 +681,16 @@ def open_subject(a):
 def cmd_run(a):
     repo, commit, launcher, scratch, wt = open_subject(a)
     try:
+        origin = git(repo, "remote", "get-url", "origin", check=False).strip()
+        try: pins = scorecard_pins.provision(wt, GIT_ENV, a.allowlist or scorecard_policy.ALLOWLIST, allow_local=not origin or origin.startswith(("/", ".", "file://")))   # host-side, before any sandbox: the sandbox never fetches
+        except ValueError as x: raise Reject(f"a pinned library cannot be provisioned: {x}")
         text = open(a.adapter).read() if a.adapter else git(wt, "show", "HEAD:scorecard.toml", check=False)
         if not text: raise Reject(f"no adapter: {commit[:12]} has no scorecard.toml and --adapter was not given")
         adapter = load_adapter(text)
         sc_sha = git(HERE, "rev-parse", "HEAD", check=False).strip() or None
         dirty = bool(git(HERE, "status", "--porcelain", "--", ".", check=False).strip()) if sc_sha else None
         ctx = dict(repo=repo, wt=wt, commit=commit, commit_date=git(repo, "log", "-1", "--format=%cI", commit).strip(), adapter=adapter, adapter_sha=hashlib.sha256(text.encode()).hexdigest(), scorecard={"sha": sc_sha, "dirty": dirty},
-                   scratch=scratch, sandbox=launcher, n_exec=0, attestations=[], skipped=set(), sandbox_info=None)
+                   scratch=scratch, sandbox=launcher, pins=pins, n_exec=0, attestations=[], skipped=set(), sandbox_info=None)
         if launcher: ctx["sandbox_info"] = {"launcher_sha256": hashlib.sha256(open(launcher, "rb").read()).hexdigest(), "limits": LIMITS, "attestations": ctx["attestations"]}
         card = build_card(ctx)
     finally:
