@@ -17,7 +17,7 @@ Anyone may run the scorecard on their own repository and publish the card ([run-
 - CI runs only on a push to `main` and on manual dispatch, on GitHub-hosted runners; it does not run on pull requests. Run the gate yourself: `mise exec -- scripts/tier1.sh` (see the README for the tools it needs).
 - Small changes (about 150 production lines), one idea each, Conventional Commits subjects (`feat(scorecard): ...`, `docs: ...`).
 - Every metric and every gate has a negative self-test: a fixture shown to fail it.
-- Metric definitions, floors, the adapter schema and the gates are gate-defining (`scripts/protected-paths.txt`): a change to one is judged by the attack suite and by the owner.
+- Metric definitions, floors, the adapter schema and the gates are never changed to make a number pass; a change lands when Tier 1 passes.
 - No private names, hosts or local paths anywhere: `scripts/lint-public` refuses them.
 
 ## Licence

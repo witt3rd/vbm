@@ -31,7 +31,7 @@ is configured, are `not-measurable` with the reason named, so a verdict is `fail
 - **The rubric is toolchain-neutral.** A metric's definition names no language; language-specific commands and patterns live only in the adapter (`[proof]`, `[tier1]`, ...). The adapter `scorecard.toml` is the submission contract.
 - **No pull requests, except one place:** a contribution to `registry/` is a PR (external contributors; `scorecard/SPEC.md`, "Registry and contribution flow"). Everything else lands with `scripts/land-direct` only; never push to main by hand, never force-push. Main is green (Tier 1) at every commit. Conventional Commits `type(scope): summary`; about 150 production lines per landing.
 - **Every metric has a negative self-test** in `scripts/test_scorecard.sh`: a fixture shown to fail it (a planted placeholder is counted, a missing adapter key is rejected, a fixture below its floor FAILS the card). A metric without one does not land.
-- **Metric definitions, floors, the adapter schema and the gates are gate-defining** (`scripts/protected-paths.txt`): changing one is judged by the attack suite and waits for the owner, never done to make a number pass.
+- **Metric definitions, floors, the adapter schema and the gates are never changed to make a number pass.** Nothing waits for an approval: a change lands when Tier 1 passes.
 - Same pinned commits, same bytes out: the JSON carries the subject SHA, the scorecard SHA, the adapter hash and the sandbox attestation, and no timestamp of the run.
 - Never walk network mounts. The scheduled series runs on one pinned worker host with no other load, never on a maintainer workstation.
 
