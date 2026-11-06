@@ -23,7 +23,7 @@ Columns: **L** = the level the metric belongs to (1 Certified, 2 Measured). **di
 ## 1 VERIFIED
 | Metric | L | Target | dir | Source | Comparator | Today |
 |---|---|---|---|---|---|---|
-| Specified share of executed code: percent of what the artifact executes that a machine-checked specification covers | 2 | 100% (library); a documented baseline that only rises (a runtime) | up | adapter `[proof] closure_cmd`, in the sandbox | the subject's own baseline | 100% (read through the sandbox) |
+| Specified share of executed code: percent of what the artifact executes that a machine-checked specification covers | 2 | 100% (library) over everything outside its named carve-outs (documented trust-ledger entries, protected files, mass that may only shrink: DECISIONS 20); a documented baseline that only rises (a runtime) | up | adapter `[proof] closure_cmd`, in the sandbox | the subject's own baseline | 100% (read through the sandbox) |
 | Export well-formed (intake): within the size caps, strict NDJSON, every reference to an earlier definition, the manifest's sha256 equal to the scorer's own | 1 | accepted | pass | the scorer's reader (`scorecard_export.py`), on the export read as data | none | not run yet |
 | Export rechecked: the independent kernel accepts EVERY declaration of the submitted proof export | 1 | accepted | pass | `scorecard/scorecard certify`: the checker (nanoda) run on the export inside the minimal sandbox, never on the host | the subject's own proof assistant's verdict (not read) | not run yet |
 | Claims present: every theorem the manifest names as claim-carrying is a theorem of the export, kernel-checked, with its statement printed | 1 | 100% | up | scorer's reader of the export (`[claims] theorems`) | none | not run yet |

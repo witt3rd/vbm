@@ -15,7 +15,7 @@ SCHEMA_VERSION = "scorecard-3"   # 3: velocity.tier1_seconds split into warm and
 
 # The adapter schema (DECISIONS 4): section -> key -> type. Every key is required.
 MUTATION = {"files": list, "comment": str, "setup_cmd": str, "kill_cmd": str, "mutants": int, "seed": int, "kill_timeout_seconds": int, "timeout_seconds": int}
-OPTIONAL = {"mutation": {"equivalent": str}, "nonvacuity": {"equivalent": str},
+OPTIONAL = {"proof": {"carveouts": str, "carveouts_protected": str, "carveouts_regex": str, "carveouts_baseline": str}, "mutation": {"equivalent": str}, "nonvacuity": {"equivalent": str},
             "tier1": {"gates": list, "attack_cmd": str, "attack_sabotage_cmd": str, "attack_timeout_seconds": int, "warm_change_cmd": str, "warm_command": str, "warm_timeout_seconds": int, "warm_skips": list, "ran_names": list}}   # optional keys (default empty): the subject's list of EQUIVALENT mutants, a path in the subject (see run_mutation); [tier1] gates = [{name, selftest}] (see honesty.gates_self_tested) and the attack-suite commands (see honesty.attack_suite); [tier1] warm_change_cmd, warm_command, warm_timeout_seconds, warm_skips declare the warm run (see velocity.tier1_seconds_warm; none declared: that metric is not-measurable); [tier1] ran_names = evidence names the fast-gate log must carry with a positive case count (see honesty.selftests_ran_cases; REQUIRED for that metric: none declared is not-measurable, so the metric fails its floor)
 ADAPTER = {
     "subject": {"name": str, "kind": str},                                  # kind: library | runtime
@@ -36,7 +36,7 @@ KINDS = ("library", "runtime")
 RAN_NAME = r"[A-Za-z0-9_.-]+"
 RAN_WEAKNESS = "a count regex proves a count was printed, not that every case was meaningful"   # main's wording (DECISIONS 19), printed with the metric and in the card notes
 RAN_LINE = re.compile(rf"^ran: ({RAN_NAME}): ([0-9]{{1,15}}) cases$", re.M)   # the ran-evidence line (DECISIONS 19); anything else starting `ran:` is ignored, never counted
-PATH_KEYS = [("source", "globs"), ("trust", "c_files"), ("trust", "ledger"), ("tests", "generated"), ("tests", "extra"), ("tests", "gate_selftests"), ("tests", "scenario_files"), ("tier1", "script"), ("mutation", "files"), ("nonvacuity", "files")]   # declared paths: relative, no ".."
+PATH_KEYS = [("source", "globs"), ("trust", "c_files"), ("trust", "ledger"), ("tests", "generated"), ("tests", "extra"), ("tests", "gate_selftests"), ("tests", "scenario_files"), ("tier1", "script"), ("mutation", "files"), ("nonvacuity", "files"), ("proof", "carveouts"), ("proof", "carveouts_protected"), ("proof", "carveouts_baseline")]   # declared paths: relative, no ".."
 LIMITS = dict(cpus=2, memory_mb=4096, disk_mb=2048, pids=512)   # the sandbox limits (SPEC); max_seconds caps any adapter timeout
 MAX_SECONDS, OUT_CAP, MAX_FILE = 3600, 1_000_000, 5_000_000
 METRIC_SECONDS = int(os.environ.get("SCORECARD_METRIC_SECONDS", "20"))   # alarm for every static metric
@@ -137,7 +137,13 @@ def load_adapter(text):
     for g in d["tests"]["gate_selftests"]:
         if not g.startswith("scripts/"): raise Reject(f"adapter: [tests] gate_selftests must be under scripts/ (tests of the subject's own code are not gate self-tests): {g!r}")
     if d["subject"]["kind"] not in KINDS: raise Reject(f"adapter: [subject] kind must be one of {KINDS}")
-    if d["subject"]["kind"] == "library" and d["floors"]["specified_share"] != 100: raise Reject("adapter: a library's [floors] specified_share is 100 (DECISIONS 1)")
+    if d["subject"]["kind"] == "library" and d["floors"]["specified_share"] != 100: raise Reject("adapter: a library's [floors] specified_share is 100 (DECISIONS 1); a boundary that cannot be specified is a documented carve-out (DECISIONS 20), never a lower floor")
+    pr = d["proof"]
+    if any(pr[k] for k in ("carveouts_protected", "carveouts_regex", "carveouts_baseline")) and not pr["carveouts"]: raise Reject("adapter: [proof] carveouts_* keys need [proof] carveouts (the list of carve-outs)")
+    if pr["carveouts"]:
+        if not (pr["carveouts_protected"] and pr["carveouts_regex"] and pr["carveouts_baseline"]): raise Reject("adapter: [proof] carveouts needs carveouts_protected (the subject's protected list), carveouts_regex (the carve-out mass in the closure output) and carveouts_baseline (the file whose `carveout_mass N` line the mass may not exceed)")
+        try: re.compile(pr["carveouts_regex"])
+        except re.error as e: raise Reject(f"adapter: [proof] carveouts_regex is not a valid regex: {e}")
     return d
 
 
@@ -316,6 +322,29 @@ def _(ctx):
     return len(hits), {"findings": hits[:50], "files_scanned": scanned}
 
 
+def carveouts(ctx, out):
+    """DECISIONS 20: the specified share is over everything OUTSIDE the named carve-outs and its floor stays 100. A carve-out is a line `NAME | LEDGER-ID | PROTECTED-PATHS` of the subject's list; it counts only while (1) the subject's trust ledger has that entry (the documented reason),
+    (2) every path it names is in the subject's protected list, (3) the closure output's carve-out mass is within the subject's baseline (it may only shrink without approval). The card shows each carve-out, its ledger entry and the mass. Anything else is a failure naming it."""
+    c = ctx["adapter"]["proof"]; rd = lambda f: (safe_read(ctx, f) or b"").decode(errors="replace")
+    lst = [[x.strip() for x in l.split("|")] for l in rd(c["carveouts"]).splitlines() if l.strip() and not l.lstrip().startswith("#")]
+    led, prot = rd(ctx["adapter"]["trust"]["ledger"]), [l.split("#")[0].strip().lstrip("?") for l in rd(c["carveouts_protected"]).splitlines()]
+    shown = []
+    for row in lst:
+        if len(row) != 3 or not all(row): raise Fail(f"carve-out line {row!r}: want 'NAME | LEDGER-ID | PROTECTED-PATHS'")
+        name, lid, paths = row
+        m = re.search(r"(?ms)^### " + re.escape(lid) + r"\. (.*?)$(.*?)(?=^### |^## |\Z)", led)
+        if not m: raise Fail(f"carve-out {name}: the trust ledger has no entry {lid}: an undocumented carve-out is refused")
+        plan = re.search(r"^- \*\*Plan:\*\* (.*)$", m.group(2), re.M)
+        for pth in (x.strip() for x in paths.split(",")):
+            if not any(pth == e or (e.endswith("/") and pth.startswith(e)) for e in prot if e): raise Fail(f"carve-out {name}: {pth} is not in the subject's protected list: a carve-out whose files can change unapproved is refused")
+        shown.append({"name": name, "ledger": lid, "entry": m.group(1).strip(), "reason": (plan.group(1) if plan else "")[:400], "protected_by": paths})
+    mm = re.search(c["carveouts_regex"], out); bl = re.search(r"^carveout_mass ([0-9]+)$", rd(c["carveouts_baseline"]), re.M)
+    if not mm or not bl: raise NotMeasurable("the carve-out mass is missing from the closure output or the baseline has no `carveout_mass N` line: the carve-outs cannot be bounded")
+    nodes = int(mm.group(1))
+    if nodes > int(bl.group(1)): raise Fail(f"the carve-outs grew to {nodes} nodes, above the subject's baseline {bl.group(1)}: widening a carve-out needs approval at the subject")
+    return {"carveouts": shown, "carveout_nodes": nodes, "carveout_baseline_nodes": int(bl.group(1))}
+
+
 @measure("verified.specified_share")
 def _(ctx):
     c = ctx["adapter"]["proof"]
@@ -326,7 +355,7 @@ def _(ctx):
     if rc: raise Fail(f"closure gate exited {rc}: ...{tail(out)}")
     m = re.search(c["closure_regex"], out)
     if not m: raise NotMeasurable("closure gate output did not match [proof] closure_regex")
-    return float(m.group(1)), {}
+    return float(m.group(1)), (carveouts(ctx, out) if c["carveouts"] else {})
 
 
 @measure("verified.nonstandard_axioms")

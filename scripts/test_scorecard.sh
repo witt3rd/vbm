@@ -62,6 +62,7 @@ allow_marker = "tier1-allow"
 closure_cmd = "${3-sh scripts/closure.sh}"
 closure_regex = "specified share ([0-9.]+)%"
 closure_timeout_seconds = 60
+${PROOF_EXTRA-}
 axiom_cmd = '${AXIOM_CMD-echo axiom gate: 3 constants checked, 0 offending}'
 axiom_regex = "axiom gate: [0-9]+ constants checked, ([0-9]+) offending"
 axiom_timeout_seconds = 60
@@ -206,6 +207,25 @@ B=$T/below; mkfixture "$B" "$(adapter library 100 'echo specified share 90.00%')
 [ "$(m verified.specified_share.value)" = 90.0 ] && [ "$(m verified.specified_share.status)" = fail ] && [ "$(card dimensions.verified.status)" = fail ] && [ "$(card dimensions.velocity.status)" = pass ] && [ "$(card verdicts.correctness.status)" = fail ] && [ "$(card verdicts.landedness.status)" = pass ] && ran_case || fail "a fixture below its floor did not fail the card: $(card dimensions)"
 mkfixture "$T/runtime" "$(adapter runtime 45.8 'echo specified share 45.8%')"; run --repo "$T/runtime" --commit HEAD; [ "$(m verified.specified_share.status)" = pass ] && ran_case || fail "a runtime at its own floor failed"
 mkfixture "$T/runtime2" "$(adapter runtime 45.8 'echo specified share 45.7%')"; run --repo "$T/runtime2" --commit HEAD; [ "$(m verified.specified_share.status)" = fail ] && ran_case || fail "a runtime below its own floor passed"
+# 7b. DECISIONS 20: the floor stays 100; a boundary that cannot be specified is a documented, protected carve-out whose mass may only shrink, and the card shows it
+PX='carveouts = "scripts/carveouts.txt"'$'\n''carveouts_protected = "scripts/protected-paths.txt"'$'\n''carveouts_regex = "carve-outs: ([0-9]+) nodes"'$'\n''carveouts_baseline = "scripts/closure-baseline.txt"'
+mkco() {   # mkco DIR LIST-LINE PROTECTED-LIST BASELINE-LINE: a subject whose ledger has T13, with the given carve-out list, protected list and baseline
+  ( cd "$1"; printf '### T13. The pinned library (a documented reason)\n- **What:** four shims.\n- **Plan:** verify; the kernel is proved in its own repository and the shim is tested there.\n- **Covers:** x\n' > docs/trust-ledger.md; printf '%s\n' "$2" > scripts/carveouts.txt; printf '%s\n' "$3" > scripts/protected-paths.txt; printf '%s\n' "$4" > scripts/closure-baseline.txt; git add -A; git commit -qm carveouts --amend ); }
+CL='echo specified share 100.00%; echo closure gate: carve-outs: 36 nodes'
+C1=$T/co1; PROOF_EXTRA="$PX" mkfixture "$C1" "$(PROOF_EXTRA="$PX" adapter library 100 "$CL")"; mkco "$C1" 'findAvx2 | T13 | scripts/pinned-libs.lock' 'scripts/pinned-libs.lock' 'carveout_mass 36'; run --repo "$C1" --commit HEAD
+[ "$(m verified.specified_share.status)" = pass ] && [ "$(m verified.specified_share.carveout_nodes)" = 36 ] && grep -q "T13" <<<"$(m verified.specified_share.carveouts)" && grep -q "kernel is proved" <<<"$(m verified.specified_share.carveouts)" && ran_case || fail "a documented, protected carve-out within its baseline did not pass and show itself: $(m verified.specified_share.reason)"
+C2=$T/co2; PROOF_EXTRA="$PX" mkfixture "$C2" "$(PROOF_EXTRA="$PX" adapter library 100 "$CL")"; mkco "$C2" 'findAvx2 | T99 | scripts/pinned-libs.lock' 'scripts/pinned-libs.lock' 'carveout_mass 36'; run --repo "$C2" --commit HEAD
+[ "$(m verified.specified_share.status)" = fail ] && grep -q "undocumented" <<<"$(m verified.specified_share.reason)" && ran_case || fail "a carve-out with no ledger entry was accepted: $(m verified.specified_share.reason)"
+C3=$T/co3; PROOF_EXTRA="$PX" mkfixture "$C3" "$(PROOF_EXTRA="$PX" adapter library 100 "$CL")"; mkco "$C3" 'findAvx2 | T13 | scripts/pinned-libs.lock' 'AGENTS.md' 'carveout_mass 36'; run --repo "$C3" --commit HEAD
+[ "$(m verified.specified_share.status)" = fail ] && grep -q "protected" <<<"$(m verified.specified_share.reason)" && ran_case || fail "an unprotected carve-out was accepted: $(m verified.specified_share.reason)"
+C4=$T/co4; PROOF_EXTRA="$PX" mkfixture "$C4" "$(PROOF_EXTRA="$PX" adapter library 100 'echo specified share 100.00%; echo closure gate: carve-outs: 40 nodes')"; mkco "$C4" 'findAvx2 | T13 | scripts/pinned-libs.lock' 'scripts/pinned-libs.lock' 'carveout_mass 36'; run --repo "$C4" --commit HEAD
+[ "$(m verified.specified_share.status)" = fail ] && grep -q "grew" <<<"$(m verified.specified_share.reason)" && ran_case || fail "a widened carve-out (40 nodes over a baseline of 36) was accepted: $(m verified.specified_share.reason)"
+C5=$T/co5; PROOF_EXTRA="$PX" mkfixture "$C5" "$(PROOF_EXTRA="$PX" adapter library 100 'echo specified share 99.77%; echo closure gate: carve-outs: 36 nodes')"; mkco "$C5" 'findAvx2 | T13 | scripts/pinned-libs.lock' 'scripts/pinned-libs.lock' 'carveout_mass 36'; run --repo "$C5" --commit HEAD
+[ "$(m verified.specified_share.status)" = fail ] && [ "$(m verified.specified_share.value)" = 99.77 ] && ran_case || fail "a share below 100 outside the carve-outs passed"
+C6=$T/co6; PROOF_EXTRA="$PX" mkfixture "$C6" "$(PROOF_EXTRA="$PX" adapter library 99.5 "$CL")"; run --repo "$C6" --commit HEAD
+[ "$rc" != 0 ] && grep -q "carve-out" "$T/err" && ran_case || fail "a library floor below 100 was accepted (rc=$rc)"
+C7=$T/co7; PROOF_EXTRA='carveouts_regex = "x"' mkfixture "$C7" "$(PROOF_EXTRA='carveouts_regex = "x"' adapter library 100 "$CL")"; run --repo "$C7" --commit HEAD
+[ "$rc" != 0 ] && grep -q "carveouts" "$T/err" && ran_case || fail "carveouts_* keys without the list were accepted (rc=$rc)"
 # 8. not-measurable fails the floor with a NAMED reason: no closure gate; unparseable closure output; a closure gate that fails; --no-exec; unmatched source globs
 N=$T/nogate; mkfixture "$N" "$(adapter library 100 '')"; run --repo "$N" --commit HEAD
 [ "$(m verified.specified_share.status)" = not-measurable ] && grep -q "no closure gate" <<<"$(m verified.specified_share.reason)" && [ "$(card dimensions.verified.status)" = fail ] && [ "$(card verdicts.correctness.status)" = fail ] && ran_case || fail "a subject without a closure gate was not not-measurable/failed: $(m verified.specified_share.reason)"
