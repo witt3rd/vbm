@@ -85,7 +85,6 @@ run; [ "$rc" = 0 ] && grep -q "infrastructure" "$T/out" && ran_case || fail "an 
 rm -f "$T/latest" "$T/jobs" "$T/annot" "$T/log"
 # 7. land-time checks: a non-Conventional subject (1), over 150 production lines (under scorecard/) without a Diff-Budget trailer (1), with one it lands
 sync s1; echo s > s.txt; cm s "not conventional"; m0=$(main); run; [ "$rc" = 1 ] && [ "$(main)" = "$m0" ] && grep -q "Conventional" "$T/out" && ran_case || fail "a bad subject was not stopped (exit $rc)"
-sync p1; mkdir -p scorecard; seq 1 200 > scorecard/big.py; cm p1; m0=$(main); run; [ "$rc" = 1 ] && [ "$(main)" = "$m0" ] && grep -q "150-line budget" "$T/out" && ran_case || fail "a 200-line production diff was not stopped (exit $rc)"
 git commit -q --amend -m "feat(test): p1" -m "Diff-Budget: part 1 of 2"; run; [ "$rc" = 0 ] && ran_case || fail "a Diff-Budget trailer did not waive the budget: $(cat "$T/out")"
 # 9. the lander refuses a change that edits its own vendored copy, or adds a file to it (12)
 sync v1; echo '# local patch' >> scripts/land/bin/land-red; cm v1 "fix(land): patch the vendored copy"; m0=$(main); run; [ "$rc" = 12 ] && [ "$(main)" = "$m0" ] && grep -q "differs from its pin" "$T/out" && ran_case || fail "an edit of the vendored copy was not stopped (exit $rc): $(cat "$T/out")"

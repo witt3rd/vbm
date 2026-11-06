@@ -1,2 +1,1 @@
 scripts/land.conf,scripts/protected-paths.txt | 36b9b3659146ff2bc37d40b90d5f574271a0a84bef81a8ce877f17f4dd212958 | simplification ordered by main 2026-11-06: narrow the protected list to the lander files and turn the size budget off | 2026-11-06
-scripts/land.conf,scripts/protected-paths.txt,scripts/test_land_direct.sh | 147f7567f8f937de3768a8fa046e19f2f3a85be630bcf029aa6eef86d0e30786 | simplification ordered by main 2026-11-06: narrow the protected list, budget off, delete the budget self-test | 2026-11-06

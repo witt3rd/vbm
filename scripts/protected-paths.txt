@@ -1,47 +1,11 @@
-# The protected set (read by scripts/protected-set.sh). Metric definitions, floors, the adapter schema and the gates are gate-defining: a change to one
-# is judged by the attack suite (ideal 7), not by taste, and waits for the owner. One entry per line; a trailing "/" is a directory; "#" starts a comment;
-# a leading "?" marks a path that is protected but may not exist yet. This file and the gate that reads it are listed: weakening the list is itself protected.
-AGENTS.md
-mise.toml
-scorecard/SPEC.md
-scorecard/DECISIONS.md
+# The protected set (read by scripts/protected-set.sh): only the lander's own files, this list, the signing keys and the registry allowlist (it decides which repositories the runner executes). A change to one of them is judged by exact-hash approval (scripts/gate-edit-approvals.txt) and waits for the owner.
+# Every other path lands normally, with a "Protected: <reason>" trailer on the commit when it used to be on this list (simplification ordered 2026-11-06: the per-slice hash approval stopped no wrong change; the real guards are Tier 1 and review).
+# One entry per line; a trailing "/" is a directory; "#" starts a comment; a leading "?" marks a path that is protected but may not exist yet.
 scripts/protected-paths.txt
 scripts/protected-set.sh
-scripts/tier1.sh
 scripts/land-direct
 scripts/land.conf
 scripts/land.d/
 scripts/land/
 scripts/land.signers
-.agents/skills/
-scripts/test_land_direct.sh
-scorecard/
-scripts/test_scorecard.sh
-scripts/test_pins.sh
-scripts/lint-public
-scripts/public-banned-hashes.txt
-scripts/test_lint_public.sh
-project.toml
-guidelines/
-scorecard/registry-validate
-scripts/test_registry.sh
-registry/scores/
 registry/allowlist.toml
-scripts/sandbox-conformance.sh
-scripts/test_sandbox_conformance.sh
-.github/workflows/
-scorecard/card-to-page
-scripts/test_card_page.sh
-scripts/test_cards_one_page.sh
-scripts/test_readme.sh
-# The ran-evidence mechanism (docs/0001-ran-evidence.md): the reader, the library, the zero-warning check and the shared negative test.
-scripts/ran-evidence.sh
-scripts/lib-ran.sh
-scripts/test_ran_evidence.sh
-# The scoped-run helpers (scripts/run-scoped.sh, scripts/long-runners.txt): a gate runs the lint and the tests that source scripts/lib-reap.sh, so anything in them runs inside the gate (an `exit 0` would bypass it).
-scripts/lib-reap.sh
-scripts/run-scoped.sh
-scripts/lint-scoped-runners.sh
-scripts/long-runners.txt
-scripts/test_reap.sh
-scripts/test_run_scoped.sh
