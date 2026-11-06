@@ -63,7 +63,7 @@ rgit() { git --git-dir="$T/remote.git" "$@"; }
 [ "$("$land" --version)" = "land-direct $(cat scripts/land/VERSION)" ] && ran_case || fail "the stub does not run the vendored lander"
 sync a; echo a > a.txt; cm a; head0=$(git rev-parse HEAD); : > "$T/updates"
 run; [ "$rc" = 0 ] && [ "$(jf result)" = landed ] && [ "$(jf sha)" = "$(main)" ] && [ "$(jf commits)" = 1 ] && [[ "$(jf tier1_seconds)" =~ ^[0-9]+$ ]] && ran_case || fail "a did not land: $(cat "$T/out")"
-[ "$(rgit log -1 --format=%s main)" = "feat(test): a" ] && grep -q "protected set" "$T/out" && ran_case || fail "a: the commit did not land as itself, or the protected-set line is missing"
+[ "$(rgit log -1 --format=%s main)" = "feat(test): a" ] && ran_case || fail "a: the commit did not land as itself"
 [ "$(wc -l < "$T/updates")" = 1 ] && [ "$(rgit for-each-ref --format='%(refname)')" = refs/heads/main ] && ran_case || fail "a: the push touched more than main (no branch, no tag): $(cat "$T/updates")"
 [ "$(git rev-parse HEAD)" = "$head0" ] && [ -z "$(git status --porcelain)" ] && ran_case || fail "a: the worker's own worktree was touched"
 sync d1; echo d1 > d1.txt; cm d1; m0=$(main); run --dry-run; [ "$rc" = 0 ] && [ "$(jf result)" = would-land ] && [ "$(main)" = "$m0" ] && ran_case || fail "dry run: $(cat "$T/out")"

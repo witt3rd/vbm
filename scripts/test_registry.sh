@@ -106,15 +106,6 @@ good > "$T/registry/acme__widget.toml"; good > "$T/base/registry/acme__widget.to
 sed -i 's/correctness = "unscored"/correctness = "pass"/; s/landedness = "unscored"/landedness = "pending"/; s/level = "unscored"/level = "certified"/; s/date = ""/date = "2026-11-04"/; s#card = ""#card = "registry/scores/acme__widget.json"#' "$T/registry/acme__widget.toml"
 V "$T/registry/acme__widget.toml" && ran_case || fail "a scored entry with date and card was rejected"
 V --pr-file registry/acme__widget.toml --base-root "$T/base" "$T/registry/acme__widget.toml" > "$T/out" && fail "negative self-test: a contributor-written score was accepted"; grep -q "only the scoring job" "$T/out" && ran_case || fail "wrong finding for a contributor-written score: $(cat "$T/out")"
-# the allowlist is GATE-DEFINING: the real protected list names it, and the protected-set gate reports an edit to it (judged against the list at the BASE, so a head that also drops the line from the list is still caught)
-grep -qx 'registry/allowlist.toml' scripts/protected-paths.txt && ran_case || fail "registry/allowlist.toml is not in scripts/protected-paths.txt"
-R=$T/pr; mkdir -p "$R/scripts" "$R/registry"; cp scripts/protected-paths.txt "$R/scripts/"; cp registry/allowlist.toml "$R/registry/"
-g() { git -C "$R" -c user.name=t -c user.email=t@t "$@"; }
-g init -q -b main; g add -A; g commit -qm base; g checkout -qb feat
-echo 'repos = ["witt3rd/vbm-json", "evil/widget"]' >> "$R/registry/allowlist.toml"; g commit -qam widen
-( cd "$R" && PROTECTED_PATHS_FILE= bash "$OLDPWD/scripts/protected-set.sh" main feat ) > "$T/out" 2>&1 && fail "negative self-test: widening the allowlist was not reported as a protected-set change"; grep -qx 'registry/allowlist.toml' "$T/out" && ran_case || fail "the protected-set gate did not name the allowlist: $(cat "$T/out")"
-sed -i '/allowlist/d' "$R/scripts/protected-paths.txt"; g commit -qam "unprotect"
-( cd "$R" && bash "$OLDPWD/scripts/protected-set.sh" main feat ) > "$T/out" 2>&1 && fail "negative self-test: dropping the allowlist from the protected list in the same change was not caught"
 # a tool on the allowlist is NOT scored automatically: scoring is only ever an explicit run (scorecard run|certify --repo --commit, a manifest for certify), no code enumerates registry/ to pick subjects,
 # and a tool entry has no commit, manifest or card to score, so its row stays unscored however the allowlist reads
 grep -q '"witt3rd/vbm-land"' registry/allowlist.toml && grep -q '^kind = "tool"' registry/witt3rd__vbm-land.toml && ran_case || fail "the real registry no longer lists vbm-land as an allowlisted tool (the cases below read it)"

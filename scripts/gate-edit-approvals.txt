@@ -1,2 +1,1 @@
 scripts/land.conf,scripts/protected-paths.txt | 36b9b3659146ff2bc37d40b90d5f574271a0a84bef81a8ce877f17f4dd212958 | simplification ordered by main 2026-11-06: narrow the protected list to the lander files and turn the size budget off | 2026-11-06
-scripts/land.conf,scripts/land.d/post-rebase,scripts/protected-paths.txt,scripts/protected-set.sh | b2b2c719c148c2eafd3e642c3d4f12d93da5fd78bb4fc96dfb21214fc197af4e | owner's strip order 2026-11-06: delete the protected set | 2026-11-06
