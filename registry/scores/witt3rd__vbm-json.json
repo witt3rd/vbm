@@ -1,17 +1,17 @@
 {
   "schema": "scorecard-3",
   "scorecard": {
-    "sha": "1bbe86f45d7fc557c5ff58d71ec6625606d99a45",
+    "sha": "a4bdb39580e0c825685cfc32645e777b5e6fbe46",
     "dirty": false
   },
   "subject": {
     "name": "vbm-json",
     "kind": "library",
-    "commit": "ca1a00a432a000c4a15710ea2b1809598270b169",
-    "commit_date": "2026-11-05T11:27:42-08:00"
+    "commit": "3685dc1dc3fb5a494669030a4da3ddb0d56479a1",
+    "commit_date": "2026-11-05T23:21:38-08:00"
   },
   "adapter": {
-    "sha256": "7cd908aafeac92d36ad6610d6e9df26d51a9b7cf8680929fdd56a02f7ea17725"
+    "sha256": "71c0554249aa01a65d0a035e8574d0f50fa0e3157bf91ea5d813d1ce89079a46"
   },
   "sandbox": {
     "launcher_sha256": "9d2c6418e11cb0f709b2db4a2d981e07d0b276fb35354048628c110c1cb3b6bb",
@@ -24,7 +24,7 @@
     "attestations": [
       {
         "kind": "bwrap",
-        "image_digest": "sha256:772754a4d62be5b36694d153ae0a77ef366992f06ee37fa66805d04e9da3fe27",
+        "image_digest": "sha256:30890758967e00e19cc63cfc6d23e95c29c6a6fb2300a0a3cd78a0c271f1c1d9",
         "network": "none",
         "subject_mount": "ro",
         "enforcement": "cgroup",
@@ -38,7 +38,7 @@
       },
       {
         "kind": "bwrap",
-        "image_digest": "sha256:772754a4d62be5b36694d153ae0a77ef366992f06ee37fa66805d04e9da3fe27",
+        "image_digest": "sha256:30890758967e00e19cc63cfc6d23e95c29c6a6fb2300a0a3cd78a0c271f1c1d9",
         "network": "none",
         "subject_mount": "ro",
         "enforcement": "cgroup",
@@ -52,7 +52,7 @@
       },
       {
         "kind": "bwrap",
-        "image_digest": "sha256:772754a4d62be5b36694d153ae0a77ef366992f06ee37fa66805d04e9da3fe27",
+        "image_digest": "sha256:30890758967e00e19cc63cfc6d23e95c29c6a6fb2300a0a3cd78a0c271f1c1d9",
         "network": "none",
         "subject_mount": "ro",
         "enforcement": "cgroup",
@@ -66,7 +66,7 @@
       },
       {
         "kind": "bwrap",
-        "image_digest": "sha256:772754a4d62be5b36694d153ae0a77ef366992f06ee37fa66805d04e9da3fe27",
+        "image_digest": "sha256:30890758967e00e19cc63cfc6d23e95c29c6a6fb2300a0a3cd78a0c271f1c1d9",
         "network": "none",
         "subject_mount": "ro",
         "enforcement": "cgroup",
@@ -80,7 +80,7 @@
       },
       {
         "kind": "bwrap",
-        "image_digest": "sha256:772754a4d62be5b36694d153ae0a77ef366992f06ee37fa66805d04e9da3fe27",
+        "image_digest": "sha256:30890758967e00e19cc63cfc6d23e95c29c6a6fb2300a0a3cd78a0c271f1c1d9",
         "network": "none",
         "subject_mount": "ro",
         "enforcement": "cgroup",
@@ -94,7 +94,7 @@
       },
       {
         "kind": "bwrap",
-        "image_digest": "sha256:772754a4d62be5b36694d153ae0a77ef366992f06ee37fa66805d04e9da3fe27",
+        "image_digest": "sha256:30890758967e00e19cc63cfc6d23e95c29c6a6fb2300a0a3cd78a0c271f1c1d9",
         "network": "none",
         "subject_mount": "ro",
         "enforcement": "cgroup",
@@ -108,7 +108,7 @@
       },
       {
         "kind": "bwrap",
-        "image_digest": "sha256:772754a4d62be5b36694d153ae0a77ef366992f06ee37fa66805d04e9da3fe27",
+        "image_digest": "sha256:30890758967e00e19cc63cfc6d23e95c29c6a6fb2300a0a3cd78a0c271f1c1d9",
         "network": "none",
         "subject_mount": "ro",
         "enforcement": "cgroup",
@@ -122,7 +122,7 @@
       },
       {
         "kind": "bwrap",
-        "image_digest": "sha256:772754a4d62be5b36694d153ae0a77ef366992f06ee37fa66805d04e9da3fe27",
+        "image_digest": "sha256:30890758967e00e19cc63cfc6d23e95c29c6a6fb2300a0a3cd78a0c271f1c1d9",
         "network": "none",
         "subject_mount": "ro",
         "enforcement": "cgroup",
@@ -136,7 +136,7 @@
       },
       {
         "kind": "bwrap",
-        "image_digest": "sha256:772754a4d62be5b36694d153ae0a77ef366992f06ee37fa66805d04e9da3fe27",
+        "image_digest": "sha256:30890758967e00e19cc63cfc6d23e95c29c6a6fb2300a0a3cd78a0c271f1c1d9",
         "network": "none",
         "subject_mount": "ro",
         "enforcement": "cgroup",
@@ -150,7 +150,7 @@
       },
       {
         "kind": "bwrap",
-        "image_digest": "sha256:772754a4d62be5b36694d153ae0a77ef366992f06ee37fa66805d04e9da3fe27",
+        "image_digest": "sha256:30890758967e00e19cc63cfc6d23e95c29c6a6fb2300a0a3cd78a0c271f1c1d9",
         "network": "none",
         "subject_mount": "ro",
         "enforcement": "cgroup",
@@ -164,7 +164,7 @@
       },
       {
         "kind": "bwrap",
-        "image_digest": "sha256:772754a4d62be5b36694d153ae0a77ef366992f06ee37fa66805d04e9da3fe27",
+        "image_digest": "sha256:30890758967e00e19cc63cfc6d23e95c29c6a6fb2300a0a3cd78a0c271f1c1d9",
         "network": "none",
         "subject_mount": "ro",
         "enforcement": "cgroup",
@@ -367,17 +367,17 @@
       "dir": "up",
       "definition": "the subject's MB/s as a percent of the BEST SCALAR comparator's (the adapter marks each comparator scalar or not; the floor 50 is 'within 2x'), on one corpus named by its sha256, from the adapter's [bench] cmd in the sandbox (cgroup-capped); every declared comparator must report a number AND a pinned version with the sha256 of its binary and inputs, or the metric is not-measurable and names the gap. The gap to each non-scalar comparator (SIMD) is reported openly, not floored",
       "implemented": true,
-      "value": 74.0,
+      "value": 80.8,
       "floor": {
         "op": ">=",
         "value": 50
       },
       "status": "pass",
-      "subject_mb_s": 69.0,
+      "subject_mb_s": 115.8,
       "comparators_mb_s": {
-        "python-json": 62.3,
-        "serde_json": 93.2,
-        "simdjson": 867.7
+        "python-json": 91.3,
+        "serde_json": 143.3,
+        "simdjson": 676.2
       },
       "comparator_provenance": {
         "python-json": {
@@ -387,7 +387,7 @@
         },
         "serde_json": {
           "version": "1.0.150",
-          "sha256": "abc637868d85afc79549ffc09f95a829055ef8a5761a1f9f40f9e819ff631eaf",
+          "sha256": "28789705c046373bd41774cab9057af792b80a31326b258fbc36b1d3644efe66",
           "inputs_sha256": "72a70cb24cc3098871b7cf5effb0732de76c287a917dbd813d5ac05fa806d071"
         },
         "simdjson": {
@@ -406,86 +406,86 @@
           "sha256": "857fc854d687e2f3881fd7f3a700d58659902a5edb91e156484726f1204f202c",
           "bytes": 1033424,
           "mb_s": {
-            "subject": 69.0,
-            "python-json": 62.3,
-            "serde_json": 93.2,
-            "simdjson": 867.7
+            "subject": 115.8,
+            "python-json": 91.3,
+            "serde_json": 143.3,
+            "simdjson": 676.2
           },
           "best_scalar": "serde_json",
-          "percent_of_best_scalar": 74.0
+          "percent_of_best_scalar": 80.8
         },
         {
           "name": "twitter",
           "sha256": "30721e496a8d73cfc50658923c34eb2c0fbe15ee6835005e43ee624d8dedf200",
           "bytes": 631515,
           "mb_s": {
-            "subject": 118.0,
-            "python-json": 151.6,
-            "serde_json": 218.5,
-            "simdjson": 2574.3
+            "subject": 77.6,
+            "python-json": 109.6,
+            "serde_json": 112.3,
+            "simdjson": 1367.5
           },
           "best_scalar": "serde_json",
-          "percent_of_best_scalar": 54.0
+          "percent_of_best_scalar": 69.1
         },
         {
           "name": "canada",
           "sha256": "f83b3b354030d5dd58740c68ac4fecef64cb730a0d12a90362a7f23077f50d78",
           "bytes": 2251051,
           "mb_s": {
-            "subject": 87.0,
-            "python-json": 54.6,
-            "serde_json": 211.2,
-            "simdjson": 765.7
+            "subject": 54.0,
+            "python-json": 29.7,
+            "serde_json": 127.4,
+            "simdjson": 452.5
           },
           "best_scalar": "serde_json",
-          "percent_of_best_scalar": 41.2
+          "percent_of_best_scalar": 42.4
         },
         {
           "name": "citm_catalog",
           "sha256": "a73e7a883f6ea8de113dff59702975e60119b4b58d451d518a929f31c92e2059",
           "bytes": 1727204,
           "mb_s": {
-            "subject": 160.4,
-            "python-json": 198.2,
-            "serde_json": 386.0,
-            "simdjson": 2938.7
+            "subject": 151.9,
+            "python-json": 189.1,
+            "serde_json": 306.8,
+            "simdjson": 2246.3
           },
           "best_scalar": "serde_json",
-          "percent_of_best_scalar": 41.6
+          "percent_of_best_scalar": 49.5
         },
         {
           "name": "small-objects",
           "sha256": "12b0bc9c4c312449ce677f4fd03e6b693ba7f232f5b1332219bddc2b049af2c8",
           "bytes": 2412355,
           "mb_s": {
-            "subject": 50.3,
-            "python-json": 64.2,
-            "serde_json": 60.5,
-            "simdjson": 745.8
+            "subject": 54.2,
+            "python-json": 82.1,
+            "serde_json": 63.9,
+            "simdjson": 1008.2
           },
           "best_scalar": "python-json",
-          "percent_of_best_scalar": 78.3
+          "percent_of_best_scalar": 66.0
         },
         {
           "name": "string-heavy",
           "sha256": "e42cabee744c0288079e5eb037aefb069f1e3efda8dd15263fbe4081e5e73228",
           "bytes": 2915939,
           "mb_s": {
-            "subject": 149.7,
-            "python-json": 186.1,
-            "serde_json": 203.2,
-            "simdjson": 1992.4
+            "subject": 214.8,
+            "python-json": 249.5,
+            "serde_json": 209.7,
+            "simdjson": 2304.6
           },
-          "best_scalar": "serde_json",
-          "percent_of_best_scalar": 73.7
+          "best_scalar": "python-json",
+          "percent_of_best_scalar": 86.1
         }
       ],
       "corpora_at_or_above_floor": 4,
       "corpora_floor_percent": 50,
       "best_scalar": "serde_json",
-      "gap_to_best_scalar_x": 1.35,
+      "gap_to_best_scalar_x": 1.24,
       "gap_to_non_scalar_x": {
-        "simdjson": 12.6
+        "simdjson": 5.8
       }
     },
     {
@@ -494,7 +494,7 @@
       "dir": "down",
       "definition": "WARM: what a landing costs. Wall seconds, measured by the runner, of the adapter's [tier1] warm_command (the fast gate on a typical change) run in the same sandbox right after the cold run, on the cache that run left, after warm_change_cmd applied the typical change (untimed). It must exit 0 and its output must carry the self-test evidence of every declared gate except the named warm_skips; a warm run that does not show the gates ran is a fail, and a missing warm run is not-measurable",
       "implemented": true,
-      "value": 18.4,
+      "value": 30.6,
       "floor": {
         "op": "<",
         "value": 60
@@ -538,7 +538,7 @@
       "dir": "down",
       "definition": "COLD: what an outside contributor pays. Wall seconds, measured by the runner, of the adapter's [tier1] command in a fresh clone and a fresh sandbox with no cache (it must exit 0). A CEILING (<= 600), shown beside the warm number and never hidden or averaged with it",
       "implemented": true,
-      "value": 270.4,
+      "value": 285.9,
       "floor": {
         "op": "<=",
         "value": 600
@@ -567,11 +567,11 @@
       "dir": "up",
       "definition": "first-parent commits in the window ending at the pinned commit, per hour of their span (span at least 1 h)",
       "implemented": true,
-      "value": 3.157,
+      "value": 1.834,
       "floor": null,
       "status": "pass",
-      "commits": 33,
-      "span_seconds": 37635
+      "commits": 41,
+      "span_seconds": 80471
     },
     {
       "id": "velocity.p90_commit_to_main_seconds",
@@ -582,8 +582,8 @@
       "value": 7373,
       "floor": null,
       "status": "pass",
-      "changes": 25,
-      "changes_with_a_recorded_start": 10
+      "changes": 29,
+      "changes_with_a_recorded_start": 13
     },
     {
       "id": "honesty.gate_selftests",
@@ -692,19 +692,19 @@
       "dir": "up",
       "definition": "the ran-evidence of the fast gate (DECISIONS 19): the cases its gates and self-tests EXECUTED, summed over the lines `ran: NAME: N cases` (NAME [A-Za-z0-9_.-]+, N at most 15 digits) of the fast-gate log (its stdout and stderr, run in the sandbox, exit 0 required). Fails, with the reason, when the log has a line containing SKIPPED, no evidence line at all, or a sum of 0 cases, or a name that the adapter does not declare in [tier1] ran_names (a subject cannot invent a gate), or a declared name that is missing or shows 0 cases; no declared ran_names is not-measurable. A self-test that never ran is not a self-test: this closes the vacuous pass that honesty.gates_self_tested cannot see. Honest weakness: a count regex proves a count was printed, not that every case was meaningful; the evidence is the subject's own output, so soundness is the attack suite's question",
       "implemented": true,
-      "value": 25558,
+      "value": 25556,
       "floor": {
         "op": ">=",
         "value": 1
       },
       "status": "pass",
       "evidence_names": 7,
-      "cases": 25558,
+      "cases": 25556,
       "cases_by_name": {
         "axiom-gate": 2244,
         "closure-gate": 24,
         "ledger-gate": 18,
-        "tests": 883,
+        "tests": 881,
         "trust-ledger": 13,
         "vectors-check": 22373,
         "zero-warning": 3
@@ -734,8 +734,8 @@
         "value": 1
       },
       "status": "pass",
-      "pass_line": "PASS relabel-attacks: 60 of 60 attacks refused (35 s)",
-      "sabotage_line": "FAIL relabel-attacks: 0 of 60 attacks refused (3 s)"
+      "pass_line": "PASS relabel-attacks: 60 of 60 attacks refused (32 s)",
+      "sabotage_line": "FAIL relabel-attacks: 0 of 60 attacks refused (2 s)"
     }
   ],
   "dimensions": {

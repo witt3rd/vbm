@@ -6,7 +6,7 @@
 
 Two verdicts, no blended score. The profile (bare metal, resource efficiency) is in neither: Bare metal pass, Resource efficiency pass.
 
-Subject: [vbm-json](https://github.com/witt3rd/vbm-json) at commit `ca1a00a432a0`, committed 2026-11-05T11:27:42-08:00. Scorecard `1bbe86f45d7f`, adapter `7cd908aafeac`, schema `scorecard-3`.
+Subject: [vbm-json](https://github.com/witt3rd/vbm-json) at commit `3685dc1dc3fb`, committed 2026-11-05T23:21:38-08:00. Scorecard `a4bdb39580e0`, adapter `71c0554249aa`, schema `scorecard-3`.
 
 ## Correctness
 
@@ -34,7 +34,7 @@ Subject: [vbm-json](https://github.com/witt3rd/vbm-json) at commit `ca1a00a432a0
 |---|---|---|---|---|---|
 | gate selftests | ✅ pass | 100 | &gt;= 100 |  | Share of the project's checks that have a test proving the check can fail. |
 | gates self tested | ✅ pass | 100 | &gt;= 100 |  | Share of the project's checks whose can-it-fail test actually ran in this measurement. |
-| selftests ran cases | ✅ pass | 25558 | &gt;= 1 |  | Whether the project's checks reported how many cases they ran, and ran at least one, with none skipped. |
+| selftests ran cases | ✅ pass | 25556 | &gt;= 1 |  | Whether the project's checks reported how many cases they ran, and ran at least one, with none skipped. |
 | attack suite | ✅ pass | 1 | == 1 |  | Whether an attempt to cheat the checks is caught, and a sabotaged run is correctly reported as failing. |
 
 ## Landedness
@@ -43,10 +43,10 @@ Subject: [vbm-json](https://github.com/witt3rd/vbm-json) at commit `ca1a00a432a0
 
 | Metric | Status | Value | Floor | Comparator | Meaning |
 |---|---|---|---|---|---|
-| tier1 seconds warm | ✅ pass | 18.4 s (skipped 13 of 24 gates) | &lt; 60 |  | Seconds the quick check takes for a typical change once caches are warm; this is what a landing costs. |
-| tier1 seconds cold | ✅ pass | 270.4 s | &lt;= 600 |  | Seconds the quick check takes on a fresh copy with no caches; this is what a newcomer pays. |
+| tier1 seconds warm | ✅ pass | 30.6 s (skipped 13 of 24 gates) | &lt; 60 |  | Seconds the quick check takes for a typical change once caches are warm; this is what a landing costs. |
+| tier1 seconds cold | ✅ pass | 285.9 s | &lt;= 600 |  | Seconds the quick check takes on a fresh copy with no caches; this is what a newcomer pays. |
 | open prs | ✅ pass | 0 | == 0 |  | How many proposed changes are waiting to be merged; zero means nothing is stuck in review. |
-| commits per hour | ✅ pass | 3.157 | tracked, not floored |  | How fast changes land on the main branch, in commits per hour. |
+| commits per hour | ✅ pass | 1.834 | tracked, not floored |  | How fast changes land on the main branch, in commits per hour. |
 | p90 commit to main seconds | ✅ pass | 7373 | tracked, not floored |  | How long, for 9 in 10 changes, from first authoring to landing on main. |
 
 ## Profile (in neither verdict)
@@ -63,7 +63,7 @@ Subject: [vbm-json](https://github.com/witt3rd/vbm-json) at commit `ca1a00a432a0
 
 | Metric | Status | Value | Floor | Comparator | Meaning |
 |---|---|---|---|---|---|
-| throughput vs best | ✅ pass | 74 | &gt;= 50 | best scalar: serde_json (1.35x faster) | Speed on real data as a percent of the fastest comparable library; 50 means within twice as slow. |
+| throughput vs best | ✅ pass | 80.8 | &gt;= 50 | best scalar: serde_json (1.24x faster) | Speed on real data as a percent of the fastest comparable library; 50 means within twice as slow. |
 
 ## Comparison
 
@@ -71,12 +71,12 @@ Throughput in MB/s on the floored corpus (the floor: within 2x of the best scala
 
 | Implementation | MB/s |
 |---|---|
-| simdjson | 867.7 |
-| serde_json | 93.2 |
-| vbm-json (this subject) | 69 |
-| python-json | 62.3 |
+| simdjson | 676.2 |
+| serde_json | 143.3 |
+| vbm-json (this subject) | 115.8 |
+| python-json | 91.3 |
 
-Gaps to non-scalar comparators: simdjson 12.6x.
+Gaps to non-scalar comparators: simdjson 5.8x.
 
 Pinned comparators: python-json 3.14.8, serde_json 1.0.150, simdjson 5.0.5.
 
@@ -84,12 +84,12 @@ Pinned comparators: python-json 3.14.8, serde_json 1.0.150, simdjson 5.0.5.
 
 | Corpus | KB | vbm-json | python-json | serde_json | simdjson | % of best scalar |
 |---|---|---|---|---|---|---|
-| scorecard-corpus | 1033 | 69 | 62.3 | 93.2 | 867.7 | 74% |
-| twitter | 631 | 118 | 151.6 | 218.5 | 2574.3 | 54% |
-| canada | 2251 | 87 | 54.6 | 211.2 | 765.7 | 41.2% |
-| citm_catalog | 1727 | 160.4 | 198.2 | 386 | 2938.7 | 41.6% |
-| small-objects | 2412 | 50.3 | 64.2 | 60.5 | 745.8 | 78.3% |
-| string-heavy | 2915 | 149.7 | 186.1 | 203.2 | 1992.4 | 73.7% |
+| scorecard-corpus | 1033 | 115.8 | 91.3 | 143.3 | 676.2 | 80.8% |
+| twitter | 631 | 77.6 | 109.6 | 112.3 | 1367.5 | 69.1% |
+| canada | 2251 | 54 | 29.7 | 127.4 | 452.5 | 42.4% |
+| citm_catalog | 1727 | 151.9 | 189.1 | 306.8 | 2246.3 | 49.5% |
+| small-objects | 2412 | 54.2 | 82.1 | 63.9 | 1008.2 | 66% |
+| string-heavy | 2915 | 214.8 | 249.5 | 209.7 | 2304.6 | 86.1% |
 
 ## Trust ledger
 
@@ -97,18 +97,18 @@ Trusted native code: 430 lines (`abi/vbm_json.c` 107, `runtime/rt.c` 323); ledge
 
 ## Fast gate
 
-Warm run 18.4 s (skipped 13 of 24 gates by design: C ABI test, wasm32 build test, freestanding native test, language bindings test, workflow lint, protected-set gate, lander, commit-on-main guard, parallel test runner, delta test selection, crash-record check, gate-diff judge, relabel-attack suite).
+Warm run 30.6 s (skipped 13 of 24 gates by design: C ABI test, wasm32 build test, freestanding native test, language bindings test, workflow lint, protected-set gate, lander, commit-on-main guard, parallel test runner, delta test selection, crash-record check, gate-diff judge, relabel-attack suite).
 
 ## Reproduce
 
 ```
-mise exec -- scorecard/scorecard run --repo https://github.com/witt3rd/vbm-json --commit ca1a00a432a000c4a15710ea2b1809598270b169 --sandbox scorecard/sandbox-bwrap
+mise exec -- scorecard/scorecard run --repo https://github.com/witt3rd/vbm-json --commit 3685dc1dc3fb5a494669030a4da3ddb0d56479a1 --sandbox scorecard/sandbox-bwrap
 ```
 
 Same pinned commit, same bytes out (the card carries no run timestamp).
 
 ## Links
 
-- [One-page PDF](../../docs/cards/vbm-json-v11.pdf)
+- [One-page PDF](../../docs/cards/vbm-json-v12.pdf)
 - [Raw JSON (the source this page is generated from)](witt3rd__vbm-json.json)
-- Previous cards: [v10](../../docs/cards/vbm-json-v10.pdf), [v9](../../docs/cards/vbm-json-v9.pdf), [v8](../../docs/cards/vbm-json-v8.pdf), [v7](../../docs/cards/vbm-json-v7.pdf), [v6](../../docs/cards/vbm-json-v6.pdf), [v5](../../docs/cards/vbm-json-v5.pdf), [v4](../../docs/cards/vbm-json-v4.pdf), [v3](../../docs/cards/vbm-json-v3.pdf), [v2](../../docs/cards/vbm-json-v2.pdf), [v1](../../docs/cards/vbm-json-v1.pdf)
+- Previous cards: [v11](../../docs/cards/vbm-json-v11.pdf), [v10](../../docs/cards/vbm-json-v10.pdf), [v9](../../docs/cards/vbm-json-v9.pdf), [v8](../../docs/cards/vbm-json-v8.pdf), [v7](../../docs/cards/vbm-json-v7.pdf), [v6](../../docs/cards/vbm-json-v6.pdf), [v5](../../docs/cards/vbm-json-v5.pdf), [v4](../../docs/cards/vbm-json-v4.pdf), [v3](../../docs/cards/vbm-json-v3.pdf), [v2](../../docs/cards/vbm-json-v2.pdf), [v1](../../docs/cards/vbm-json-v1.pdf)
