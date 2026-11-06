@@ -1,10 +1,10 @@
 kind = "library"
 status = "live"
 what = "Server-sent event streams"
-milestone = "pre-release: reference, incremental and array readers proved; C, WebAssembly, Python and Rust bindings generated; not scored yet. Efficiency measured with the card's bench driver on one idle machine, not by the scorecard runner: the primary row is 51.3% and 51.2% of the best scalar comparator in two independent 5-run A/B passes (floor 50%); the scorecard-runner re-run is pending (its sandbox cannot yet pre-provision the pinned dependency); not a card pass"
+milestone = "pre-release: reference, incremental and array readers proved; C, WebAssembly, Python and Rust bindings generated; not scored yet. Scorecard runner (sandboxed, pinned vbm-simd provisioned host-side): 56.6% on the primary row (profile efficiency pass), 15 of 15 efficiency rows at or above 50%; not a full card pass (Correctness FAIL on specified_share and non_vacuity, Landedness open_prs not measurable). The specified share is 99.77% with 36 nodes of trusted boundary shims (findAvx2, hasAvx2, ld64, ctz); the two non-vacuity survivors are comment hyphens"
 depends_on = ["vbm-kit"]
 repo = "https://github.com/witt3rd/vbm-sse"
-commit = "238e760448ec810c2e2e7bc90696faa6868c3444"
+commit = "298354b38ef1741ee52a0a61047b64d0069d6d5f"
 targets = ["C", "WebAssembly", "Python", "Rust"]
 manifest = "vbm-proof.toml"
 
