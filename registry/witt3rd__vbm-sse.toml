@@ -1,10 +1,10 @@
 kind = "library"
 status = "live"
 what = "Server-sent event streams"
-milestone = "pre-release: reference, incremental and array readers proved; C, WebAssembly, Python and Rust bindings generated; not scored yet"
+milestone = "pre-release: reference, incremental and array readers proved; C, WebAssembly, Python and Rust bindings generated; not scored yet. Efficiency measured with the card's bench driver on one idle machine, not by the scorecard runner: the primary row is 51.3% and 51.2% of the best scalar comparator in two independent 5-run A/B passes (floor 50%); the scorecard-runner re-run is pending (its sandbox cannot yet pre-provision the pinned dependency); not a card pass"
 depends_on = ["vbm-kit"]
 repo = "https://github.com/witt3rd/vbm-sse"
-commit = "167db51adb02a482cd04af948ef30d9e3b6584e8"
+commit = "238e760448ec810c2e2e7bc90696faa6868c3444"
 targets = ["C", "WebAssembly", "Python", "Rust"]
 manifest = "vbm-proof.toml"
 
