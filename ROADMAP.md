@@ -9,7 +9,7 @@ Everything in this roadmap is ordered to reach one factoring. A VBM library is a
 ```
  libraries     vbm-json  vbm-sse  vbm-jsonrpc  vbm-acp  vbm-mcp  vbm-http1 ...    Lean specification + proofs, compiled to C and WebAssembly, generated bindings
                   |   every claim carries a clause tag and a review tier
- foundation    vbm-gates (Lean gates)   vbm-rt (freestanding runtime)   vbm-abi (ABI description + generators)   vbm-simd (later)
+ foundation    vbm-gates (Lean gates)   vbm-rt (freestanding runtime, ABI description and generators)   vbm-simd (later)
                   |   vbm-gates plugs into vbm-land through hook points
  process       vbm-land      the landing tool: lander, one red definition, freeze marker, revert-first watchdog, known-flaky list
  conventions   spec-clause tags  |  two tiers: fidelity-reviewed / agent-built  |  claim and blueprint for outside contributors
@@ -19,8 +19,7 @@ Everything in this roadmap is ordered to reach one factoring. A VBM library is a
 |---|---|---|---|
 | **`vbm-land`** | the language-neutral landing tool and the guide to using it (the how-we-land document is its README) | exists as seven hand-made copies in four language ecosystems; no two identical | **first** (section below) |
 | **`vbm-gates`** (0.1) | the Lean-specific gates: specified-share and closure, axiom, obligation ledger, trust ledger, protected set, the relabel-attack suite | two diverged copies | after `vbm-land`'s hook interface |
-| **`vbm-rt`** (0.2) | the freestanding Lean runtime shim: allocator, `mem*` replacements, trap, WebAssembly and native variants | one consumer | at the second library |
-| **`vbm-abi`** (0.3) | the interface description in Lean and the generators for the C header and the Python, Rust, TypeScript and C# bindings | one consumer | at the second library |
+| **`vbm-rt`** (0.2) | the freestanding Lean runtime shim (allocator, `mem*` replacements, trap, WebAssembly and native variants) and the ABI description and generators (item 0.3 folded in) | one consumer | at the second library |
 | **`vbm-simd`** (0.4) | a bit-vector model of vector instructions, a trusted shim per instruction set, proved kernels | nothing yet | after the first SIMD measurements |
 | **conventions** (0.5) | clause tags, two review tiers, claim-and-blueprint | nothing yet | adopt now |
 
@@ -72,7 +71,7 @@ Scoring (1-5, 5 best): **R** reuse beyond the first consumer; **T** trust-surfac
 | first | **`vbm-land`** (a tool, see below) | 5 | 3 | 5 | 3 | 5 | 21-28 | install by one command, pinned copy, drift check; then one red definition, watchdog |
 | done | `vbm-json` (+ newline-delimited framing module) | 5 | 4 | 4 | 2 | 5 | +1-2 | Level 1 card; framing module |
 | 1 | `vbm-sse` | 4 | 3 | 5 | 5 | 4 | 6-9 | reference + whole-buffer theorems |
-| 2 | `vbm-kit` = `vbm-gates` + `vbm-rt` + `vbm-abi` (0.1-0.3 below) | 5 | 2 | 5 | 3 | 5 | 9-12 | gates extracted; a third library scaffolds from it |
+| 2 | the shared foundation: `vbm-gates` and `vbm-rt` (0.1-0.3 below), each pinned by signed tag; there is no `vbm-kit` bundle | 5 | 2 | 5 | 3 | 5 | 9-12 | gates extracted; a third library scaffolds from it |
 | 3 | `vbm-jsonrpc` | 5 | 2 | 4 | 4 | 5 | 6-9 | codec + peer machine |
 | 4 | `vbm-acp` | 3 | 3 | 3 | 2 | 5 | 12-18 | pinned core profile |
 | 5 | `vbm-mcp` | 4 | 3 | 3 | 1 | 5 | 16-24 | pinned client profile over stdio |
@@ -120,7 +119,7 @@ A slice is one landing of at most ~400 lines including proofs, roughly one agent
 - **Scorecard prospects.** Level 1: likely. Level 2: a line scanner is where a Lean-compiled loop is most likely to land within 2x of a scalar comparator, but this is unmeasured. The incremental-parser proof is new effort (the exemplar is whole-buffer), so the 6-9 estimate is also the calibration point for HTTP framing.
 - **First milestone.** Reference interpreter, whole-buffer theorems and generated vectors; then the chunk-invariance theorem.
 
-### 2. `vbm-kit`: the shared gates and boundary tooling (items 0.1-0.3, see "Foundation layer")
+### 2. The shared foundation, `vbm-gates` and `vbm-rt` (items 0.1-0.3, see "Foundation layer"; no `vbm-kit` bundle)
 - **What it is.** What `vbm-json` had to build around its proofs, extracted once: the Lean-specific Tier 1 and Tier 2 gate scripts with their negative self-tests (closure and specified-share gate, axiom gate, obligation ledger gate, trust-ledger check, protected set, forbidden-construct and import scans), the ABI description generator, the vector driver for every binding, the generated binding scaffolds, the freestanding runtime and the mutation harness. The landing scripts and the language-neutral CI templates are not part of it: they are `vbm-land`, and the gates plug into it through hook points.
 - **Why it exists.** 28 of the exemplar's 46 commits were this infrastructure. The first library copies it; the second is the right moment to extract it, so that the parameter list comes from two real consumers instead of a guess.
 - **Size.** 9-12 slices of extraction (gates 3-4, interface generators 3-4, runtime 3-4; +2 for the TypeScript and C# generators), mostly moving and parameterising existing code.
@@ -137,7 +136,7 @@ A slice is one landing of at most ~400 lines including proofs, roughly one agent
 - **Verification plan.** (a) *Classification*: a JSON value is exactly one of request, notification, result response, error response or invalid (total and exclusive); reserved error codes; encode/decode round trip over the verified JSON value. (b) *Peer machine*: a bounded outstanding-request table and `step : Peer x Event -> Peer x Effects` with events send, receive, cancel and tick. Theorems: every response is delivered to exactly one pending request or refused with a typed protocol error; no identifier is reused while pending; every pending request ends as response, error, cancellation or timeout within a stated tick bound; the table never exceeds its cap.
 - **Residue (ledger).** Transport framing, the tick source, the peer's honesty.
 - **Targets.** C, WebAssembly, Rust, Python, TypeScript.
-- **Dependencies.** `vbm-json` and its framing module; `vbm-kit`.
+- **Dependencies.** `vbm-json` and its framing module; `vbm-gates`, `vbm-rt`.
 - **Scorecard prospects.** Level 1: plausible. Level 2 efficiency: not measurable until the state-machine substitute exists.
 - **First milestone.** Codec classification, round trip and vectors from the specification's own examples; then the peer machine.
 
@@ -175,7 +174,7 @@ A slice is one landing of at most ~400 lines including proofs, roughly one agent
 - **Verification plan.** Parse iff grammar for a pinned subset; **body-length determination is a total function** (the decision table for HEAD, informational, 204, 304, transfer-encoding, content-length, close-delimited) and a theorem that a message with both `Transfer-Encoding` and `Content-Length` is refused or resolved by the stated rule (the request-smuggling class); chunked decode/encode round trip; truncation detected; named limits on header count and size; incremental feed invariant under chunking. Vectors: the corpora of mature independent parsers as the independent set.
 - **Residue (ledger).** Sockets, TLS, DNS, the clock; semantics of a server.
 - **Targets.** C, WebAssembly, Rust.
-- **Dependencies.** `vbm-uri`, `vbm-kit`.
+- **Dependencies.** `vbm-uri`, `vbm-gates`, `vbm-rt`.
 - **Scorecard prospects.** Level 1 plausible. Efficiency against the fast scalar and SIMD-assisted parsers is genuinely uncertain.
 - **First milestone.** Response framing with body-length determination and chunked decoding.
 
@@ -197,14 +196,14 @@ A slice is one landing of at most ~400 lines including proofs, roughly one agent
 - **Spec source.** RFC 3986 (ABNF, reference resolution, normalization); `application/x-www-form-urlencoded` from the WHATWG URL Standard. A WHATWG URL parser is a separate later module with a differential against a mature implementation, because the two standards differ on purpose.
 - **Verification plan.** Parse iff grammar, soundness and completeness. **Unambiguity is false** for RFC 3986 as written (it resolves overlaps by a longest-match rule), so the reference implements the stated disambiguation and that claim is `partial` by design. `remove_dot_segments` is idempotent and leaves no dot segments; resolving an absolute reference is normalization; percent-encoding round trip; exact scheme/host/port comparison functions for allow-lists.
 - **Residue (ledger).** Internationalised host names and DNS stay out of scope.
-- **Size.** 8-10 slices. **Targets.** C, WebAssembly, Rust, TypeScript. **Dependencies.** `vbm-utf8` optional, `vbm-kit`.
+- **Size.** 8-10 slices. **Targets.** C, WebAssembly, Rust, TypeScript. **Dependencies.** `vbm-utf8` optional, `vbm-gates`, `vbm-rt`.
 - **Scorecard prospects.** Level 1 plausible; efficiency against `ada`-class parsers unlikely at first.
 - **First milestone.** RFC 3986 parse and resolve with the RFC's own reference-resolution examples as vectors.
 
 ### 9. `vbm-baseN`: base64, base64url, base16
 - **Spec source.** RFC 4648 (base64, base64url, base16; non-alphabet characters; canonical encoding).
 - **Verification plan.** `decode (encode b) = b`; `encode (decode s) = s` for canonical `s`; length formulas; the decoder rejects non-zero padding bits (the classic malleability bug) under the strict policy, with a lenient decoder as a separate named function; chunk invariance on 3-byte/4-character boundaries. Fully provable, no residue.
-- **Size.** 3-4 slices. **Dependencies.** `vbm-kit`. **Needed by.** PKCE, binary fields in the protocols above, token formats.
+- **Size.** 3-4 slices. **Dependencies.** `vbm-gates`, `vbm-rt`. **Needed by.** PKCE, binary fields in the protocols above, token formats.
 - **Scorecard prospects.** Level 1 likely; efficiency comparators exist (scalar and SIMD base64 libraries); within 2x of the scalar best is plausible but unmeasured.
 - **First milestone.** Strict base64/base64url/base16 with RFC 4648 vectors and malleability rows.
 
@@ -225,7 +224,7 @@ A slice is one landing of at most ~400 lines including proofs, roughly one agent
 ### 12. `vbm-utf8`: UTF-8
 - **Spec source.** RFC 3629 and the Unicode Standard's table of well-formed byte sequences. Mostly an extraction from `vbm-json`, which already proves the relation for examples (its general "every invalid input is rejected" claim is open).
 - **Verification plan.** Validator iff grammar; decode/encode round trip; every decoded value is a Unicode scalar; overlong and surrogate forms rejected; a fast validator (ASCII word fast path or DFA) refines the reference; error position is the first invalid byte.
-- **Size.** 4-5 slices. **Scorecard prospects.** Level 1 likely; strong comparators exist (the standard library scalar validator; a SIMD library as the stated gap). **Dependencies.** `vbm-kit`; `vbm-json` then imports it (expand and contract).
+- **Size.** 4-5 slices. **Scorecard prospects.** Level 1 likely; strong comparators exist (the standard library scalar validator; a SIMD library as the stated gap). **Dependencies.** `vbm-gates`, `vbm-rt`; `vbm-json` then imports it (expand and contract).
 
 ### 13. `vbm-ring`: bounded FIFO
 - **Spec.** None needed (textbook); the model is a list with fixed capacity and a typed refusal when full. Theorems: FIFO order, capacity never changes, refused exactly when full, memory bounded by capacity times item bound. A byte-specialised ring over a byte array provides an ABI.
@@ -245,15 +244,15 @@ The "bare metal" part of a VBM library is mostly the same every time. This secti
 |---|---|---|---|---|
 | 0.1 `vbm-gates` | the closure, axiom, obligation-ledger and trust-ledger gates, protected-set check, gate-diff, relabel-attack suite, Lean CI templates (the lander, red definition and watchdog are `vbm-land`) | copied once and **already diverged** (the exemplar's gate scripts are ~3,200 lines across 52 files; a second copy grew extra gates of its own) | 3-4 slices | **extract after `vbm-land`'s hook interface**, common core only; the second library is the first adopter |
 | 0.2 `vbm-rt` | the freestanding Lean runtime shim: allocator, `mem*` replacements, trap, WebAssembly and native variants | one consumer; ~350 hand-written trusted C lines and one ledger entry | 3-4 slices | **at the second library**; prepare now by removing library-specific names and writing its contract |
-| 0.3 `vbm-abi` | the interface description (buffers, needed-size return, options struct, error enum, versioning) and generators for the C header and Python, Rust, TypeScript, C# bindings | one consumer; generators exist for Python and Rust only | 3-4 slices + 2 for TypeScript and C# | **at the second library** |
+| 0.3 `vbm-rt` (ABI part) | the interface description (buffers, needed-size return, options struct, error enum, versioning) and generators for the C header and Python, Rust, TypeScript, C# bindings | one consumer; generators exist for Python and Rust only | 3-4 slices + 2 for TypeScript and C# | **at the second library** |
 | 0.4 `vbm-simd` | a Lean bit-vector model of vector instructions, a trusted shim per instruction set with differential tests, proved kernels (byte classification, UTF-8 validation, prefix-xor) | nothing | 12-16 slices (+2 research) | **after the first SIMD measurements** (a design memo and a prototype classifier with timings, in progress); deferred until they exist |
 | 0.5 conventions | spec-clause tags, reviewed vs agent-built claims, claim-and-blueprint for outside contributors | nothing | docs + ~3 slices | **adopt now** |
 
-The first three (the Lean-specific ones) live in one repository, `vbm-kit`, as three packages until a consumer needs independent versions: they have different release models (CI tooling, a build-time generator, a runtime linked into artifacts) but separate pins multiply review cost.
+Captain's ruling: there is no `vbm-kit` bundle and no `vbm-abi` repository. `vbm-gates` (live, tag v0.1.0) and `vbm-rt` (planned; it carries the ABI description and generators too, and is not created until its first slice starts) are each consumed by a pinned, signed tag through the one update flow.
 
 **`vbm-rt` honesty.** The runtime is not as generic as its names suggest: it replaces exactly the pieces of the Lean runtime that one library's closure calls, stubs initialisation because that closure uses no standard-library constants, traps on big numbers, is single-threaded and uses a fixed static arena. A second library with a different closure will show what must grow. The contract is therefore a rule: a library's closure stays small and its naturals stay small, enforced by a gate. One shared runtime is the right shape for the trust ledger (one entry, one mutation suite, one pin).
 
-**`vbm-abi` honesty.** Bindings are generated from an interface description, but today that description is itself hand-written and checked against a hand-written header, so the first link of "generated from the proofs" is not yet proved or derived. Moving the description into Lean is part of the extraction.
+**ABI honesty (part of `vbm-rt`).** Bindings are generated from an interface description, but today that description is itself hand-written and checked against a hand-written header, so the first link of "generated from the proofs" is not yet proved or derived. Moving the description into Lean is part of the extraction.
 
 **`vbm-simd` honesty.** SIMD is the largest efficiency lever (the exemplar is roughly 3x off the best scalar JSON parser and far more off SIMD parsers). It is also the weakest to verify: Lean has no unboxed vector type, so kernels must be C functions at block granularity, bound to the Lean bit-vector model by differential testing rather than by a refinement theorem, with one named ledger entry per instruction set. What would be proved is the model's kernels against a scalar reference; the claim that the model matches the hardware is a stated limit. Libraries share the model and the shim harness, not the kernels. Defer until those measurements exist and show the classifier fits and the proof tool can discharge a 64-byte block.
 
@@ -276,7 +275,7 @@ A large public Lean formalization of an existing reference work shows three prac
 
 ```
 vbm-land ---------------------------> every repository (landing; the gates plug in by hooks)
-vbm-kit ----------------------------> every library (gates, ABI, vectors, bindings)
+vbm-gates, vbm-rt -------------------> every library (gates, runtime, ABI, vectors, bindings)
 vbm-json (+ framing) <- vbm-jsonrpc <- vbm-acp
                      <- vbm-jsonschema <- vbm-mcp <- vbm-jsonrpc
                      <- vbm-oauth, vbm-journal
@@ -291,7 +290,7 @@ vbm-utf8, vbm-ring: leaves
 
 0. `vbm-land`: the landing tool, extracted from its seven copies; first, because it is language-neutral, already runs, and every later repository would otherwise copy it again.
 1. `vbm-sse`: small, precisely specified, needed now by streaming clients, and the pilot for the incremental-parser proof pattern; the second library, installing `vbm-land` on day one.
-2. `vbm-kit` (`vbm-gates`, `vbm-rt`, `vbm-abi`): extracted from the two real libraries; the gates after `vbm-land`'s hook interface, the runtime and the ABI at the second library.
+2. `vbm-gates` and `vbm-rt` (the runtime and the ABI): extracted from the two real libraries; the gates after `vbm-land`'s hook interface, the runtime and the ABI at the second library.
 3. `vbm-jsonrpc`: the base of both agent protocols.
 4. `vbm-acp`, 5. `vbm-mcp`: the new capabilities; modern-era stdio first.
 6. `vbm-http1`: the largest trust-surface reduction; unblocks HTTP transports. If trust surface matters more than capability, move it ahead of `vbm-acp`.

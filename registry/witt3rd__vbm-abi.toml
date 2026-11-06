@@ -1,5 +1,0 @@
-kind = "foundation"
-status = "planned"
-what = "The Lean interface description and the C header and binding generators; consumers vbm-json and vbm-sse"
-milestone = "not started"
-depends_on = []

@@ -1,12 +1,12 @@
 ---
 name: write-a-binding
 description: >-
-  Generate a language binding (Python, Rust, TypeScript, C#) for a VBM library from its ABI description (vbm-abi). Use when a library needs a new language binding.
+  Generate a language binding (Python, Rust, TypeScript, C#) for a VBM library from its ABI description (vbm-rt, planned). Use when a library needs a new language binding.
 ---
 
 # Write a binding
 
-A binding is generated, never hand-written: the ABI is described once in Lean (`abi/*.lean`) and generators emit the C header and each binding. Until a shared `vbm-abi` exists, each library carries its own generator; follow the exemplar `vbm-json` (`abi/`, `include/`).
+A binding is generated, never hand-written: the ABI is described once in Lean (`abi/*.lean`) and generators emit the C header and each binding. Until the shared `vbm-rt` (which will carry the ABI generators) exists, each library carries its own generator; follow the exemplar `vbm-json` (`abi/`, `include/`).
 
 ## Steps
 1. Make sure the ABI description covers the entry points: caller-owned buffers, a "needed size" return, typed results, no allocator across the boundary; a layout theorem fixes the result record.

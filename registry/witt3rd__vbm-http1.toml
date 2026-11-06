@@ -2,4 +2,4 @@ kind = "library"
 status = "planned"
 what = "HTTP/1.1 message framing and body length"
 milestone = "response framing + body length"
-depends_on = ["vbm-uri", "vbm-kit"]
+depends_on = ["vbm-uri", "vbm-gates", "vbm-rt"]

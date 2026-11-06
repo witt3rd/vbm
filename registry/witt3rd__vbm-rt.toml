@@ -1,5 +1,5 @@
 kind = "foundation"
 status = "planned"
-what = "The freestanding runtime shim: allocator, mem* replacements, WebAssembly and native; consumers vbm-json and vbm-sse"
-milestone = "not started"
+what = "The freestanding runtime shim (allocator, mem* replacements, WebAssembly and native) and the ABI description with the C header and binding generators; consumers vbm-json and vbm-sse"
+milestone = "not started; no repository until its first slice starts"
 depends_on = []

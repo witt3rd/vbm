@@ -1,5 +1,0 @@
-kind = "foundation"
-status = "planned"
-what = "One file, kit.toml, and an install and update command that list which gates, runtime and ABI versions work together (not a code repository)"
-milestone = "not started; after vbm-rt and vbm-abi exist"
-depends_on = ["vbm-gates", "vbm-rt", "vbm-abi"]
