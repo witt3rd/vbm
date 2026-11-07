@@ -1,10 +1,10 @@
 kind = "library"
 status = "live"
 what = "Verified JSON codec"
-milestone = "Level 2 card at 3685dc1, scored by the hub at a4bdb39 on a clean checkout: Correctness PASS (3 of 4 measured, generation not yet defined), Landedness PASS, throughput 80.8% of the best scalar comparator (floor 50), warm Tier 1 30.6 s, cold 285.9 s; x was busier in this run than in an earlier run of the same commit (warm 30.6 s here against 14.6 s, cold 285.9 s against 190.3 s, throughput 80.8% against 75.8%): both are recorded; supersedes the earlier card at ca1a00a"
+milestone = "Level 2 card, run on a build host with the comparators built on that host in the same run; every number is on the card (see it), none is copied here. Supersedes the earlier cards."
 depends_on = []
 repo = "https://github.com/witt3rd/vbm-json"
-commit = "3685dc1dc3fb5a494669030a4da3ddb0d56479a1"
+commit = "b689b52260e5cf116e3c472b6c2948872da3a9e2"
 targets = ["C", "WebAssembly", "Python", "Rust"]
 manifest = "vbm-proof.toml"
 
@@ -15,7 +15,7 @@ approved = "2026-11-04"
 
 [latest]
 date = "2026-11-06"
-correctness = "pass"
-landedness = "pass"
+correctness = "fail"
+landedness = "fail"
 level = "none"
 card = "registry/scores/witt3rd__vbm-json.json"

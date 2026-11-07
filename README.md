@@ -30,16 +30,16 @@ Also: [flip-checklist](skills/flip-checklist/SKILL.md) (publishing a repo), [wri
 | [vbm-context](https://github.com/witt3rd/vbm-context) | A typed, verified agent context state (goal, obligations, facts with provenance, bounded compaction) for long-horizon LLM agents | library | live | unscored | unscored | - |
 | vbm-http1 | HTTP/1.1 message framing and body length | library | planned | unscored | unscored | - |
 | vbm-journal | Append-only, hash-chained log and a generic chain checker | library | planned | unscored | unscored | - |
-| [vbm-json](https://github.com/witt3rd/vbm-json) | Verified JSON codec | library | live | **PASS** (3 of 4; Trusted generation not yet defined) | **PASS** | [card](registry/scores/witt3rd__vbm-json.md) |
+| [vbm-json](https://github.com/witt3rd/vbm-json) | Verified JSON codec | library | live | **FAIL** (2 of 3; Trusted generation not yet defined) | **FAIL** | [card](registry/scores/witt3rd__vbm-json.md) |
 | vbm-jsonrpc | JSON-RPC 2.0 codec and request/response matching | library | planned | unscored | unscored | - |
 | [vbm-llm](https://github.com/witt3rd/vbm-llm) | The wire contract of the LLM provider conventions (OpenAI, Anthropic, OpenRouter): codecs, stream fold, tool-call turns, usage and finish-reason arithmetic | library | live | unscored | unscored | - |
 | vbm-mcp | Model context protocol client, pinned profile over stdio | library | planned | unscored | unscored | - |
 | vbm-oauth | OAuth client flows as a state machine | library | planned | unscored | unscored | - |
-| [vbm-sse](https://github.com/witt3rd/vbm-sse) | Server-sent event streams | library | live | **PASS** (3 of 4; Trusted generation not yet defined) | **PASS** | [card](registry/scores/witt3rd__vbm-sse.md) |
+| [vbm-sse](https://github.com/witt3rd/vbm-sse) | Server-sent event streams | library | live | **PASS** (2 of 3; Trusted generation not yet defined) | **PASS** | [card](registry/scores/witt3rd__vbm-sse.md) |
 | vbm-uri | URI parsing and resolution (RFC 3986) | library | planned | unscored | unscored | - |
 <!-- registry:end -->
 
-The adapter for the first row runs its subject as described in these [notes](scorecard/adapters/vbm-json.notes.md); its [card page](registry/scores/witt3rd__vbm-json.md) shows every metric, and its [one-page PDF](docs/cards/vbm-json-v12.pdf) is one page.
+The adapter for the first row runs its subject as described in these [notes](scorecard/adapters/vbm-json.notes.md); its [card page](registry/scores/witt3rd__vbm-json.md) shows every metric, and its [one-page PDF](docs/cards/vbm-json-v13.pdf) is one page.
 
 ## The foundation
 

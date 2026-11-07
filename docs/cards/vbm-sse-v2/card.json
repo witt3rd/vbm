@@ -1,0 +1,781 @@
+{
+  "schema": "scorecard-3",
+  "scorecard": {
+    "sha": "86e312b69466f412b45473c9764640172dae264f",
+    "dirty": false
+  },
+  "subject": {
+    "name": "vbm-sse",
+    "kind": "library",
+    "commit": "c19cfe96d19787b7dfdcd47b39db97c1ae27917f",
+    "commit_date": "2026-11-06T13:56:43-09:00"
+  },
+  "adapter": {
+    "sha256": "520db9a1849a4076b686e5390a1e61c3fd367a106770c72b616fc28b698c76d6"
+  },
+  "sandbox": {
+    "launcher_sha256": "9d2c6418e11cb0f709b2db4a2d981e07d0b276fb35354048628c110c1cb3b6bb",
+    "limits": {
+      "cpus": 2,
+      "memory_mb": 4096,
+      "disk_mb": 2048,
+      "pids": 512
+    },
+    "attestations": [
+      {
+        "kind": "bwrap",
+        "image_digest": "sha256:922a8a9f12ef3b96cba022a2d98fae4da911adbb121419447d2c46fd445678b3",
+        "network": "none",
+        "subject_mount": "ro",
+        "enforcement": "cgroup",
+        "limits": {
+          "cpus": 2,
+          "memory_mb": 4096,
+          "disk_mb": 2048,
+          "pids": 512,
+          "timeout_seconds": 3600
+        }
+      },
+      {
+        "kind": "bwrap",
+        "image_digest": "sha256:922a8a9f12ef3b96cba022a2d98fae4da911adbb121419447d2c46fd445678b3",
+        "network": "none",
+        "subject_mount": "ro",
+        "enforcement": "cgroup",
+        "limits": {
+          "cpus": 2,
+          "memory_mb": 4096,
+          "disk_mb": 2048,
+          "pids": 512,
+          "timeout_seconds": 900
+        }
+      },
+      {
+        "kind": "bwrap",
+        "image_digest": "sha256:922a8a9f12ef3b96cba022a2d98fae4da911adbb121419447d2c46fd445678b3",
+        "network": "none",
+        "subject_mount": "ro",
+        "enforcement": "cgroup",
+        "limits": {
+          "cpus": 2,
+          "memory_mb": 4096,
+          "disk_mb": 2048,
+          "pids": 512,
+          "timeout_seconds": 900
+        }
+      },
+      {
+        "kind": "bwrap",
+        "image_digest": "sha256:922a8a9f12ef3b96cba022a2d98fae4da911adbb121419447d2c46fd445678b3",
+        "network": "none",
+        "subject_mount": "ro",
+        "enforcement": "cgroup",
+        "limits": {
+          "cpus": 2,
+          "memory_mb": 4096,
+          "disk_mb": 2048,
+          "pids": 512,
+          "timeout_seconds": 3500
+        }
+      },
+      {
+        "kind": "bwrap",
+        "image_digest": "sha256:922a8a9f12ef3b96cba022a2d98fae4da911adbb121419447d2c46fd445678b3",
+        "network": "none",
+        "subject_mount": "ro",
+        "enforcement": "cgroup",
+        "limits": {
+          "cpus": 2,
+          "memory_mb": 4096,
+          "disk_mb": 2048,
+          "pids": 512,
+          "timeout_seconds": 900
+        }
+      },
+      {
+        "kind": "bwrap",
+        "image_digest": "sha256:922a8a9f12ef3b96cba022a2d98fae4da911adbb121419447d2c46fd445678b3",
+        "network": "none",
+        "subject_mount": "ro",
+        "enforcement": "cgroup",
+        "limits": {
+          "cpus": 2,
+          "memory_mb": 4096,
+          "disk_mb": 2048,
+          "pids": 512,
+          "timeout_seconds": 900
+        }
+      },
+      {
+        "kind": "bwrap",
+        "image_digest": "sha256:922a8a9f12ef3b96cba022a2d98fae4da911adbb121419447d2c46fd445678b3",
+        "network": "none",
+        "subject_mount": "ro",
+        "enforcement": "cgroup",
+        "limits": {
+          "cpus": 2,
+          "memory_mb": 4096,
+          "disk_mb": 2048,
+          "pids": 512,
+          "timeout_seconds": 900
+        }
+      },
+      {
+        "kind": "bwrap",
+        "image_digest": "sha256:922a8a9f12ef3b96cba022a2d98fae4da911adbb121419447d2c46fd445678b3",
+        "network": "none",
+        "subject_mount": "ro",
+        "enforcement": "cgroup",
+        "limits": {
+          "cpus": 2,
+          "memory_mb": 4096,
+          "disk_mb": 2048,
+          "pids": 512,
+          "timeout_seconds": 1800
+        }
+      },
+      {
+        "kind": "bwrap",
+        "image_digest": "sha256:922a8a9f12ef3b96cba022a2d98fae4da911adbb121419447d2c46fd445678b3",
+        "network": "none",
+        "subject_mount": "ro",
+        "enforcement": "cgroup",
+        "limits": {
+          "cpus": 2,
+          "memory_mb": 4096,
+          "disk_mb": 2048,
+          "pids": 512,
+          "timeout_seconds": 1200
+        }
+      }
+    ]
+  },
+  "skipped_files": [],
+  "metrics": [
+    {
+      "id": "verified.unproved_escapes",
+      "dimension": "verified",
+      "dir": "down",
+      "definition": "lines matching the adapter's [proof] sorry_pattern in its source globs (a line containing [proof] allow_marker is skipped)",
+      "implemented": true,
+      "value": 0,
+      "floor": {
+        "op": "==",
+        "value": 0
+      },
+      "status": "pass",
+      "findings": [],
+      "files_scanned": 15
+    },
+    {
+      "id": "verified.specified_share",
+      "dimension": "verified",
+      "dir": "up",
+      "definition": "percent specified, read from the subject's closure gate output; not-measurable when the subject has no closure gate",
+      "implemented": true,
+      "value": 100.0,
+      "floor": {
+        "op": ">=",
+        "value": 100
+      },
+      "status": "pass",
+      "carveouts": [
+        {
+          "name": "VbmSimd.findAvx2",
+          "ledger": "T13",
+          "entry": "The pinned verified library vbm-simd (the line-end search)",
+          "reason": "verify. The kernel is proved and the shim is tested in its own repository; the part that stays trust is the shim's C and the CPU, listed there.",
+          "protected_by": "scripts/pinned-libs.lock"
+        },
+        {
+          "name": "VbmSimd.hasAvx2",
+          "ledger": "T13",
+          "entry": "The pinned verified library vbm-simd (the line-end search)",
+          "reason": "verify. The kernel is proved and the shim is tested in its own repository; the part that stays trust is the shim's C and the CPU, listed there.",
+          "protected_by": "scripts/pinned-libs.lock"
+        },
+        {
+          "name": "VbmSimd.ld64",
+          "ledger": "T13",
+          "entry": "The pinned verified library vbm-simd (the line-end search)",
+          "reason": "verify. The kernel is proved and the shim is tested in its own repository; the part that stays trust is the shim's C and the CPU, listed there.",
+          "protected_by": "scripts/pinned-libs.lock"
+        },
+        {
+          "name": "VbmSimd.ctz",
+          "ledger": "T13",
+          "entry": "The pinned verified library vbm-simd (the line-end search)",
+          "reason": "verify. The kernel is proved and the shim is tested in its own repository; the part that stays trust is the shim's C and the CPU, listed there.",
+          "protected_by": "scripts/pinned-libs.lock"
+        }
+      ],
+      "carveout_nodes": 36,
+      "carveout_baseline_nodes": 36
+    },
+    {
+      "id": "verified.nonstandard_axioms",
+      "dimension": "verified",
+      "dir": "down",
+      "definition": "constants that depend on an axiom beyond the standard three (a placeholder proof included), from the adapter's [proof] axiom_cmd, in the sandbox",
+      "implemented": true,
+      "value": 0,
+      "floor": {
+        "op": "==",
+        "value": 0
+      },
+      "status": "pass"
+    },
+    {
+      "id": "verified.trusted_c_lines",
+      "dimension": "verified",
+      "dir": "down",
+      "definition": "newline count of the files matching trust.c_files",
+      "implemented": true,
+      "value": 464,
+      "floor": null,
+      "status": "pass",
+      "files": {
+        "abi/vbm_sse.c": 82,
+        "runtime/rt.c": 382
+      }
+    },
+    {
+      "id": "verified.trust_ledger_entries",
+      "dimension": "verified",
+      "dir": "down",
+      "definition": "lines of the trust ledger matching trust.entry_regex",
+      "implemented": true,
+      "value": 13,
+      "floor": null,
+      "status": "pass"
+    },
+    {
+      "id": "verified.non_vacuity",
+      "dimension": "verified",
+      "dir": "up",
+      "definition": "percent of viable SPECIFICATION mutants (the same operator swaps, at seeded sites of the adapter's [nonvacuity] files, at most 200) that break a proof (the adapter's kill_cmd exits non-zero; 99 = the mutated specification itself does not build, excluded); the unmutated baseline must pass; in the sandbox",
+      "implemented": true,
+      "value": 100.0,
+      "floor": {
+        "op": ">=",
+        "value": 100
+      },
+      "status": "pass",
+      "mutants": 20,
+      "killed": 6,
+      "survived": 2,
+      "not_viable": 12,
+      "sites_total": 147,
+      "equivalent": [
+        "LeanSse/Spec.lean:10:12:-:+",
+        "LeanSse/Spec.lean:1:15:-:+"
+      ],
+      "rejected_equivalents": [
+        "line 4: LeanSse/Spec.lean:8:10:-:+ is not a surviving mutant (stale id, or the tests kill it)",
+        "line 5: LeanSse/Spec.lean:8:54:-:+ is not a surviving mutant (stale id, or the tests kill it)"
+      ],
+      "survivors": []
+    },
+    {
+      "id": "bare_metal.freestanding_build",
+      "dimension": "bare_metal",
+      "dir": "up",
+      "definition": "1 if the adapter's [bare_metal] build_cmd (a build with -ffreestanding -nostdlib) exits 0, else 0; in the sandbox",
+      "implemented": true,
+      "value": 1,
+      "floor": {
+        "op": "==",
+        "value": 1
+      },
+      "status": "pass",
+      "exit": 0,
+      "output_tail": ""
+    },
+    {
+      "id": "bare_metal.wasm_freestanding_build",
+      "dimension": "bare_metal",
+      "dir": "up",
+      "definition": "1 if the adapter's [bare_metal] wasm_cmd (a freestanding wasm32 build, no libc, no imports) exits 0, else 0; its size in bytes is read with wasm_bytes_regex. Listed only when the adapter declares a wasm target",
+      "implemented": true,
+      "value": 1,
+      "floor": {
+        "op": "==",
+        "value": 1
+      },
+      "status": "pass",
+      "bytes": 46526
+    },
+    {
+      "id": "bare_metal.libc_symbols",
+      "dimension": "bare_metal",
+      "dir": "down",
+      "definition": "distinct undefined symbols printed by [bare_metal] symbols_cmd (nm -u of the artifact, the subject's own prefixes filtered by the adapter) minus allowed_symbols; the command must end with --end-of-symbols-- (a silent failure is not zero); in the sandbox",
+      "implemented": true,
+      "value": 0,
+      "floor": {
+        "op": "==",
+        "value": 0
+      },
+      "status": "pass",
+      "symbols": []
+    },
+    {
+      "id": "construction.hand_written_tests",
+      "dimension": "construction",
+      "dir": "down",
+      "definition": "CASE LITERALS written by hand in the subject's test files (DECISIONS 5): in each candidate file (default test patterns plus tests.extra, minus tests.generated and minus the declared gate self-tests) the calls to a declared tests.entry_points name that have a string or bytes literal in their arguments. A DRIVER (it loads generated vectors and compares verdicts, no input literal of its own) has 0 cases and is listed as a driver, not counted; with no entry_points every candidate file counts as one case",
+      "implemented": true,
+      "value": 0,
+      "floor": {
+        "op": "==",
+        "value": 0
+      },
+      "status": "pass",
+      "files": [],
+      "cases_by_file": {},
+      "drivers": [
+        "bindings/rust/tests/vectors.rs",
+        "tests/abi_test.c",
+        "tests/bindings/test_python.py",
+        "tests/lean_layout.c",
+        "tests/wasm/vbm_sse.mjs",
+        "tests/wasm/wasm_test.mjs"
+      ],
+      "generated_excluded": 1,
+      "gate_selftests_excluded": 5
+    },
+    {
+      "id": "construction.mutation_score",
+      "dimension": "construction",
+      "dir": "up",
+      "definition": "percent of viable code mutants (the scorecard's operator swaps at seeded sites of the adapter's [mutation] files, at most 200) that the adapter's kill_cmd harness kills (non-zero exit; 99 = not viable, excluded); the unmutated baseline must pass; in the sandbox",
+      "implemented": true,
+      "value": 100.0,
+      "floor": {
+        "op": ">=",
+        "value": 100
+      },
+      "status": "pass",
+      "mutants": 9,
+      "killed": 5,
+      "survived": 0,
+      "not_viable": 4,
+      "sites_total": 9,
+      "equivalent": [],
+      "rejected_equivalents": [],
+      "survivors": []
+    },
+    {
+      "id": "efficiency.throughput_vs_best",
+      "dimension": "efficiency",
+      "dir": "up",
+      "definition": "the subject's MB/s as a percent of the BEST SCALAR comparator's (the adapter marks each comparator scalar or not; the floor 50 is 'within 2x'), on one corpus named by its sha256, from the adapter's [bench] cmd in the sandbox (cgroup-capped); every declared comparator must report a number AND a pinned version with the sha256 of its binary and inputs, or the metric is not-measurable and names the gap. The gap to each non-scalar comparator (SIMD) is reported openly, not floored",
+      "implemented": true,
+      "value": 56.3,
+      "floor": {
+        "op": ">=",
+        "value": 50
+      },
+      "status": "pass",
+      "subject_mb_s": 1255.8,
+      "comparators_mb_s": {
+        "eventsource-parser": 2230.2,
+        "eventsource-stream": 349.7
+      },
+      "comparator_provenance": {
+        "eventsource-parser": {
+          "version": "4.1.3",
+          "sha256": "9f9f60931a7315a7e01508bbcf7bc1c70f54e828d2a1012348a3c3c18704b9d3",
+          "inputs_sha256": "bffce7b31a5a1d5f71fc77b771ed16450cd7d734247eca1e9fa24585399cae28"
+        },
+        "eventsource-stream": {
+          "version": "0.2.3",
+          "sha256": "0448b4c0c86baf319d86c2c3bfff1ca193961c0fd6b6d4cdb596fbe5ed04f14e",
+          "inputs_sha256": "7fea2fc6e08126e3a263707a0889595fb27e82882a0482be6dacba3e6d38e55c"
+        }
+      },
+      "corpus": {
+        "sha256": "490f3c117d2f5c347d15eb3833e0a77388e13ee11a50b6fd5a2eebce10e1cbcd",
+        "bytes": 3616788
+      },
+      "corpora": [
+        {
+          "name": "small-events@1",
+          "sha256": "490f3c117d2f5c347d15eb3833e0a77388e13ee11a50b6fd5a2eebce10e1cbcd",
+          "bytes": 3616788,
+          "mb_s": {
+            "eventsource-parser": 30.0,
+            "eventsource-stream": 12.1,
+            "lean-fast": 62.6,
+            "reference": 26.6,
+            "subject": 26.0
+          },
+          "best_scalar": "eventsource-parser",
+          "percent_of_best_scalar": 86.7
+        },
+        {
+          "name": "small-events@7",
+          "sha256": "490f3c117d2f5c347d15eb3833e0a77388e13ee11a50b6fd5a2eebce10e1cbcd",
+          "bytes": 3616788,
+          "mb_s": {
+            "eventsource-parser": 166.9,
+            "eventsource-stream": 69.8,
+            "lean-fast": 220.0,
+            "reference": 26.6,
+            "subject": 120.5
+          },
+          "best_scalar": "eventsource-parser",
+          "percent_of_best_scalar": 72.2
+        },
+        {
+          "name": "small-events@4096",
+          "sha256": "490f3c117d2f5c347d15eb3833e0a77388e13ee11a50b6fd5a2eebce10e1cbcd",
+          "bytes": 3616788,
+          "mb_s": {
+            "eventsource-parser": 2230.2,
+            "eventsource-stream": 349.7,
+            "lean-fast": 1846.9,
+            "reference": 26.6,
+            "subject": 1255.8
+          },
+          "best_scalar": "eventsource-parser",
+          "percent_of_best_scalar": 56.3
+        },
+        {
+          "name": "large-data@1",
+          "sha256": "16c547a49632c7a6f5d92d4a8570b081e89fdc20e540dc0502bb36440bdc5ca2",
+          "bytes": 1500824,
+          "mb_s": {
+            "eventsource-parser": 32.8,
+            "eventsource-stream": 0.3,
+            "lean-fast": 61.7,
+            "reference": 22.6,
+            "subject": 28.0
+          },
+          "best_scalar": "eventsource-parser",
+          "percent_of_best_scalar": 85.4
+        },
+        {
+          "name": "large-data@7",
+          "sha256": "16c547a49632c7a6f5d92d4a8570b081e89fdc20e540dc0502bb36440bdc5ca2",
+          "bytes": 1500824,
+          "mb_s": {
+            "eventsource-parser": 210.8,
+            "eventsource-stream": 2.0,
+            "lean-fast": 297.9,
+            "reference": 22.6,
+            "subject": 154.6
+          },
+          "best_scalar": "eventsource-parser",
+          "percent_of_best_scalar": 73.3
+        },
+        {
+          "name": "large-data@4096",
+          "sha256": "16c547a49632c7a6f5d92d4a8570b081e89fdc20e540dc0502bb36440bdc5ca2",
+          "bytes": 1500824,
+          "mb_s": {
+            "eventsource-parser": 2448.3,
+            "eventsource-stream": 471.2,
+            "lean-fast": 2989.7,
+            "reference": 22.6,
+            "subject": 2416.0
+          },
+          "best_scalar": "eventsource-parser",
+          "percent_of_best_scalar": 98.7
+        },
+        {
+          "name": "ends-crlf@1",
+          "sha256": "52f907184c0ff2acf10dc2b1fecc3d2c0ccd9015f40a967397eea8d5b0d6d101",
+          "bytes": 3681588,
+          "mb_s": {
+            "eventsource-parser": 30.1,
+            "eventsource-stream": 12.0,
+            "lean-fast": 64.0,
+            "reference": 25.0,
+            "subject": 25.9
+          },
+          "best_scalar": "eventsource-parser",
+          "percent_of_best_scalar": 86.0
+        },
+        {
+          "name": "ends-crlf@7",
+          "sha256": "52f907184c0ff2acf10dc2b1fecc3d2c0ccd9015f40a967397eea8d5b0d6d101",
+          "bytes": 3681588,
+          "mb_s": {
+            "eventsource-parser": 156.0,
+            "eventsource-stream": 69.3,
+            "lean-fast": 212.5,
+            "reference": 25.0,
+            "subject": 118.7
+          },
+          "best_scalar": "eventsource-parser",
+          "percent_of_best_scalar": 76.1
+        },
+        {
+          "name": "ends-crlf@4096",
+          "sha256": "52f907184c0ff2acf10dc2b1fecc3d2c0ccd9015f40a967397eea8d5b0d6d101",
+          "bytes": 3681588,
+          "mb_s": {
+            "eventsource-parser": 1469.4,
+            "eventsource-stream": 398.6,
+            "lean-fast": 1628.0,
+            "reference": 25.0,
+            "subject": 1240.9
+          },
+          "best_scalar": "eventsource-parser",
+          "percent_of_best_scalar": 84.4
+        },
+        {
+          "name": "ends-cr@1",
+          "sha256": "69953a24a48edb929e1b15652ef97500b368071aba1fb303a522fddc08c41e12",
+          "bytes": 3616788,
+          "mb_s": {
+            "eventsource-parser": 29.9,
+            "eventsource-stream": 11.9,
+            "lean-fast": 62.7,
+            "reference": 25.7,
+            "subject": 25.9
+          },
+          "best_scalar": "eventsource-parser",
+          "percent_of_best_scalar": 86.6
+        },
+        {
+          "name": "ends-cr@7",
+          "sha256": "69953a24a48edb929e1b15652ef97500b368071aba1fb303a522fddc08c41e12",
+          "bytes": 3616788,
+          "mb_s": {
+            "eventsource-parser": 155.4,
+            "eventsource-stream": 68.9,
+            "lean-fast": 219.0,
+            "reference": 25.7,
+            "subject": 119.9
+          },
+          "best_scalar": "eventsource-parser",
+          "percent_of_best_scalar": 77.2
+        },
+        {
+          "name": "ends-cr@4096",
+          "sha256": "69953a24a48edb929e1b15652ef97500b368071aba1fb303a522fddc08c41e12",
+          "bytes": 3616788,
+          "mb_s": {
+            "eventsource-parser": 1777.8,
+            "eventsource-stream": 389.0,
+            "lean-fast": 1836.2,
+            "reference": 25.7,
+            "subject": 1334.9
+          },
+          "best_scalar": "eventsource-parser",
+          "percent_of_best_scalar": 75.1
+        },
+        {
+          "name": "ends-mixed@1",
+          "sha256": "e0e6a1c024bc8a4b8e6e8698fb86eb08a7b0e522f56154efca64219bcd3726d5",
+          "bytes": 3638365,
+          "mb_s": {
+            "eventsource-parser": 30.0,
+            "eventsource-stream": 11.8,
+            "lean-fast": 62.9,
+            "reference": 25.6,
+            "subject": 25.9
+          },
+          "best_scalar": "eventsource-parser",
+          "percent_of_best_scalar": 86.3
+        },
+        {
+          "name": "ends-mixed@7",
+          "sha256": "e0e6a1c024bc8a4b8e6e8698fb86eb08a7b0e522f56154efca64219bcd3726d5",
+          "bytes": 3638365,
+          "mb_s": {
+            "eventsource-parser": 156.1,
+            "eventsource-stream": 66.7,
+            "lean-fast": 211.7,
+            "reference": 25.6,
+            "subject": 118.1
+          },
+          "best_scalar": "eventsource-parser",
+          "percent_of_best_scalar": 75.7
+        },
+        {
+          "name": "ends-mixed@4096",
+          "sha256": "e0e6a1c024bc8a4b8e6e8698fb86eb08a7b0e522f56154efca64219bcd3726d5",
+          "bytes": 3638365,
+          "mb_s": {
+            "eventsource-parser": 1277.5,
+            "eventsource-stream": 372.6,
+            "lean-fast": 1527.6,
+            "reference": 25.6,
+            "subject": 1166.7
+          },
+          "best_scalar": "eventsource-parser",
+          "percent_of_best_scalar": 91.3
+        }
+      ],
+      "corpora_at_or_above_floor": 15,
+      "corpora_floor_percent": 50,
+      "best_scalar": "eventsource-parser",
+      "gap_to_best_scalar_x": 1.78,
+      "gap_to_non_scalar_x": {}
+    },
+    {
+      "id": "velocity.tier1_seconds_warm",
+      "dimension": "velocity",
+      "dir": "down",
+      "definition": "WARM: what a landing costs. Wall seconds, measured by the runner, of the adapter's [tier1] warm_command (the fast gate on a typical change) run in the same sandbox right after the cold run, on the cache that run left, after warm_change_cmd applied the typical change (untimed). It must exit 0 and its output must carry the self-test evidence of every declared gate except the named warm_skips; a warm run that does not show the gates ran is a fail, and a missing warm run is not-measurable",
+      "implemented": true,
+      "value": 54.4,
+      "floor": {
+        "op": "<",
+        "value": 60
+      },
+      "status": "pass",
+      "change_command": "cd /tmp/w && printf \"\\n-- warm-run change: a comment\\n\" >> LeanSseProofs/Examples.lean",
+      "command": "cd /tmp/w && PATH=/tmp/shim:$PATH TEST_JOBS=1 scripts/tier1.sh",
+      "gates_shown": [
+        "forbidden-constructs scan",
+        "Init-only import scan",
+        "pipefail lint",
+        "proof-evaluation lint",
+        "zero-warning build",
+        "axiom gate",
+        "obligation ledger gate",
+        "closure gate",
+        "trust ledger",
+        "scrub gate"
+      ],
+      "gates_skipped": [
+        "vectors check",
+        "C ABI description check",
+        "freestanding native test",
+        "wasm32 build test",
+        "language bindings test",
+        "workflow lint",
+        "protected-set gate",
+        "lander",
+        "commit-on-main guard",
+        "parallel test runner",
+        "delta test selection",
+        "crash-record check",
+        "gate-diff judge",
+        "relabel-attack suite"
+      ],
+      "measured": true
+    },
+    {
+      "id": "velocity.tier1_seconds_cold",
+      "dimension": "velocity",
+      "dir": "down",
+      "definition": "COLD: what an outside contributor pays. Wall seconds, measured by the runner, of the adapter's [tier1] command in a fresh clone and a fresh sandbox with no cache (it must exit 0). A CEILING (<= 600), shown beside the warm number and never hidden or averaged with it",
+      "implemented": true,
+      "value": 67.6,
+      "floor": {
+        "op": "<=",
+        "value": 600
+      },
+      "status": "pass",
+      "command": "cp -a /subject /tmp/w && cd /tmp/w && git config core.hooksPath scripts/githooks &&\nR=$(command -v lake) && mkdir /tmp/shim &&\ncat > /tmp/shim/lake <<SH\n#!/bin/bash\ncase \" \\$* \" in *\" --run \"*) exec f",
+      "measured": true
+    },
+    {
+      "id": "velocity.open_prs",
+      "dimension": "velocity",
+      "dir": "down",
+      "definition": "open pull requests of the subject's origin repo (gh pr list)",
+      "implemented": true,
+      "value": 0,
+      "floor": {
+        "op": "==",
+        "value": 0
+      },
+      "status": "pass",
+      "repo": "witt3rd/vbm-sse"
+    },
+    {
+      "id": "velocity.commits_per_hour",
+      "dimension": "velocity",
+      "dir": "up",
+      "definition": "first-parent commits in the window ending at the pinned commit, per hour of their span (span at least 1 h)",
+      "implemented": true,
+      "value": 2.274,
+      "floor": null,
+      "status": "pass",
+      "commits": 80,
+      "span_seconds": 126647
+    },
+    {
+      "id": "velocity.p90_commit_to_main_seconds",
+      "dimension": "velocity",
+      "dir": "down",
+      "definition": "p90 (nearest rank) over the changes in the window of: last landing time minus FIRST AUTHORED commit time. A change is the run of first-parent commits landed within 120 s of each other; author dates survive a direct landing's rebase, squash merges rewrite them (those read 0). Not-measurable when every change reads 0 (no authoring start is recorded), never a silent zero",
+      "implemented": true,
+      "value": 4744,
+      "floor": null,
+      "status": "pass",
+      "changes": 58,
+      "changes_with_a_recorded_start": 32
+    }
+  ],
+  "dimensions": {
+    "verified": {
+      "status": "pass",
+      "below_floor": [],
+      "below_floor_implemented": []
+    },
+    "bare_metal": {
+      "status": "pass",
+      "below_floor": [],
+      "below_floor_implemented": []
+    },
+    "construction": {
+      "status": "pass",
+      "below_floor": [],
+      "below_floor_implemented": []
+    },
+    "efficiency": {
+      "status": "pass",
+      "below_floor": [],
+      "below_floor_implemented": []
+    },
+    "velocity": {
+      "status": "pass",
+      "below_floor": [],
+      "below_floor_implemented": []
+    }
+  },
+  "pinned_libs": [
+    {
+      "name": "vbm-simd",
+      "rev": "9c274830d5463169fc8848b5cbf3538cb75c1c4b",
+      "spec_hash": "d7743785d0b9eee78b9f81171b587e4c27c72ba2887061f2747ff182fd69e45d",
+      "url": "https://github.com/witt3rd/vbm-simd"
+    }
+  ],
+  "verdicts": {
+    "correctness": {
+      "dimensions": {
+        "verified": "pass",
+        "construction": "pass"
+      },
+      "below_floor": [],
+      "status": "pass",
+      "not_defined_yet": [
+        "generation"
+      ],
+      "measured": 2,
+      "of": 3
+    },
+    "landedness": {
+      "dimensions": {
+        "velocity": "pass"
+      },
+      "below_floor": [],
+      "status": "pass"
+    },
+    "profile": {
+      "dimensions": {
+        "bare_metal": "pass",
+        "efficiency": "pass"
+      },
+      "below_floor": []
+    }
+  }
+}

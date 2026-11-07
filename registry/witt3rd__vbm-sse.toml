@@ -1,10 +1,10 @@
 kind = "library"
 status = "live"
 what = "Server-sent event streams"
-milestone = "Level 2 card at 1829fc4, scored by the hub at a4bdb39 on a clean checkout (the pinned vbm-simd provisioned host-side): Correctness PASS (3 of 4 measured, generation not yet defined) and Landedness PASS; throughput 55.1% of the best scalar comparator on the floored row (1408 vs 2553 MB/s, floor 50), warm Tier 1 29.5 s, cold 131.5 s, trusted C 464 lines. The specified share is 100 outside four named, documented, protected carve-outs: the vbm-simd shims findAvx2, hasAvx2, ld64 and ctz (36 nodes, held at that baseline), because the kernel is proved and the shim is tested in the vbm-simd repository and what stays trusted is its C code and the CPU; supersedes the earlier scorer pass (56.6%, not a card pass)"
+milestone = "Level 2 card, run on a build host with the comparators built on that host in the same run; every number is on the card (see it), none is copied here. The specified share is judged outside four named, documented carve-outs (the vbm-simd shims findAvx2, hasAvx2, ld64 and ctz): the kernel is proved and the shim is tested in the vbm-simd repository, and what stays trusted is its C code and the CPU. Supersedes the earlier cards."
 depends_on = ["vbm-gates", "vbm-rt"]
 repo = "https://github.com/witt3rd/vbm-sse"
-commit = "1829fc470376e5d6c25d4e29c8dedb7c8a5eeed9"
+commit = "c19cfe96d19787b7dfdcd47b39db97c1ae27917f"
 targets = ["C", "WebAssembly", "Python", "Rust"]
 manifest = "vbm-proof.toml"
 

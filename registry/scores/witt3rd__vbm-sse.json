@@ -1,14 +1,14 @@
 {
   "schema": "scorecard-3",
   "scorecard": {
-    "sha": "a4bdb39580e0c825685cfc32645e777b5e6fbe46",
+    "sha": "86e312b69466f412b45473c9764640172dae264f",
     "dirty": false
   },
   "subject": {
     "name": "vbm-sse",
     "kind": "library",
-    "commit": "1829fc470376e5d6c25d4e29c8dedb7c8a5eeed9",
-    "commit_date": "2026-11-06T01:03:46-09:00"
+    "commit": "c19cfe96d19787b7dfdcd47b39db97c1ae27917f",
+    "commit_date": "2026-11-06T13:56:43-09:00"
   },
   "adapter": {
     "sha256": "520db9a1849a4076b686e5390a1e61c3fd367a106770c72b616fc28b698c76d6"
@@ -24,7 +24,7 @@
     "attestations": [
       {
         "kind": "bwrap",
-        "image_digest": "sha256:26075c297e46f8dbfd2a8ce5b644e36094d1c5da6a28823bb82289fc8ac428f5",
+        "image_digest": "sha256:922a8a9f12ef3b96cba022a2d98fae4da911adbb121419447d2c46fd445678b3",
         "network": "none",
         "subject_mount": "ro",
         "enforcement": "cgroup",
@@ -38,7 +38,7 @@
       },
       {
         "kind": "bwrap",
-        "image_digest": "sha256:26075c297e46f8dbfd2a8ce5b644e36094d1c5da6a28823bb82289fc8ac428f5",
+        "image_digest": "sha256:922a8a9f12ef3b96cba022a2d98fae4da911adbb121419447d2c46fd445678b3",
         "network": "none",
         "subject_mount": "ro",
         "enforcement": "cgroup",
@@ -52,7 +52,7 @@
       },
       {
         "kind": "bwrap",
-        "image_digest": "sha256:26075c297e46f8dbfd2a8ce5b644e36094d1c5da6a28823bb82289fc8ac428f5",
+        "image_digest": "sha256:922a8a9f12ef3b96cba022a2d98fae4da911adbb121419447d2c46fd445678b3",
         "network": "none",
         "subject_mount": "ro",
         "enforcement": "cgroup",
@@ -66,7 +66,7 @@
       },
       {
         "kind": "bwrap",
-        "image_digest": "sha256:26075c297e46f8dbfd2a8ce5b644e36094d1c5da6a28823bb82289fc8ac428f5",
+        "image_digest": "sha256:922a8a9f12ef3b96cba022a2d98fae4da911adbb121419447d2c46fd445678b3",
         "network": "none",
         "subject_mount": "ro",
         "enforcement": "cgroup",
@@ -80,7 +80,7 @@
       },
       {
         "kind": "bwrap",
-        "image_digest": "sha256:26075c297e46f8dbfd2a8ce5b644e36094d1c5da6a28823bb82289fc8ac428f5",
+        "image_digest": "sha256:922a8a9f12ef3b96cba022a2d98fae4da911adbb121419447d2c46fd445678b3",
         "network": "none",
         "subject_mount": "ro",
         "enforcement": "cgroup",
@@ -94,7 +94,7 @@
       },
       {
         "kind": "bwrap",
-        "image_digest": "sha256:26075c297e46f8dbfd2a8ce5b644e36094d1c5da6a28823bb82289fc8ac428f5",
+        "image_digest": "sha256:922a8a9f12ef3b96cba022a2d98fae4da911adbb121419447d2c46fd445678b3",
         "network": "none",
         "subject_mount": "ro",
         "enforcement": "cgroup",
@@ -108,7 +108,7 @@
       },
       {
         "kind": "bwrap",
-        "image_digest": "sha256:26075c297e46f8dbfd2a8ce5b644e36094d1c5da6a28823bb82289fc8ac428f5",
+        "image_digest": "sha256:922a8a9f12ef3b96cba022a2d98fae4da911adbb121419447d2c46fd445678b3",
         "network": "none",
         "subject_mount": "ro",
         "enforcement": "cgroup",
@@ -122,7 +122,7 @@
       },
       {
         "kind": "bwrap",
-        "image_digest": "sha256:26075c297e46f8dbfd2a8ce5b644e36094d1c5da6a28823bb82289fc8ac428f5",
+        "image_digest": "sha256:922a8a9f12ef3b96cba022a2d98fae4da911adbb121419447d2c46fd445678b3",
         "network": "none",
         "subject_mount": "ro",
         "enforcement": "cgroup",
@@ -136,7 +136,7 @@
       },
       {
         "kind": "bwrap",
-        "image_digest": "sha256:26075c297e46f8dbfd2a8ce5b644e36094d1c5da6a28823bb82289fc8ac428f5",
+        "image_digest": "sha256:922a8a9f12ef3b96cba022a2d98fae4da911adbb121419447d2c46fd445678b3",
         "network": "none",
         "subject_mount": "ro",
         "enforcement": "cgroup",
@@ -146,34 +146,6 @@
           "disk_mb": 2048,
           "pids": 512,
           "timeout_seconds": 1200
-        }
-      },
-      {
-        "kind": "bwrap",
-        "image_digest": "sha256:26075c297e46f8dbfd2a8ce5b644e36094d1c5da6a28823bb82289fc8ac428f5",
-        "network": "none",
-        "subject_mount": "ro",
-        "enforcement": "cgroup",
-        "limits": {
-          "cpus": 2,
-          "memory_mb": 4096,
-          "disk_mb": 2048,
-          "pids": 512,
-          "timeout_seconds": 1800
-        }
-      },
-      {
-        "kind": "bwrap",
-        "image_digest": "sha256:26075c297e46f8dbfd2a8ce5b644e36094d1c5da6a28823bb82289fc8ac428f5",
-        "network": "none",
-        "subject_mount": "ro",
-        "enforcement": "cgroup",
-        "limits": {
-          "cpus": 2,
-          "memory_mb": 4096,
-          "disk_mb": 2048,
-          "pids": 512,
-          "timeout_seconds": 1800
         }
       }
     ]
@@ -370,7 +342,7 @@
         "tests/wasm/wasm_test.mjs"
       ],
       "generated_excluded": 1,
-      "gate_selftests_excluded": 19
+      "gate_selftests_excluded": 5
     },
     {
       "id": "construction.mutation_score",
@@ -399,16 +371,16 @@
       "dir": "up",
       "definition": "the subject's MB/s as a percent of the BEST SCALAR comparator's (the adapter marks each comparator scalar or not; the floor 50 is 'within 2x'), on one corpus named by its sha256, from the adapter's [bench] cmd in the sandbox (cgroup-capped); every declared comparator must report a number AND a pinned version with the sha256 of its binary and inputs, or the metric is not-measurable and names the gap. The gap to each non-scalar comparator (SIMD) is reported openly, not floored",
       "implemented": true,
-      "value": 55.1,
+      "value": 56.3,
       "floor": {
         "op": ">=",
         "value": 50
       },
       "status": "pass",
-      "subject_mb_s": 1408.0,
+      "subject_mb_s": 1255.8,
       "comparators_mb_s": {
-        "eventsource-parser": 2553.2,
-        "eventsource-stream": 390.7
+        "eventsource-parser": 2230.2,
+        "eventsource-stream": 349.7
       },
       "comparator_provenance": {
         "eventsource-parser": {
@@ -418,7 +390,7 @@
         },
         "eventsource-stream": {
           "version": "0.2.3",
-          "sha256": "093a8ef59b54c9a3779f3b6c6db1df6432e8358c7afc305ccd0e32ce6d1fb15a",
+          "sha256": "0448b4c0c86baf319d86c2c3bfff1ca193961c0fd6b6d4cdb596fbe5ed04f14e",
           "inputs_sha256": "7fea2fc6e08126e3a263707a0889595fb27e82882a0482be6dacba3e6d38e55c"
         }
       },
@@ -432,216 +404,216 @@
           "sha256": "490f3c117d2f5c347d15eb3833e0a77388e13ee11a50b6fd5a2eebce10e1cbcd",
           "bytes": 3616788,
           "mb_s": {
-            "eventsource-parser": 29.3,
-            "eventsource-stream": 12.2,
-            "lean-fast": 62.2,
-            "reference": 24.1,
-            "subject": 24.4
+            "eventsource-parser": 30.0,
+            "eventsource-stream": 12.1,
+            "lean-fast": 62.6,
+            "reference": 26.6,
+            "subject": 26.0
           },
           "best_scalar": "eventsource-parser",
-          "percent_of_best_scalar": 83.3
+          "percent_of_best_scalar": 86.7
         },
         {
           "name": "small-events@7",
           "sha256": "490f3c117d2f5c347d15eb3833e0a77388e13ee11a50b6fd5a2eebce10e1cbcd",
           "bytes": 3616788,
           "mb_s": {
-            "eventsource-parser": 161.9,
-            "eventsource-stream": 68.6,
-            "lean-fast": 226.0,
-            "reference": 24.1,
-            "subject": 120.8
+            "eventsource-parser": 166.9,
+            "eventsource-stream": 69.8,
+            "lean-fast": 220.0,
+            "reference": 26.6,
+            "subject": 120.5
           },
           "best_scalar": "eventsource-parser",
-          "percent_of_best_scalar": 74.6
+          "percent_of_best_scalar": 72.2
         },
         {
           "name": "small-events@4096",
           "sha256": "490f3c117d2f5c347d15eb3833e0a77388e13ee11a50b6fd5a2eebce10e1cbcd",
           "bytes": 3616788,
           "mb_s": {
-            "eventsource-parser": 2553.2,
-            "eventsource-stream": 390.7,
-            "lean-fast": 1863.7,
-            "reference": 24.1,
-            "subject": 1408.0
+            "eventsource-parser": 2230.2,
+            "eventsource-stream": 349.7,
+            "lean-fast": 1846.9,
+            "reference": 26.6,
+            "subject": 1255.8
           },
           "best_scalar": "eventsource-parser",
-          "percent_of_best_scalar": 55.1
+          "percent_of_best_scalar": 56.3
         },
         {
           "name": "large-data@1",
           "sha256": "16c547a49632c7a6f5d92d4a8570b081e89fdc20e540dc0502bb36440bdc5ca2",
           "bytes": 1500824,
           "mb_s": {
-            "eventsource-parser": 29.9,
+            "eventsource-parser": 32.8,
             "eventsource-stream": 0.3,
-            "lean-fast": 66.7,
+            "lean-fast": 61.7,
             "reference": 22.6,
-            "subject": 26.2
+            "subject": 28.0
           },
           "best_scalar": "eventsource-parser",
-          "percent_of_best_scalar": 87.6
+          "percent_of_best_scalar": 85.4
         },
         {
           "name": "large-data@7",
           "sha256": "16c547a49632c7a6f5d92d4a8570b081e89fdc20e540dc0502bb36440bdc5ca2",
           "bytes": 1500824,
           "mb_s": {
-            "eventsource-parser": 197.8,
+            "eventsource-parser": 210.8,
             "eventsource-stream": 2.0,
-            "lean-fast": 324.3,
+            "lean-fast": 297.9,
             "reference": 22.6,
-            "subject": 159.9
+            "subject": 154.6
           },
           "best_scalar": "eventsource-parser",
-          "percent_of_best_scalar": 80.8
+          "percent_of_best_scalar": 73.3
         },
         {
           "name": "large-data@4096",
           "sha256": "16c547a49632c7a6f5d92d4a8570b081e89fdc20e540dc0502bb36440bdc5ca2",
           "bytes": 1500824,
           "mb_s": {
-            "eventsource-parser": 2880.6,
-            "eventsource-stream": 461.3,
-            "lean-fast": 3389.0,
+            "eventsource-parser": 2448.3,
+            "eventsource-stream": 471.2,
+            "lean-fast": 2989.7,
             "reference": 22.6,
-            "subject": 2458.5
+            "subject": 2416.0
           },
           "best_scalar": "eventsource-parser",
-          "percent_of_best_scalar": 85.3
+          "percent_of_best_scalar": 98.7
         },
         {
           "name": "ends-crlf@1",
           "sha256": "52f907184c0ff2acf10dc2b1fecc3d2c0ccd9015f40a967397eea8d5b0d6d101",
           "bytes": 3681588,
           "mb_s": {
-            "eventsource-parser": 30.0,
-            "eventsource-stream": 12.3,
-            "lean-fast": 63.6,
-            "reference": 23.9,
-            "subject": 24.8
+            "eventsource-parser": 30.1,
+            "eventsource-stream": 12.0,
+            "lean-fast": 64.0,
+            "reference": 25.0,
+            "subject": 25.9
           },
           "best_scalar": "eventsource-parser",
-          "percent_of_best_scalar": 82.7
+          "percent_of_best_scalar": 86.0
         },
         {
           "name": "ends-crlf@7",
           "sha256": "52f907184c0ff2acf10dc2b1fecc3d2c0ccd9015f40a967397eea8d5b0d6d101",
           "bytes": 3681588,
           "mb_s": {
-            "eventsource-parser": 157.3,
-            "eventsource-stream": 69.1,
-            "lean-fast": 219.6,
-            "reference": 23.9,
-            "subject": 121.5
+            "eventsource-parser": 156.0,
+            "eventsource-stream": 69.3,
+            "lean-fast": 212.5,
+            "reference": 25.0,
+            "subject": 118.7
           },
           "best_scalar": "eventsource-parser",
-          "percent_of_best_scalar": 77.2
+          "percent_of_best_scalar": 76.1
         },
         {
           "name": "ends-crlf@4096",
           "sha256": "52f907184c0ff2acf10dc2b1fecc3d2c0ccd9015f40a967397eea8d5b0d6d101",
           "bytes": 3681588,
           "mb_s": {
-            "eventsource-parser": 1388.4,
-            "eventsource-stream": 392.7,
-            "lean-fast": 1597.7,
-            "reference": 23.9,
-            "subject": 1263.3
+            "eventsource-parser": 1469.4,
+            "eventsource-stream": 398.6,
+            "lean-fast": 1628.0,
+            "reference": 25.0,
+            "subject": 1240.9
           },
           "best_scalar": "eventsource-parser",
-          "percent_of_best_scalar": 91.0
+          "percent_of_best_scalar": 84.4
         },
         {
           "name": "ends-cr@1",
           "sha256": "69953a24a48edb929e1b15652ef97500b368071aba1fb303a522fddc08c41e12",
           "bytes": 3616788,
           "mb_s": {
-            "eventsource-parser": 28.7,
-            "eventsource-stream": 11.8,
-            "lean-fast": 61.9,
-            "reference": 23.5,
-            "subject": 24.1
+            "eventsource-parser": 29.9,
+            "eventsource-stream": 11.9,
+            "lean-fast": 62.7,
+            "reference": 25.7,
+            "subject": 25.9
           },
           "best_scalar": "eventsource-parser",
-          "percent_of_best_scalar": 84.0
+          "percent_of_best_scalar": 86.6
         },
         {
           "name": "ends-cr@7",
           "sha256": "69953a24a48edb929e1b15652ef97500b368071aba1fb303a522fddc08c41e12",
           "bytes": 3616788,
           "mb_s": {
-            "eventsource-parser": 155.1,
-            "eventsource-stream": 68.7,
-            "lean-fast": 223.1,
-            "reference": 23.5,
-            "subject": 120.5
+            "eventsource-parser": 155.4,
+            "eventsource-stream": 68.9,
+            "lean-fast": 219.0,
+            "reference": 25.7,
+            "subject": 119.9
           },
           "best_scalar": "eventsource-parser",
-          "percent_of_best_scalar": 77.7
+          "percent_of_best_scalar": 77.2
         },
         {
           "name": "ends-cr@4096",
           "sha256": "69953a24a48edb929e1b15652ef97500b368071aba1fb303a522fddc08c41e12",
           "bytes": 3616788,
           "mb_s": {
-            "eventsource-parser": 1717.4,
-            "eventsource-stream": 381.9,
-            "lean-fast": 1858.4,
-            "reference": 23.5,
-            "subject": 1371.9
+            "eventsource-parser": 1777.8,
+            "eventsource-stream": 389.0,
+            "lean-fast": 1836.2,
+            "reference": 25.7,
+            "subject": 1334.9
           },
           "best_scalar": "eventsource-parser",
-          "percent_of_best_scalar": 79.9
+          "percent_of_best_scalar": 75.1
         },
         {
           "name": "ends-mixed@1",
           "sha256": "e0e6a1c024bc8a4b8e6e8698fb86eb08a7b0e522f56154efca64219bcd3726d5",
           "bytes": 3638365,
           "mb_s": {
-            "eventsource-parser": 29.3,
-            "eventsource-stream": 12.0,
+            "eventsource-parser": 30.0,
+            "eventsource-stream": 11.8,
             "lean-fast": 62.9,
-            "reference": 23.7,
-            "subject": 24.6
+            "reference": 25.6,
+            "subject": 25.9
           },
           "best_scalar": "eventsource-parser",
-          "percent_of_best_scalar": 84.0
+          "percent_of_best_scalar": 86.3
         },
         {
           "name": "ends-mixed@7",
           "sha256": "e0e6a1c024bc8a4b8e6e8698fb86eb08a7b0e522f56154efca64219bcd3726d5",
           "bytes": 3638365,
           "mb_s": {
-            "eventsource-parser": 152.4,
-            "eventsource-stream": 65.5,
-            "lean-fast": 217.6,
-            "reference": 23.7,
-            "subject": 120.1
+            "eventsource-parser": 156.1,
+            "eventsource-stream": 66.7,
+            "lean-fast": 211.7,
+            "reference": 25.6,
+            "subject": 118.1
           },
           "best_scalar": "eventsource-parser",
-          "percent_of_best_scalar": 78.8
+          "percent_of_best_scalar": 75.7
         },
         {
           "name": "ends-mixed@4096",
           "sha256": "e0e6a1c024bc8a4b8e6e8698fb86eb08a7b0e522f56154efca64219bcd3726d5",
           "bytes": 3638365,
           "mb_s": {
-            "eventsource-parser": 1161.5,
-            "eventsource-stream": 365.9,
-            "lean-fast": 1498.7,
-            "reference": 23.7,
-            "subject": 1206.2
+            "eventsource-parser": 1277.5,
+            "eventsource-stream": 372.6,
+            "lean-fast": 1527.6,
+            "reference": 25.6,
+            "subject": 1166.7
           },
           "best_scalar": "eventsource-parser",
-          "percent_of_best_scalar": 103.8
+          "percent_of_best_scalar": 91.3
         }
       ],
       "corpora_at_or_above_floor": 15,
       "corpora_floor_percent": 50,
       "best_scalar": "eventsource-parser",
-      "gap_to_best_scalar_x": 1.81,
+      "gap_to_best_scalar_x": 1.78,
       "gap_to_non_scalar_x": {}
     },
     {
@@ -650,7 +622,7 @@
       "dir": "down",
       "definition": "WARM: what a landing costs. Wall seconds, measured by the runner, of the adapter's [tier1] warm_command (the fast gate on a typical change) run in the same sandbox right after the cold run, on the cache that run left, after warm_change_cmd applied the typical change (untimed). It must exit 0 and its output must carry the self-test evidence of every declared gate except the named warm_skips; a warm run that does not show the gates ran is a fail, and a missing warm run is not-measurable",
       "implemented": true,
-      "value": 29.5,
+      "value": 54.4,
       "floor": {
         "op": "<",
         "value": 60
@@ -694,7 +666,7 @@
       "dir": "down",
       "definition": "COLD: what an outside contributor pays. Wall seconds, measured by the runner, of the adapter's [tier1] command in a fresh clone and a fresh sandbox with no cache (it must exit 0). A CEILING (<= 600), shown beside the warm number and never hidden or averaged with it",
       "implemented": true,
-      "value": 131.5,
+      "value": 67.6,
       "floor": {
         "op": "<=",
         "value": 600
@@ -723,11 +695,11 @@
       "dir": "up",
       "definition": "first-parent commits in the window ending at the pinned commit, per hour of their span (span at least 1 h)",
       "implemented": true,
-      "value": 3.139,
+      "value": 2.274,
       "floor": null,
       "status": "pass",
-      "commits": 70,
-      "span_seconds": 80270
+      "commits": 80,
+      "span_seconds": 126647
     },
     {
       "id": "velocity.p90_commit_to_main_seconds",
@@ -735,163 +707,11 @@
       "dir": "down",
       "definition": "p90 (nearest rank) over the changes in the window of: last landing time minus FIRST AUTHORED commit time. A change is the run of first-parent commits landed within 120 s of each other; author dates survive a direct landing's rebase, squash merges rewrite them (those read 0). Not-measurable when every change reads 0 (no authoring start is recorded), never a silent zero",
       "implemented": true,
-      "value": 7475,
+      "value": 4744,
       "floor": null,
       "status": "pass",
-      "changes": 49,
-      "changes_with_a_recorded_start": 31
-    },
-    {
-      "id": "honesty.gate_selftests",
-      "dimension": "honesty",
-      "dir": "up",
-      "definition": "percent of the declared gate self-test files (adapter [tests] gate_selftests, under scripts/) that the fast-gate script names; zero such files is not-measurable (a gate not watched to fail is decoration). Presence and coverage only: that each can fail is shown by the subject's own run",
-      "implemented": true,
-      "value": 100.0,
-      "floor": {
-        "op": ">=",
-        "value": 100
-      },
-      "status": "pass",
-      "files": [
-        "scripts/test_abi.sh",
-        "scripts/test_bench.sh",
-        "scripts/test_bindings.sh",
-        "scripts/test_gate_diff_improving.sh",
-        "scripts/test_githook.sh",
-        "scripts/test_land_direct.sh",
-        "scripts/test_lint_workflows.sh",
-        "scripts/test_native.sh",
-        "scripts/test_no_crash_record.sh",
-        "scripts/test_pinned_lib.sh",
-        "scripts/test_protected_set.sh",
-        "scripts/test_ran_evidence.sh",
-        "scripts/test_reap.sh",
-        "scripts/test_relabel_attacks.sh",
-        "scripts/test_run_parallel.sh",
-        "scripts/test_run_scoped.sh",
-        "scripts/test_select_tests.sh",
-        "scripts/test_vectors.sh",
-        "scripts/test_wasm.sh"
-      ],
-      "not_named_by_the_fast_gate": []
-    },
-    {
-      "id": "honesty.gates_self_tested",
-      "dimension": "honesty",
-      "dir": "up",
-      "definition": "percent of the gates the adapter declares ([tier1] gates = [{name, selftest}]) whose negative self-test LEFT EVIDENCE in this run: the selftest pattern matches the output of the fast gate, run in the sandbox (it must exit 0). The evidence is the subject's own output, so it shows the self-test was reached, never that it is sound (that is the attack suite); no declared gate is not-measurable",
-      "implemented": true,
-      "value": 100.0,
-      "floor": {
-        "op": ">=",
-        "value": 100
-      },
-      "status": "pass",
-      "gates": [
-        "forbidden-constructs scan",
-        "Init-only import scan",
-        "pipefail lint",
-        "proof-evaluation lint",
-        "zero-warning build",
-        "axiom gate",
-        "obligation ledger gate",
-        "closure gate",
-        "trust ledger",
-        "scrub gate",
-        "vectors check",
-        "C ABI description check",
-        "freestanding native test",
-        "wasm32 build test",
-        "language bindings test",
-        "workflow lint",
-        "protected-set gate",
-        "lander",
-        "commit-on-main guard",
-        "parallel test runner",
-        "delta test selection",
-        "crash-record check",
-        "gate-diff judge",
-        "relabel-attack suite"
-      ],
-      "self_test_ran": [
-        "forbidden-constructs scan",
-        "Init-only import scan",
-        "pipefail lint",
-        "proof-evaluation lint",
-        "zero-warning build",
-        "axiom gate",
-        "obligation ledger gate",
-        "closure gate",
-        "trust ledger",
-        "scrub gate",
-        "vectors check",
-        "C ABI description check",
-        "freestanding native test",
-        "wasm32 build test",
-        "language bindings test",
-        "workflow lint",
-        "protected-set gate",
-        "lander",
-        "commit-on-main guard",
-        "parallel test runner",
-        "delta test selection",
-        "crash-record check",
-        "gate-diff judge",
-        "relabel-attack suite"
-      ],
-      "no_evidence": []
-    },
-    {
-      "id": "honesty.selftests_ran_cases",
-      "dimension": "honesty",
-      "dir": "up",
-      "definition": "the ran-evidence of the fast gate (DECISIONS 19): the cases its gates and self-tests EXECUTED, summed over the lines `ran: NAME: N cases` (NAME [A-Za-z0-9_.-]+, N at most 15 digits) of the fast-gate log (its stdout and stderr, run in the sandbox, exit 0 required). Fails, with the reason, when the log has a line containing SKIPPED, no evidence line at all, or a sum of 0 cases, or a name that the adapter does not declare in [tier1] ran_names (a subject cannot invent a gate), or a declared name that is missing or shows 0 cases; no declared ran_names is not-measurable. A self-test that never ran is not a self-test: this closes the vacuous pass that honesty.gates_self_tested cannot see. Honest weakness: a count regex proves a count was printed, not that every case was meaningful; the evidence is the subject's own output, so soundness is the attack suite's question",
-      "implemented": true,
-      "value": 2315,
-      "floor": {
-        "op": ">=",
-        "value": 1
-      },
-      "status": "pass",
-      "evidence_names": 7,
-      "cases": 2315,
-      "cases_by_name": {
-        "axiom-gate": 1007,
-        "closure-gate": 38,
-        "ledger-gate": 23,
-        "scrub": 225,
-        "tests": 1006,
-        "trust-ledger": 13,
-        "zero-warning": 3
-      },
-      "zero_case_names": [],
-      "skipped_lines": [],
-      "ran_names_declared": [
-        "zero-warning",
-        "tests",
-        "axiom-gate",
-        "closure-gate",
-        "ledger-gate",
-        "scrub",
-        "trust-ledger"
-      ],
-      "weakness": "a count regex proves a count was printed, not that every case was meaningful"
-    },
-    {
-      "id": "honesty.attack_suite",
-      "dimension": "honesty",
-      "dir": "up",
-      "definition": "the subject's relabel-attack suite (adapter [tier1] attack_cmd) exits 0 and its last line starts with PASS, and its sabotage run (attack_sabotage_cmd: every gate an attack relies on replaced by a stub) exits non-zero with a last line starting FAIL: a suite that cannot fail is decoration; both run in the sandbox; none declared is not-measurable",
-      "implemented": true,
-      "value": 1,
-      "floor": {
-        "op": "==",
-        "value": 1
-      },
-      "status": "pass",
-      "pass_line": "PASS relabel-attacks: 67 of 67 attacks refused (26 s)",
-      "sabotage_line": "FAIL relabel-attacks: 0 of 67 attacks refused (1 s)"
+      "changes": 58,
+      "changes_with_a_recorded_start": 32
     }
   ],
   "dimensions": {
@@ -919,11 +739,6 @@
       "status": "pass",
       "below_floor": [],
       "below_floor_implemented": []
-    },
-    "honesty": {
-      "status": "pass",
-      "below_floor": [],
-      "below_floor_implemented": []
     }
   },
   "pinned_libs": [
@@ -938,16 +753,15 @@
     "correctness": {
       "dimensions": {
         "verified": "pass",
-        "construction": "pass",
-        "honesty": "pass"
+        "construction": "pass"
       },
       "below_floor": [],
       "status": "pass",
       "not_defined_yet": [
         "generation"
       ],
-      "measured": 3,
-      "of": 4
+      "measured": 2,
+      "of": 3
     },
     "landedness": {
       "dimensions": {
