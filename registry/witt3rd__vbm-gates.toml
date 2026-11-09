@@ -1,6 +1,0 @@
-kind = "tool"
-status = "live"
-what = "The shared gates every repo vendors by pinned signed tag (v0.1.0)"
-milestone = "v0.1.0 tagged and signed; adopted by: none yet (pilot: vbm-context, in progress)"
-depends_on = ["vbm-land"]
-repo = "https://github.com/witt3rd/vbm-gates"

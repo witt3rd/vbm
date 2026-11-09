@@ -9,8 +9,8 @@ Everything in this roadmap is ordered to reach one factoring. A VBM library is a
 ```
  libraries     vbm-json  vbm-sse  vbm-jsonrpc  vbm-acp  vbm-mcp  vbm-http1 ...    Lean specification + proofs, compiled to C and WebAssembly, generated bindings
                   |   every claim carries a clause tag and a review tier
- foundation    vbm-gates (Lean gates)   vbm-rt (freestanding runtime, ABI description and generators)   vbm-simd (later)
-                  |   vbm-gates plugs into vbm-land through hook points
+ foundation    vbm-rt (freestanding runtime, ABI description and generators)   vbm-simd (later)
+                  |   the foundation pieces plug into vbm-land through hook points
  process       vbm-land      the landing tool: lander, one red definition, freeze marker, revert-first watchdog, known-flaky list
  conventions   spec-clause tags  |  two tiers: fidelity-reviewed / agent-built  |  claim and blueprint for outside contributors
 ```
@@ -18,7 +18,6 @@ Everything in this roadmap is ordered to reach one factoring. A VBM library is a
 | piece | what it is | state today | when |
 |---|---|---|---|
 | **`vbm-land`** | the language-neutral landing tool and the guide to using it (the how-we-land document is its README) | exists as seven hand-made copies in four language ecosystems; no two identical | **first** (section below) |
-| **`vbm-gates`** (0.1) | the Lean-specific gates: specified-share and closure, axiom, obligation ledger, trust ledger, protected set, the relabel-attack suite | two diverged copies | after `vbm-land`'s hook interface |
 | **`vbm-rt`** (0.2) | the freestanding Lean runtime shim (allocator, `mem*` replacements, trap, WebAssembly and native variants) and the ABI description and generators (item 0.3 folded in) | one consumer | at the second library |
 | **`vbm-simd`** (0.4) | a bit-vector model of vector instructions, a trusted shim per instruction set, proved kernels | nothing yet | after the first SIMD measurements |
 | **conventions** (0.5) | clause tags, two review tiers, claim-and-blueprint | nothing yet | adopt now |
@@ -71,7 +70,7 @@ Scoring (1-5, 5 best): **R** reuse beyond the first consumer; **T** trust-surfac
 | first | **`vbm-land`** (a tool, see below) | 5 | 3 | 5 | 3 | 5 | 21-28 | install by one command, pinned copy, drift check; then one red definition, watchdog |
 | done | `vbm-json` (+ newline-delimited framing module) | 5 | 4 | 4 | 2 | 5 | +1-2 | Level 1 card; framing module |
 | 1 | `vbm-sse` | 4 | 3 | 5 | 5 | 4 | 6-9 | reference + whole-buffer theorems |
-| 2 | the shared foundation: `vbm-gates` and `vbm-rt` (0.1-0.3 below), each pinned by signed tag; there is no `vbm-kit` bundle | 5 | 2 | 5 | 3 | 5 | 9-12 | gates extracted; a third library scaffolds from it |
+| 2 | the shared foundation: `vbm-rt` (0.2-0.3 below), pinned by signed tag; there is no `vbm-kit` bundle | 5 | 2 | 5 | 3 | 5 | 6-8 | a third library scaffolds from it |
 | 3 | `vbm-jsonrpc` | 5 | 2 | 4 | 4 | 5 | 6-9 | codec + peer machine |
 | 4 | `vbm-acp` | 3 | 3 | 3 | 2 | 5 | 12-18 | pinned core profile |
 | 5 | `vbm-mcp` | 4 | 3 | 3 | 1 | 5 | 16-24 | pinned client profile over stdio |
@@ -99,10 +98,10 @@ A slice is one landing of at most ~400 lines including proofs, roughly one agent
 - **What it is.** The code that gets a change onto `main` under a mechanical gate, with no pull request: one lander (rebase onto current `main`, regenerate generated files, run the fast gate on the exact combination that will land, plain fast-forward push, one lock), **one** definition of a red `main` (the fast-gate job of the latest push failed; an infrastructure failure is not red; not knowing is not green), a hold marker and a freeze marker with an owner and an expiry, a revert-first post-merge watchdog, a known-flaky list whose entries are debt, and the installer and drift check below. It is language-neutral: it knows a command that runs the fast gate and nothing about what the gate checks.
 - **Why first.** It already exists, seven times. Seven private repositories in four language ecosystems (Lean and C, Python, Rust, Ansible and shell) each took a copy on the same day, by hand. Measured: no two copies are identical; only 35 normalized lines are common to all seven (of 80-194 per copy); the copies range from 8 to 25 KB, together 92 KB, with 111 KB of tests and 73 KB of related scripts in one of them (~278 KB for one design); fixes do not propagate (six of seven still prune the shared clone's worktree records, only two accept the revert commit that `git revert` itself writes, one has the watchdog and the known-flaky list); a template copy taken in the morning was 26-31 % behind the live copy the next day. Every new library would be copy number eight, with its own divergence.
 - **Design of the extraction.** One source repository. A consumer **vendors a pinned copy** into `.land/tool/` (so a worktree is self-contained and offline, and history shows which version landed what) and installs it with **one command** that also writes a three-line stub, a pin file and a parameters file. The pin records the version **and the commit hash** (tags can move) and a manifest of file hashes. A **drift check** runs offline in the fast gate (the vendored files must hash to the manifest: a local edit fails it) and online on the slow, scheduled tier (the manifest at the pinned commit is fetched and compared; a newer release is reported, never forced). An `audit` command lists every repository's pin and lag, replacing a hand-kept table. Rules: no local patches (a repository needing something different adds a parameter or a hook upstream); the lander never lands a commit that changes itself with the new copy (the old copy lands the new one). Rejected: submodules (they break fresh worktrees), a language package manager (not language-neutral), fetching at run time (a lander that changes under a landing).
-- **Parameters and hooks, measured.** What differs between the copies reduces to about fourteen parameters (base branch, CI workflow and job names, fast-gate and regeneration commands, production paths for the size budget, lock wait, locale, required trailers, red-check mode, step timeouts) and four hook points: `pre-rebase`, `post-rebase` (receives the touched files; refusing stops the landing), `post-tier1`, and extra fields for the result line. The Lean-specific checks of `vbm-gates` are hooks, not branches of the core.
+- **Parameters and hooks, measured.** What differs between the copies reduces to about fourteen parameters (base branch, CI workflow and job names, fast-gate and regeneration commands, production paths for the size budget, lock wait, locale, required trailers, red-check mode, step timeouts) and four hook points: `pre-rebase`, `post-rebase` (receives the touched files; refusing stops the landing), `post-tier1`, and extra fields for the result line. Language-specific checks are hooks, not branches of the core.
 - **README.** The how-we-land document is the README: the one idea, the three things trunk-based work needs, how to choose a mechanism, the template (agent-instruction block, two gate tiers, the lander, red exactly, freeze and watchdog, archive-then-discard, escalation threshold), the three metrics; plus install, parameters and drift. Repository-specific status tables and partner-specific sections are not part of the public edition.
 - **Size.** 12-16 slices for the tool (core lander, options the copies have separately, a bare-remote test suite run against a matrix of parameter sets, install and pin and drift check, the red definition, known-flaky, watchdog and revert, hooks, templates, self-hosting) plus 9-12 migration slices, one per consuming repository, ordered smallest and lowest-risk first and the most heavily extended copies last. About 21-28 slices in all. A first version that two repositories can adopt (installer, lander, parameters, tests, offline drift check) is about 5-7 slices; the red definition, known-flaky and watchdog are the next 6-10.
-- **Dependencies.** None. `vbm-gates` plugs into it.
+- **Dependencies.** None.
 - **Scorecard prospects.** Not scored as a library (it proves nothing); it determines whether every other repository lands cheaply and without drift. Its own tests are a bare-remote suite that can fail: lands, two racing workers (one waits), a conflict aborts naming files, a failing gate lands nothing, `main` moving during the gate re-runs it, no force push, a hold stops it.
 - **First milestone.** A new repository installs it with one command, lands its first commit through it, and the drift check passes offline; a second repository in a different language does the same.
 - **Risks.** A public tool that pushes to `main` and reverts is sensitive: the README states its preconditions (a repository worked by agents alone, `main` not deployed, a fast gate) and the watchdog is opt-in. Linux first (it uses `flock`). Behavioural differences between copies (lock wait, which runs count for red) are real decisions and become parameters, not noise.
@@ -119,10 +118,10 @@ A slice is one landing of at most ~400 lines including proofs, roughly one agent
 - **Scorecard prospects.** Level 1: likely. Level 2: a line scanner is where a Lean-compiled loop is most likely to land within 2x of a scalar comparator, but this is unmeasured. The incremental-parser proof is new effort (the exemplar is whole-buffer), so the 6-9 estimate is also the calibration point for HTTP framing.
 - **First milestone.** Reference interpreter, whole-buffer theorems and generated vectors; then the chunk-invariance theorem.
 
-### 2. The shared foundation, `vbm-gates` and `vbm-rt` (items 0.1-0.3, see "Foundation layer"; no `vbm-kit` bundle)
-- **What it is.** What `vbm-json` had to build around its proofs, extracted once: the Lean-specific Tier 1 and Tier 2 gate scripts with their negative self-tests (closure and specified-share gate, axiom gate, obligation ledger gate, trust-ledger check, protected set, forbidden-construct and import scans), the ABI description generator, the vector driver for every binding, the generated binding scaffolds, the freestanding runtime and the mutation harness. The landing scripts and the language-neutral CI templates are not part of it: they are `vbm-land`, and the gates plug into it through hook points.
+### 2. The shared foundation, `vbm-rt` (items 0.2-0.3, see "Foundation layer"; no `vbm-kit` bundle)
+- **What it is.** What `vbm-json` had to build around its proofs, extracted once: the ABI description generator, the vector driver for every binding, the generated binding scaffolds, the freestanding runtime and the mutation harness. The landing scripts and the language-neutral CI templates are not part of it: they are `vbm-land`, and the checks they run plug into it through hook points.
 - **Why it exists.** 28 of the exemplar's 46 commits were this infrastructure. The first library copies it; the second is the right moment to extract it, so that the parameter list comes from two real consumers instead of a guess.
-- **Size.** 9-12 slices of extraction (gates 3-4, interface generators 3-4, runtime 3-4; +2 for the TypeScript and C# generators), mostly moving and parameterising existing code.
+- **Size.** 6-8 slices of extraction (interface generators 3-4, runtime 3-4; +2 for the TypeScript and C# generators), mostly moving and parameterising existing code.
 - **Verification plan.** The kit is a boundary and tooling package, not a proof library; its own gates have negative self-tests. First task: measure the size of the proof export restricted to the closure of the named claims against the scorecard's Level 1 cap, and add the restriction to the build.
 - **Dependencies.** Two existing libraries to extract from.
 - **Scorecard prospects.** Not itself scored as a library; it determines whether the others reach Level 1 cheaply.
@@ -136,7 +135,7 @@ A slice is one landing of at most ~400 lines including proofs, roughly one agent
 - **Verification plan.** (a) *Classification*: a JSON value is exactly one of request, notification, result response, error response or invalid (total and exclusive); reserved error codes; encode/decode round trip over the verified JSON value. (b) *Peer machine*: a bounded outstanding-request table and `step : Peer x Event -> Peer x Effects` with events send, receive, cancel and tick. Theorems: every response is delivered to exactly one pending request or refused with a typed protocol error; no identifier is reused while pending; every pending request ends as response, error, cancellation or timeout within a stated tick bound; the table never exceeds its cap.
 - **Residue (ledger).** Transport framing, the tick source, the peer's honesty.
 - **Targets.** C, WebAssembly, Rust, Python, TypeScript.
-- **Dependencies.** `vbm-json` and its framing module; `vbm-gates`, `vbm-rt`.
+- **Dependencies.** `vbm-json` and its framing module; `vbm-rt`.
 - **Scorecard prospects.** Level 1: plausible. Level 2 efficiency: not measurable until the state-machine substitute exists.
 - **First milestone.** Codec classification, round trip and vectors from the specification's own examples; then the peer machine.
 
@@ -174,7 +173,7 @@ A slice is one landing of at most ~400 lines including proofs, roughly one agent
 - **Verification plan.** Parse iff grammar for a pinned subset; **body-length determination is a total function** (the decision table for HEAD, informational, 204, 304, transfer-encoding, content-length, close-delimited) and a theorem that a message with both `Transfer-Encoding` and `Content-Length` is refused or resolved by the stated rule (the request-smuggling class); chunked decode/encode round trip; truncation detected; named limits on header count and size; incremental feed invariant under chunking. Vectors: the corpora of mature independent parsers as the independent set.
 - **Residue (ledger).** Sockets, TLS, DNS, the clock; semantics of a server.
 - **Targets.** C, WebAssembly, Rust.
-- **Dependencies.** `vbm-uri`, `vbm-gates`, `vbm-rt`.
+- **Dependencies.** `vbm-uri`, `vbm-rt`.
 - **Scorecard prospects.** Level 1 plausible. Efficiency against the fast scalar and SIMD-assisted parsers is genuinely uncertain.
 - **First milestone.** Response framing with body-length determination and chunked decoding.
 
@@ -196,14 +195,14 @@ A slice is one landing of at most ~400 lines including proofs, roughly one agent
 - **Spec source.** RFC 3986 (ABNF, reference resolution, normalization); `application/x-www-form-urlencoded` from the WHATWG URL Standard. A WHATWG URL parser is a separate later module with a differential against a mature implementation, because the two standards differ on purpose.
 - **Verification plan.** Parse iff grammar, soundness and completeness. **Unambiguity is false** for RFC 3986 as written (it resolves overlaps by a longest-match rule), so the reference implements the stated disambiguation and that claim is `partial` by design. `remove_dot_segments` is idempotent and leaves no dot segments; resolving an absolute reference is normalization; percent-encoding round trip; exact scheme/host/port comparison functions for allow-lists.
 - **Residue (ledger).** Internationalised host names and DNS stay out of scope.
-- **Size.** 8-10 slices. **Targets.** C, WebAssembly, Rust, TypeScript. **Dependencies.** `vbm-utf8` optional, `vbm-gates`, `vbm-rt`.
+- **Size.** 8-10 slices. **Targets.** C, WebAssembly, Rust, TypeScript. **Dependencies.** `vbm-utf8` optional, `vbm-rt`.
 - **Scorecard prospects.** Level 1 plausible; efficiency against `ada`-class parsers unlikely at first.
 - **First milestone.** RFC 3986 parse and resolve with the RFC's own reference-resolution examples as vectors.
 
 ### 9. `vbm-baseN`: base64, base64url, base16
 - **Spec source.** RFC 4648 (base64, base64url, base16; non-alphabet characters; canonical encoding).
 - **Verification plan.** `decode (encode b) = b`; `encode (decode s) = s` for canonical `s`; length formulas; the decoder rejects non-zero padding bits (the classic malleability bug) under the strict policy, with a lenient decoder as a separate named function; chunk invariance on 3-byte/4-character boundaries. Fully provable, no residue.
-- **Size.** 3-4 slices. **Dependencies.** `vbm-gates`, `vbm-rt`. **Needed by.** PKCE, binary fields in the protocols above, token formats.
+- **Size.** 3-4 slices. **Dependencies.** `vbm-rt`. **Needed by.** PKCE, binary fields in the protocols above, token formats.
 - **Scorecard prospects.** Level 1 likely; efficiency comparators exist (scalar and SIMD base64 libraries); within 2x of the scalar best is plausible but unmeasured.
 - **First milestone.** Strict base64/base64url/base16 with RFC 4648 vectors and malleability rows.
 
@@ -224,7 +223,7 @@ A slice is one landing of at most ~400 lines including proofs, roughly one agent
 ### 12. `vbm-utf8`: UTF-8
 - **Spec source.** RFC 3629 and the Unicode Standard's table of well-formed byte sequences. Mostly an extraction from `vbm-json`, which already proves the relation for examples (its general "every invalid input is rejected" claim is open).
 - **Verification plan.** Validator iff grammar; decode/encode round trip; every decoded value is a Unicode scalar; overlong and surrogate forms rejected; a fast validator (ASCII word fast path or DFA) refines the reference; error position is the first invalid byte.
-- **Size.** 4-5 slices. **Scorecard prospects.** Level 1 likely; strong comparators exist (the standard library scalar validator; a SIMD library as the stated gap). **Dependencies.** `vbm-gates`, `vbm-rt`; `vbm-json` then imports it (expand and contract).
+- **Size.** 4-5 slices. **Scorecard prospects.** Level 1 likely; strong comparators exist (the standard library scalar validator; a SIMD library as the stated gap). **Dependencies.** `vbm-rt`; `vbm-json` then imports it (expand and contract).
 
 ### 13. `vbm-ring`: bounded FIFO
 - **Spec.** None needed (textbook); the model is a list with fixed capacity and a typed refusal when full. Theorems: FIFO order, capacity never changes, refused exactly when full, memory bounded by capacity times item bound. A byte-specialised ring over a byte array provides an ABI.
@@ -242,13 +241,12 @@ The "bare metal" part of a VBM library is mostly the same every time. This secti
 
 | item | what it is | shared today | size | recommendation |
 |---|---|---|---|---|
-| 0.1 `vbm-gates` | the closure, axiom, obligation-ledger and trust-ledger gates, protected-set check, gate-diff, relabel-attack suite, Lean CI templates (the lander, red definition and watchdog are `vbm-land`) | copied once and **already diverged** (the exemplar's gate scripts are ~3,200 lines across 52 files; a second copy grew extra gates of its own) | 3-4 slices | **extract after `vbm-land`'s hook interface**, common core only; the second library is the first adopter |
 | 0.2 `vbm-rt` | the freestanding Lean runtime shim: allocator, `mem*` replacements, trap, WebAssembly and native variants | one consumer; ~350 hand-written trusted C lines and one ledger entry | 3-4 slices | **at the second library**; prepare now by removing library-specific names and writing its contract |
 | 0.3 `vbm-rt` (ABI part) | the interface description (buffers, needed-size return, options struct, error enum, versioning) and generators for the C header and Python, Rust, TypeScript, C# bindings | one consumer; generators exist for Python and Rust only | 3-4 slices + 2 for TypeScript and C# | **at the second library** |
 | 0.4 `vbm-simd` | a Lean bit-vector model of vector instructions, a trusted shim per instruction set with differential tests, proved kernels (byte classification, UTF-8 validation, prefix-xor) | nothing | 12-16 slices (+2 research) | **after the first SIMD measurements** (a design memo and a prototype classifier with timings, in progress); deferred until they exist |
 | 0.5 conventions | spec-clause tags, reviewed vs agent-built claims, claim-and-blueprint for outside contributors | nothing | docs + ~3 slices | **adopt now** |
 
-Captain's ruling: there is no `vbm-kit` bundle and no `vbm-abi` repository. `vbm-gates` (live, tag v0.1.0) and `vbm-rt` (early: the repository exists, nothing extracted yet; it carries the ABI description and generators too) are each consumed by a pinned, signed tag through the one update flow.
+Captain's ruling: there is no `vbm-kit` bundle and no `vbm-abi` repository. `vbm-rt` (early: the repository exists, nothing extracted yet; it carries the ABI description and generators too) is consumed by a pinned, signed tag through the one update flow.
 
 **`vbm-rt` honesty.** The runtime is not as generic as its names suggest: it replaces exactly the pieces of the Lean runtime that one library's closure calls, stubs initialisation because that closure uses no standard-library constants, traps on big numbers, is single-threaded and uses a fixed static arena. A second library with a different closure will show what must grow. The contract is therefore a rule: a library's closure stays small and its naturals stay small, enforced by a gate. One shared runtime is the right shape for the trust ledger (one entry, one mutation suite, one pin).
 
@@ -275,7 +273,7 @@ A large public Lean formalization of an existing reference work shows three prac
 
 ```
 vbm-land ---------------------------> every repository (landing; the gates plug in by hooks)
-vbm-gates, vbm-rt -------------------> every library (gates, runtime, ABI, vectors, bindings)
+vbm-rt -----------------------------> every library (runtime, ABI, vectors, bindings)
 vbm-json (+ framing) <- vbm-jsonrpc <- vbm-acp
                      <- vbm-jsonschema <- vbm-mcp <- vbm-jsonrpc
                      <- vbm-oauth, vbm-journal
@@ -290,7 +288,7 @@ vbm-utf8, vbm-ring: leaves
 
 0. `vbm-land`: the landing tool, extracted from its seven copies; first, because it is language-neutral, already runs, and every later repository would otherwise copy it again.
 1. `vbm-sse`: small, precisely specified, needed now by streaming clients, and the pilot for the incremental-parser proof pattern; the second library, installing `vbm-land` on day one.
-2. `vbm-gates` and `vbm-rt` (the runtime and the ABI): extracted from the two real libraries; the gates after `vbm-land`'s hook interface, the runtime and the ABI at the second library.
+2. `vbm-rt` (the runtime and the ABI): extracted from the two real libraries, at the second library.
 3. `vbm-jsonrpc`: the base of both agent protocols.
 4. `vbm-acp`, 5. `vbm-mcp`: the new capabilities; modern-era stdio first.
 6. `vbm-http1`: the largest trust-surface reduction; unblocks HTTP transports. If trust surface matters more than capability, move it ahead of `vbm-acp`.
