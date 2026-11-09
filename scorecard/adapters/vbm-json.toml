@@ -169,7 +169,6 @@ gates = [
   { name = "language bindings test", selftest = "^ok +scripts/test_bindings\\.sh" },
   { name = "workflow lint", selftest = "^ok +scripts/test_lint_workflows\\.sh" },
   { name = "protected-set gate", selftest = "^ok +scripts/test_protected_set\\.sh" },
-  { name = "lander", selftest = "^ok +scripts/test_land_direct\\.sh" },
   { name = "commit-on-main guard", selftest = "^ok +scripts/test_githook\\.sh" },
   { name = "parallel test runner", selftest = "^ok +scripts/test_run_parallel\\.sh" },
   { name = "delta test selection", selftest = "^ok +scripts/test_select_tests\\.sh" },

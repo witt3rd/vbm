@@ -18,16 +18,14 @@ There is exactly one way: `scripts/land-direct` (a stub for the vendored `script
 
 | exit | result | do |
 |---|---|---|
-| 0 | landed | read the push CI (step 6) |
+| 0 | landed | start the next change from a fresh `origin/main`; nothing runs after the push |
 | 1 | error | the message says why (base kept moving, bad commit subject, over budget): fix, run again |
-| 10 | blocked-red | main is red or unknowable: only a fix or revert may land; see `triage-red` |
 | 11 | conflict | files are named: `git fetch && git rebase origin/main`, resolve, run again |
 | 12 | refused | a hook, the protected-set rule or the drift check refused; read the message; never edit `scripts/land/` |
 | 13 | tier1 | your change fails Tier 1; nothing landed; fix and run again |
 | 14 | held | a hold or freeze is on; see `hold-and-freeze`; do not remove it unless you set it |
-| 15 | busy | another landing holds the lock: just run it again |
+| 16 | moved | main moved faster than the lander could validate; nothing landed; just run it again (a rerun after an accepted push says "already landed" and exits 0) |
 
-6. After exit 0, read the push CI of main and wait for it: `gh run list --workflow ci.yml --branch main --limit 1`, then `gh run watch <id> --exit-status`.
 
 ## A gate line that must go: the approval, announced first
 
@@ -37,13 +35,9 @@ A removed or changed line in a gate-defining file that may only gain lines (exit
 
 A landing that touches a path of the protected-paths list is refused (exit 12, "touches the protected set") unless a one-time approval for exactly that set of paths and exactly that diff is on main. A resume or go-ahead message is not an approval: only the line on main is. The same order as above: `land-direct --print-gate-diff-hash @protected` prints the record (set, hash); the record lands ALONE, announced to the judge first; the change lands later and removes the record in the same landing. Never write the line for a change you are about to land yourself without the judge having read it.
 
-## Numbers: local vs CI
-
-`tier1_seconds` in the JSON is the **local** Tier 1 time on your machine. The CI run's job time is a **CI** number. Report them separately and label each (`local` / `CI`); they differ and neither stands in for the other.
-
 ## What red means
 
-Main is red **only** when the `tier1` job of the latest *push* run on main failed. Tier 2 failures do not make it red. A run that did not finish, or an infrastructure failure (runner never started, network, billing), is not red. If CI cannot be asked, the lander refuses (exit 10): not knowing is not green.
+Nothing runs after the push: Tier 1 on the rebased combination is the only gate. If main is ever red, whoever sees it reverts the commit that made it red with `git revert` and lands the revert; its author reproduces in a new worktree and resubmits (`triage-red`). Your landing must not ADD a failure.
 
 ## Do NOT
 

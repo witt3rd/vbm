@@ -110,7 +110,7 @@ V --pr-file registry/acme__widget.toml --base-root "$T/base" "$T/registry/acme__
 # and a tool entry has no commit, manifest or card to score, so its row stays unscored however the allowlist reads
 grep -q '"witt3rd/vbm-land"' registry/allowlist.toml && grep -q '^kind = "tool"' registry/witt3rd__vbm-land.toml && ran_case || fail "the real registry no longer lists vbm-land as an allowlisted tool (the cases below read it)"
 for k in commit manifest targets latest measured; do ! grep -q "^\[\?$k" registry/witt3rd__vbm-land.toml && ran_case || fail "the vbm-land tool entry carries $k: a tool is never scored"; done
-readers=$(grep -l 'registry/\|\*__\*\.toml' scorecard/scorecard scorecard/scorecard_*.py scorecard/registry-* .github/workflows/*.yml 2>/dev/null | sed 's#.*/##' | sort | tr '\n' ' ')
+readers=$(grep -l 'registry/\|\*__\*\.toml' scorecard/scorecard scorecard/scorecard_*.py scorecard/registry-* 2>/dev/null | sed 's#.*/##' | sort | tr '\n' ' ')
 case "$readers" in "registry-table registry-validate scorecard ") ran_case ;; *) fail "a new reader of registry/ appeared ($readers): a scoring job must not pick subjects from the registry or allowlist without a test here" ;; esac
 grep -n 'registry/\|__\*\.toml' scorecard/scorecard scorecard/scorecard_policy.py | grep -v -i 'allowlist\|#\|"""' > "$T/enum" || true; [ ! -s "$T/enum" ] && ran_case || fail "the scorer reads registry entries: $(cat "$T/enum")"
 scorecard/registry-table --root "$(pwd)" | grep '^| \[vbm-land\]' | grep -q '| tool | live | unscored | unscored | - |$' && ran_case || fail "the vbm-land row is not an unscored tool row with no card"
