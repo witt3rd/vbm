@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# The runtime's mem* against libc, byte for byte, on this machine's architecture (CI runs it on x86_64 and aarch64). The native part of scripts/rt/runtime/rt.c (the native mem* and memcmp) is
+# The runtime's mem* against libc, byte for byte, on this machine's architecture (a cold machine runs it on x86_64 and aarch64). The native part of scripts/rt/runtime/rt.c (the native mem* and memcmp) is
 # compiled alone under other names; libc is the oracle. Real behaviour caught: a wrong copy at some size, alignment or overlap.
 set -euo pipefail
 here=$(cd "$(dirname "$0")/.." && pwd); t=$(mktemp -d); trap 'rm -rf "$t"' EXIT
