@@ -4,7 +4,7 @@ Thank you for looking. A short, honest note about how this repository works.
 
 ## Who lands changes
 
-**Only the owner lands changes on `main`**, directly, with the repository's own lander (`scripts/land-direct`, from [vbm-land](https://github.com/witt3rd/vbm-land)): no pull request is merged in the GitHub sense. That is the method this repository describes ([no pull requests for a single owner](guidelines/no-pull-requests-for-a-single-owner.md)), not a lack of interest in your work.
+**Only the owner lands changes on `main`**, directly, with the repository's own lander (`.land/land-direct`, from [vbm-land](https://github.com/witt3rd/vbm-land)): no pull request is merged in the GitHub sense. That is the method this repository describes ([no pull requests for a single owner](guidelines/no-pull-requests-for-a-single-owner.md)), not a lack of interest in your work.
 
 **Outside contributions are welcome** as proposals: open an issue, or a pull request from a fork. If the change is accepted it lands as a commit made by the owner (your authorship is kept where the change is applied as is; otherwise the commit says where it came from), and the pull request may be closed.
 

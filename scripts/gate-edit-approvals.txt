@@ -1,1 +1,1 @@
-scripts/land.conf,scripts/protected-paths.txt | 36b9b3659146ff2bc37d40b90d5f574271a0a84bef81a8ce877f17f4dd212958 | simplification ordered by main 2026-11-06: narrow the protected list to the lander files and turn the size budget off | 2026-11-06
+.land/land.conf,scripts/protected-paths.txt | 36b9b3659146ff2bc37d40b90d5f574271a0a84bef81a8ce877f17f4dd212958 | simplification ordered by main 2026-11-06: narrow the protected list to the lander files and turn the size budget off | 2026-11-06

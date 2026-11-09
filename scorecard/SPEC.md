@@ -12,7 +12,7 @@ The rubric is toolchain-neutral: a metric is defined by what it counts, never by
 3. **Honest status.** Each metric is `pass`, `fail` or `not-measurable`. `not-measurable` counts as a FAIL for the floor unless a NAMED SUBSTITUTE metric is reported beside it (see "Cannot be fully measured").
 4. **Time series.** Each run appends its JSON to a history; a scheduled run on a pinned worker host with no other load keeps it. The page shows trend, not only today.
 5. **Any repo, one adapter.** The submission contract is one file, `scorecard.toml` (named commands and declared paths for each source below). The scorecard knows no repo by name.
-6. **Own lander.** Lands only through its own `scripts/land-direct`: no PRs, main green at every commit.
+6. **Own lander.** Lands only through its own `.land/land-direct`: no PRs, main green at every commit.
 7. **Self-protected.** The metric definitions, targets, floors and the adapter schema are protected paths; changing one is a gate-defining edit, judged by the attack suite (ideal 7), not by taste.
 8. **Untrusted subject.** The submitted repo is untrusted code. Static metrics read only declared files; every metric that must execute subject code runs inside the sandbox (section below), and the runner refuses to execute it anywhere else.
 9. **Two levels.** A metric belongs to exactly one level (the `L` column below). Level 1 executes nothing of the candidate. A Level 2 metric never makes a card `Certified`, and a missing Level 2 run never fails a Level 1 verdict.

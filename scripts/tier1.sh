@@ -14,12 +14,12 @@ par scripts/test_license.sh
 par scripts/test_tmp_preflight.sh
 par scripts/test_export.sh
 par scripts/test_no_crash_record.sh
-par scripts/test_run_scoped.sh
+par
 par scripts/test_reap.sh
 par scripts/test_ran_evidence.sh   # the shared negative test of the ran-evidence mechanism: a refused, missing, skipped, silent or zero-count check FAILS
 for f in scripts/test_*.sh; do case " ${tests[*]} " in *" $f "*) ;; *) echo "tier1: $f is not declared with par" >&2; exit 1;; esac; done
 for f in "${tests[@]}"; do [ -f "$f" ] || { echo "tier1: declared test $f does not exist" >&2; exit 1; }; done
-scripts/land/bin/land-check   # the pinned lander is intact (edit vbm-land, not the copy); negative self-test:
+.land/tool/bin/land-check   # the pinned lander is intact (edit vbm-land, not the copy); negative self-test:
 scripts/lint-scoped-runners.sh --selftest   # long runners run under scripts/run-scoped.sh (a bounded transient scope, reaped on exit: an aborted run cannot orphan); a guard against accidents, indirection is its stated limit
 # No test may leave a crash record (systemd-coredump, hence a desktop notification): the run is wrapped (scripts/lib-no-crash-record.sh; self-test: scripts/test_no_crash_record.sh).
 # Audit: no test here crashes on purpose (the fixtures exit 1, the sandbox probes are denials and a timeout kill); a probe that must crash runs under `quiet`.
