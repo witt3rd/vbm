@@ -12,7 +12,9 @@ An agent's memory is where what it learned outlives its process. The behaviour a
 - **Scope.** Pure data and total functions over `Init`. No model call, no network, no storage.
 
 ## 3. Slices
-M1 the scope and note types, the bank, and monotone append-only retain. M2 the recall contract (every hit cites a retained note, only from the attached scopes). M3 supersession and consolidation. M4 the reference model and the vectors.
+M1 the scope and note types, the bank, and monotone append-only retain. **Landed:** a scope is one of three kinds (a class, a domain, an identity) and the kinds stay distinct under one name (`VbmMemory/Scope.lean`, `VbmMemoryProofs/Note.lean`); a note is its identifier, its scope, where it came from and the identifiers of the notes it derives from, empty for an experience note (`VbmMemory/Note.lean`); a bank is the notes retained so far, retaining appends and loses nothing, each retain adds exactly one note, two writers retaining at once leave the same notes whichever lands first, a recall considers exactly the retained notes whose scope was asked for and nothing else, and a derived note is accepted only when it derives from a note the bank already holds (`VbmMemory/Bank.lean`, `VbmMemoryProofs/Bank.lean`); an instance is attached to a class, some domains and an identity if it bears one, it has no identity scope and cannot write one when it bears none, and it writes only into the scopes it is attached to (`VbmMemory/Attach.lean`, `VbmMemoryProofs/Attach.lean`). Every theorem carries a witness beside it that its hypothesis can hold.
+
+M2 the recall contract (every hit cites a retained note, only from the attached scopes). M3 supersession and consolidation. M4 the reference model and the vectors.
 
 ## 4. Ran-evidence (the gate rule)
 A check that never ran must not pass. Every test script prints `ran: NAME: N cases` (N > 0).

@@ -33,7 +33,7 @@ Verified agent memory, written once in Lean 4 and machine-checked: scopes (a cla
 **Scope.** Pure data and total functions over `Init`. No model call, no network, no storage. What is proved is what a compliant implementation may return; how relevant a note is and how hits are ranked belong to the implementation.
 
 ## Status
-Slices (docs/decisions/0001-vbm-memory.md): M1 scope, note, bank, monotone append-only retain (the scope type landed with the scaffold). Planned: M2 the recall contract, M3 supersession and consolidation, M4 the reference model and the conformance vectors.
+Slices (docs/decisions/0001-vbm-memory.md): M1 landed: scope, note, bank, monotone append-only retain, eligibility and attachment, each theorem with a non-vacuity witness. Planned: M2 the recall contract, M3 supersession and consolidation, M4 the reference model and the conformance vectors.
 
 
 ## Hard rules
