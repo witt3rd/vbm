@@ -14,7 +14,7 @@ VBM is a standard for software that is specified and proved in Lean, builds free
 4. **Gate and prove**: [prove-and-gate](skills/prove-and-gate/SKILL.md); every gate gets a negative self-test.
 5. **Score and register**: [run-the-scorecard](skills/run-the-scorecard/SKILL.md), then [register-in-the-registry](skills/register-in-the-registry/SKILL.md).
 
-Also: [flip-checklist](skills/flip-checklist/SKILL.md) (publishing a repo), [write-a-binding](skills/write-a-binding/SKILL.md) and [consume-a-pinned-library](skills/consume-a-pinned-library/SKILL.md) and [release-a-library](skills/release-a-library/SKILL.md).
+Also: [flip-checklist](skills/flip-checklist/SKILL.md) (publishing a repo), [write-a-binding](skills/write-a-binding/SKILL.md) and [vendor-a-library](https://github.com/witt3rd/vbm-land/blob/main/skills/vendor-a-library/SKILL.md) and [release-a-library](https://github.com/witt3rd/vbm-land/blob/main/skills/release-a-library/SKILL.md) (shipped with vbm-land, `land-pin` and `land-release`) and [release-a-library](skills/release-a-library/SKILL.md).
 
 ## Registry
 

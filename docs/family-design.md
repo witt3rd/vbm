@@ -12,8 +12,9 @@ It EXTENDS the standard (the guidelines, the registry, the pinned-library skill)
 - **Layering rule** (ROADMAP): libraries depend on foundation pieces; foundation depends only on vbm-land's hook
   interface; vbm-land depends on nothing but a shell, git and the forge client.
 - **Registry** (`registry/*.toml`): one entry per package with `kind`, `status`, `what`, `depends_on`.
-- **Pinned dependencies** (skill `consume-a-pinned-library`): a pin is version AND commit AND the SHA-256 of a
-  vendored copy; no submodules; no fetching at run time; an offline drift check in the fast gate.
+- **Pinned dependencies** (vbm-land `docs/pin.md`, tool `land-pin`): a library is vendored at `vendor/NAME/` and locked by
+  tag, commit and tree hash; the signed tag records the tree hash; nothing is fetched at build time; `land-pin verify` is
+  the offline fast-gate check.
 
 ## 2. What we found (facts, 2026-11-11)
 
@@ -80,14 +81,14 @@ Each conditional theorem carries a non-vacuity witness.
 
 ## 5. Dependencies and releases
 
-1. **Signed release tags on every package**, existing and new, starting at `v0.1.0`, as vbm-land does. A tag is cut
-   only on a commit that landed through the lander, and is never moved or deleted (a fix is a new version). A pin is
-   the tag + its commit + the SHA-256 of the vendored copy (the existing skill); an untagged pin is refused by the
-   pin check. A bump is one commit.
-2. **A flat, vendored, offline closure.** A fresh worktree builds with no network and no per-host prep. SPIKE FIRST
-   (milestone M1): confirm how Lake resolves path dependencies for a flat vendored closure (vbm-llm, which needs
-   vbm-json, which needs vbm-simd). Acceptance: a clean clone builds offline, with no nested package directory and
-   no prep command. If Lake cannot do it cleanly, we say so and decide with the facts.
+1. **Signed release tags on every package**, existing and new, starting at `v0.1.0`, made by `land-release` (vbm-land
+   v0.10.0), whose message records the tree hash. A tag is cut only on a commit that landed through the lander, and is
+   never moved or deleted (a fix is a new version). A pin is the tag + its commit + the tree hash in `.land/pins.lock`,
+   added or bumped only by `land-pin vendor` (it refuses an unsigned tag or a tree that does not match the signed hash).
+2. **A vendored, offline closure** (proven by the M1 spike): each package vendors its direct dependencies at
+   `vendor/NAME`, requires them by path, and refers to their files relative to its own directory. A fresh worktree
+   builds with no network and no per-host prep; `land-pin verify` also refuses two different copies of one library in
+   the closure.
 3. **The registry is the one manifest.** `depends_on` in `registry/*.toml` is checked by a gate that recomputes the
    dependencies from each package's build file and compares (the scorecard's rule: every number recomputed, never
    trusted from a document).
@@ -111,7 +112,7 @@ Each conditional theorem carries a non-vacuity witness.
 |---|---|---|
 | M0 | this design approved; planned registry entries and the guideline land | nothing |
 | M1 | the vendored-closure spike (section 5.2) | the per-host `prep` commands, if it works |
-| M1b | cut `v0.1.0` on each existing library, after the spike (which may touch their build files); a `release-a-library` skill modelled on vbm-land's `release` | untagged pins |
+| M1b | cut `v0.1.0` on each existing library, after the spike (which may touch their build files); `land-pin` and `land-release` (vbm-land v0.10.0) and their skills are the mechanism | untagged pins |
 | M2 | `vbm-work`: Task, typed Outcome, round and run end, extracted from the application's own specifications (typed outcome, session, run end, worker outcome); the application depends on it by expand-and-contract | the application's duplicates |
 | M3 | `vbm-orchestrator`: the cycle SPEC first (the missing piece), proofs, reference model | nothing yet |
 | M4 | the orchestrator's interpreter and the application's bindings; the dispatch script calls it | the application's task script; the worker, repair and landing parts of its dispatch script |
