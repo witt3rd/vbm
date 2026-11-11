@@ -1,0 +1,5 @@
+kind = "library"
+status = "planned"
+what = "The task cycle as a sans-I/O state machine: run the worker, the checks and the reviewers, cycle back on failure or criticism, close out"
+milestone = "the cycle specification first"
+depends_on = ["vbm-work"]

@@ -302,3 +302,7 @@ Where the first consumer of a codec already has the code, the library is a **lif
 - **Unmeasured effort**: chunk-split invariance. The `vbm-sse` result recalibrates `vbm-http1` and stdio framing.
 - **A card is not a proof**: counting a pinned library raises a consumer's specified share by its mass, not by effort; every slice names the theorem that makes it more than a relabeling.
 - **Fidelity to prose specifications is a limit claim**, never `proved`: we say so on each card.
+
+## The family design
+
+The dispatcher, the orchestrator, the packages between them, the release-tag and pinning rules, and the build order are in [docs/family-design.md](docs/family-design.md).

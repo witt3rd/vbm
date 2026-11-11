@@ -8,7 +8,7 @@ VBM is a standard for software that is specified and proved in Lean, builds free
 
 ## Start here
 
-1. **Read the guidelines**: [the index](guidelines/INDEX.md); start with [specification first](guidelines/spec-first.md).
+1. **Read the guidelines**: [the index](guidelines/INDEX.md); start with [specification first](guidelines/spec-first.md), [logic lives in the specification](guidelines/logic-lives-in-the-spec.md).
 2. **Scaffold** a library with the [new-vbm-library](skills/new-vbm-library/SKILL.md) skill.
 3. **Land** with [vbm-land](https://github.com/witt3rd/vbm-land), the landing tool (trunk-based, one lander, no pull requests for a single owner).
 4. **Gate and prove**: [prove-and-gate](skills/prove-and-gate/SKILL.md); every gate gets a negative self-test.
@@ -27,6 +27,7 @@ Also: [flip-checklist](skills/flip-checklist/SKILL.md) (publishing a repo), [wri
 | vbm-acp | Agent client protocol, pinned core profile | library | planned | unscored | unscored | - |
 | vbm-baseN | base64, base64url and base16 | library | planned | unscored | unscored | - |
 | [vbm-context](https://github.com/witt3rd/vbm-context) | A typed, verified agent context state (goal, obligations, facts with provenance, bounded compaction) for long-horizon LLM agents | library | live | unscored | unscored | - |
+| vbm-dispatcher | Host capacity, claim, lease, heartbeat and hand-over of work to an orchestrator, as a sans-I/O state machine | library | planned | unscored | unscored | - |
 | vbm-http1 | HTTP/1.1 message framing and body length | library | planned | unscored | unscored | - |
 | vbm-journal | Append-only, hash-chained log and a generic chain checker | library | planned | unscored | unscored | - |
 | [vbm-json](https://github.com/witt3rd/vbm-json) | Verified JSON codec | library | live | **FAIL** (2 of 3; Trusted generation not yet defined) | **FAIL** | [card](registry/scores/witt3rd__vbm-json.md) |
@@ -34,8 +35,10 @@ Also: [flip-checklist](skills/flip-checklist/SKILL.md) (publishing a repo), [wri
 | [vbm-llm](https://github.com/witt3rd/vbm-llm) | The wire contract of the LLM provider conventions (OpenAI, Anthropic, OpenRouter): codecs, stream fold, tool-call turns, usage and finish-reason arithmetic | library | live | unscored | unscored | - |
 | vbm-mcp | Model context protocol client, pinned profile over stdio | library | planned | unscored | unscored | - |
 | vbm-oauth | OAuth client flows as a state machine | library | planned | unscored | unscored | - |
+| vbm-orchestrator | The task cycle as a sans-I/O state machine: run the worker, the checks and the reviewers, cycle back on failure or criticism, close out | library | planned | unscored | unscored | - |
 | [vbm-sse](https://github.com/witt3rd/vbm-sse) | Server-sent event streams | library | live | **PASS** (2 of 3; Trusted generation not yet defined) | **PASS** | [card](registry/scores/witt3rd__vbm-sse.md) |
 | vbm-uri | URI parsing and resolution (RFC 3986) | library | planned | unscored | unscored | - |
+| vbm-work | The vocabulary of work: a task, its typed outcome, round end and run end, and the kinds of block | library | planned | unscored | unscored | - |
 <!-- registry:end -->
 
 The adapter for the first row runs its subject as described in these [notes](scorecard/adapters/vbm-json.notes.md); its [card page](registry/scores/witt3rd__vbm-json.md) shows every metric, and its [one-page PDF](docs/cards/vbm-json-v13.pdf) is one page.
@@ -83,7 +86,7 @@ The card records the commit, the sandbox and its limits, so a score can be repro
 
 Small files, one idea each ([index](guidelines/INDEX.md)):
 
-- [Verified by construction](guidelines/verified-by-construction.md), [the trusted base is a budget](guidelines/trusted-base-is-a-budget.md), [the boundary never decides](guidelines/boundary-never-decides.md), [specification first](guidelines/spec-first.md), [gates need negative self-tests](guidelines/gates-need-negative-self-tests.md)
+- [Verified by construction](guidelines/verified-by-construction.md), [the trusted base is a budget](guidelines/trusted-base-is-a-budget.md), [the boundary never decides](guidelines/boundary-never-decides.md), [specification first](guidelines/spec-first.md), [logic lives in the specification](guidelines/logic-lives-in-the-spec.md), [gates need negative self-tests](guidelines/gates-need-negative-self-tests.md)
 - [Write once, generate many](guidelines/write-once-generate-many.md), [generated code is checked independently](guidelines/generated-code-is-checked-independently.md), [tests come from the specification](guidelines/tests-from-the-spec.md), [efficiency is a budget](guidelines/efficiency-is-a-budget.md)
 - [Trunk-based landing](guidelines/trunk-based-landing.md), [choose the landing mechanism](guidelines/choose-the-landing-mechanism.md), [a fast gate and small changes](guidelines/fast-gate-small-changes.md), [one lander](guidelines/single-lander.md), [revert first](guidelines/revert-first.md), [no pull requests for a single owner](guidelines/no-pull-requests-for-a-single-owner.md)
 

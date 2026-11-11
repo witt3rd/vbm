@@ -1,0 +1,5 @@
+kind = "library"
+status = "planned"
+what = "The vocabulary of work: a task, its typed outcome, round end and run end, and the kinds of block"
+milestone = "extracted from the first application's typed-outcome, session, run-end and worker-outcome specifications"
+depends_on = []

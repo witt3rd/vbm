@@ -1,0 +1,5 @@
+kind = "library"
+status = "planned"
+what = "Host capacity, claim, lease, heartbeat and hand-over of work to an orchestrator, as a sans-I/O state machine"
+milestone = "specification from the first application's pool, claim-plan, lease, heartbeat and host-life specifications"
+depends_on = ["vbm-work"]
