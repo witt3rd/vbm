@@ -5,7 +5,7 @@
 export LC_ALL=C
 set -euo pipefail
 cd "$(dirname "$0")/.."
-. scripts/lib-ran.sh   # ran_case counts each executed check, ran_done prints the evidence line `ran: NAME: N cases` (docs/0001-ran-evidence.md)
+. .land/tool/lib/ran.sh   # ran_case counts each executed check, ran_done prints the evidence line `ran: NAME: N cases` (.land/tool/docs/ran-evidence.md)
 sb=$(pwd)/scorecard/sandbox-bwrap; sc=$(pwd)/scorecard/scorecard
 fail() { echo "tier1: sandbox-bwrap: $*" >&2; exit 1; }
 command -v bwrap >/dev/null && ran_case || fail "bwrap is not installed (apt install bubblewrap)"

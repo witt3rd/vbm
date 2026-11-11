@@ -4,7 +4,7 @@
 export LC_ALL=C
 set -euo pipefail
 cd "$(dirname "$0")/.."
-. scripts/lib-ran.sh   # ran_case counts each executed check, ran_done prints the evidence line `ran: NAME: N cases` (docs/0001-ran-evidence.md)
+. .land/tool/lib/ran.sh   # ran_case counts each executed check, ran_done prints the evidence line `ran: NAME: N cases` (.land/tool/docs/ran-evidence.md)
 python3 - <<'PY'
 import importlib.machinery, importlib.util, sys
 sys.path.insert(0, "scorecard"); sys.dont_write_bytecode = True

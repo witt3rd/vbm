@@ -6,7 +6,7 @@
 export LC_ALL=C
 set -euo pipefail
 cd "$(dirname "$0")/.."
-. scripts/lib-ran.sh
+. .land/tool/lib/ran.sh
 . scripts/git-hermetic.sh 2>/dev/null || true
 fail() { echo "tier1: pins: $*" >&2; exit 1; }
 T=$(mktemp -d); trap 'rm -rf "$T"' EXIT
