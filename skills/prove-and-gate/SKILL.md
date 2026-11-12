@@ -14,7 +14,7 @@ description: >-
 4. `lake build <Name> <Name>Proofs` must pass.
 
 ## The gates
-- **Axiom gate**: walks every constant and fails on any axiom beyond the standard three (`propext`, `Classical.choice`, `Quot.sound`). Run: `lake env lean --run scripts/AxiomGate.lean`; it prints `axiom gate: N constants checked, M offending`, and M must be 0.
+- **Axiom gate**: walks every constant of the modules you list and fails on any axiom beyond the standard three (`propext`, `Classical.choice`, `Quot.sound`). The landing tool ships it: list the modules to import and the roots to audit in `.land/lean.conf` (its presence turns the Lean gates on), then run `.land/tool/bin/land-lean axiom [--selftest]` (vbm-land `docs/lean-gates.md`); it prints `axiom gate: N constants checked, M offending`, and M must be 0. A root that matches no constant fails: a gate that audited nothing proves nothing. Write no axiom gate of your own.
 - **Closure gate**: `lake env lean --run scripts/ClosureGate.lean` prints `specified share P%`; for a library the floor is 100%.
 
 ## Negative self-tests (the gate must be seen to fail)
