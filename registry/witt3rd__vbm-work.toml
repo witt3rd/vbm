@@ -1,5 +1,5 @@
 kind = "library"
 status = "planned"
-what = "The vocabulary of work: a task, its typed outcome, round end and run end, and the kinds of block"
-milestone = "extracted from the first application's typed-outcome, session, run-end and worker-outcome specifications"
+what = "The vocabulary of work: the typed outcome of a run (four tags, fourteen kinds of block, what makes one well formed) and the review words (findings, verdicts); pure Lean specifications and proofs"
+milestone = "released v0.1.0 (private until its owner publishes it); next: the task, one list of the kinds of block"
 depends_on = []

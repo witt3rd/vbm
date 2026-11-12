@@ -39,7 +39,7 @@ Also: [flip-checklist](skills/flip-checklist/SKILL.md) (publishing a repo), [wri
 | vbm-orchestrator | The task cycle as a sans-I/O state machine: run the worker, the checks and the reviewers, cycle back on failure or criticism, close out | library | planned | unscored | unscored | - |
 | [vbm-sse](https://github.com/witt3rd/vbm-sse) | Server-sent event streams | library | live | **PASS** (2 of 3; Trusted generation not yet defined) | **PASS** | [card](registry/scores/witt3rd__vbm-sse.md) |
 | vbm-uri | URI parsing and resolution (RFC 3986) | library | planned | unscored | unscored | - |
-| vbm-work | The vocabulary of work: a task, its typed outcome, round end and run end, and the kinds of block | library | planned | unscored | unscored | - |
+| vbm-work | The vocabulary of work: the typed outcome of a run (four tags, fourteen kinds of block, what makes one well formed) and the review words (findings, verdicts); pure Lean specifications and proofs | library | planned | unscored | unscored | - |
 <!-- registry:end -->
 
 The adapter for the first row runs its subject as described in these [notes](scorecard/adapters/vbm-json.notes.md); its [card page](registry/scores/witt3rd__vbm-json.md) shows every metric, and its [one-page PDF](docs/cards/vbm-json-v13.pdf) is one page.

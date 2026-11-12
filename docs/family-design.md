@@ -55,7 +55,7 @@ run. It also performs the landing step. It runs nothing agentic and knows nothin
  machines     vbm-dispatcher  host capacity, claim, lease, heartbeat, hand-over                       (sans-I/O state machine)
               vbm-orchestrator the task cycle: worker, checks, reviewers, repair, close-out           (sans-I/O state machine)
                 |  both depend only on vbm-work; neither depends on the other (the dispatcher reaches the orchestrator through a port)
- vocabulary   vbm-work        Task in, typed Outcome out; round end and run end; the kinds of block
+ vocabulary   vbm-work        Task in, typed Outcome out; the review words; the kinds of block
               vbm-judge, vbm-money, vbm-route, vbm-host    extracted from the application when a second consumer needs them
  libraries    vbm-json  vbm-sse  vbm-journal  vbm-context  vbm-llm  vbm-memory                          (exist)
  foundation   vbm-rt  vbm-simd                                                                         (exist)
@@ -113,7 +113,7 @@ Each conditional theorem carries a non-vacuity witness.
 | M0 (done 2026-11-11) | this design approved; planned registry entries and the guideline land | nothing |
 | M1 (done: the vendored closure works, proven by experiment) | the vendored-closure spike (section 5.2) | the per-host `prep` commands, if it works |
 | M1b (done: every repository has a signed release) | cut `v0.1.0` on each existing library, after the spike (which may touch their build files); `land-pin` and `land-release` (vbm-land v0.10.0) and their skills are the mechanism | untagged pins |
-| M2 (planned) | `vbm-work`: Task, typed Outcome, round and run end, extracted from the application's own specifications (typed outcome, session, run end, worker outcome); the application depends on it by expand-and-contract | the application's duplicates |
+| M2 (S1 done 2026-11-12) | `vbm-work`: the typed outcome (four tags, fourteen kinds, well-formedness) and the review words, with new proofs; v0.1.0 released, private until published. Reading the specifications corrected the plan: the run's end machinery and the session's rounds stay in the agent core, `WorkerOutcome` is deleted not extracted (the application's decision 0037). Next: the task, one list of the kinds of block, the application depends on it by expand-and-contract | the application's duplicates, `WorkerOutcome` |
 | M3 (planned) | `vbm-orchestrator`: the cycle SPEC first (the missing piece), proofs, reference model | nothing yet |
 | M4 (planned) | the orchestrator's interpreter and the application's bindings; the dispatch script calls it | the application's task script; the worker, repair and landing parts of its dispatch script |
 | M5 (planned) | `vbm-dispatcher` from the application's pool, claim-plan, lease, heartbeat and host-life specifications; its interpreter | the application's dispatch script |
