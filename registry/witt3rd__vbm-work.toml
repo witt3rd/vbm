@@ -1,5 +1,16 @@
 kind = "library"
-status = "planned"
+status = "live"
 what = "The vocabulary of work: the typed outcome of a run (four tags, fourteen kinds of block, what makes one well formed) and the review words (findings, verdicts); pure Lean specifications and proofs"
-milestone = "released v0.1.0 (private until its owner publishes it); next: the task, one list of the kinds of block"
+milestone = "released v0.1.0; not scored yet; next: the task, one list of the kinds of block"
 depends_on = []
+repo = "https://github.com/witt3rd/vbm-work"
+commit = "fac72ee8350d14c5f2cdfa7b1fa10129038f1c73"
+targets = ["Lean"]
+manifest = "vbm-proof.toml"
+
+[latest]
+date = ""
+correctness = "unscored"
+landedness = "unscored"
+level = "unscored"
+card = ""

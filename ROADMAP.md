@@ -1,6 +1,6 @@
 # VBM roadmap: the next verified bare-metal libraries (draft, revision 2)
 
-Status: draft, revised 2026-11-12. The tooling layers drawn below are built (one way to land, vendor, pin and release across ten repositories; see docs/family-design.md), and so are the libraries already released; none of the libraries LISTED below as next is. It lists the libraries we intend to write next in the `vbm-<name>` family, in dependency order, with an honest estimate of what each can prove, what it cannot, and how it is likely to score.
+Status: draft, revised 2026-11-12. The tooling layers drawn below are built (one way to land, vendor, pin and release across eleven repositories; see docs/family-design.md), and so are the libraries already released; none of the libraries LISTED below as next is. It lists the libraries we intend to write next in the `vbm-<name>` family, in dependency order, with an honest estimate of what each can prove, what it cannot, and how it is likely to score.
 
 ## Target architecture
 
