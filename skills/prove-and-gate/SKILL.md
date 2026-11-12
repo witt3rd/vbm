@@ -15,6 +15,7 @@ description: >-
 
 ## The gates
 - **Axiom gate**: walks every constant of the modules you list and fails on any axiom beyond the standard three (`propext`, `Classical.choice`, `Quot.sound`). The landing tool ships it: list the modules to import and the roots to audit in `.land/lean.conf` (its presence turns the Lean gates on), then run `.land/tool/bin/land-lean axiom [--selftest]` (vbm-land `docs/lean-gates.md`); it prints `axiom gate: N constants checked, M offending`, and M must be 0. A root that matches no constant fails: a gate that audited nothing proves nothing. Write no axiom gate of your own.
+- **Proof replay**: `land-lean recheck --selftest` replays every proof of the modules in `LAND_LEAN_RECHECK_MODULES` (`.land/lean.conf`), and of everything they import, with Lean's own checker in a fresh process (`leanchecker --fresh`); `--selftest` first proves the checker rejects a planted false theorem. Say exactly what it is: the same kernel code, so it catches a declaration that bypassed the kernel and an `.olean` an honest build did not produce, not a bug in the kernel (that needs a second implementation, nanoda: not wired).
 - **Closure gate**: `lake env lean --run scripts/ClosureGate.lean` prints `specified share P%`; for a library the floor is 100%.
 
 ## Negative self-tests (the gate must be seen to fail)
