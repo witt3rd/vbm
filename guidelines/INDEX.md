@@ -5,6 +5,7 @@ One idea per file. The scorecard (`../scorecard/SPEC.md`) measures how well a re
 Verified by construction
 - `verified-by-construction.md`: the code that runs is the specification, or derived from it.
 - `trusted-base-is-a-budget.md`: count what runs outside your control and keep it small.
+- `mark-what-is-trusted.md`: what cannot be proven is marked as trusted, and what must be marked is derived from the tree.
 - `boundary-never-decides.md`: code at the edge moves bytes; it does not choose.
 - `logic-lives-in-the-spec.md`: decisions are in the specification; scripts only bind ports.
 - `spec-first.md`: the specification lands before the implementation.
