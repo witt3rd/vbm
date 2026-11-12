@@ -106,18 +106,18 @@ Each conditional theorem carries a non-vacuity witness.
   `TEMPORARY(until: <what replaces it>)` and listed; the reviewer asks for the list.
 - Logic added in shell is a `fix`-level finding for a reviewer.
 
-## 7. Sequence, and what each step deletes
+## 7. Sequence, and what each step deletes (status 2026-11-12)
 
 | step | what | deletes |
 |---|---|---|
-| M0 | this design approved; planned registry entries and the guideline land | nothing |
-| M1 | the vendored-closure spike (section 5.2) | the per-host `prep` commands, if it works |
-| M1b | cut `v0.1.0` on each existing library, after the spike (which may touch their build files); `land-pin` and `land-release` (vbm-land v0.10.0) and their skills are the mechanism | untagged pins |
-| M2 | `vbm-work`: Task, typed Outcome, round and run end, extracted from the application's own specifications (typed outcome, session, run end, worker outcome); the application depends on it by expand-and-contract | the application's duplicates |
-| M3 | `vbm-orchestrator`: the cycle SPEC first (the missing piece), proofs, reference model | nothing yet |
-| M4 | the orchestrator's interpreter and the application's bindings; the dispatch script calls it | the application's task script; the worker, repair and landing parts of its dispatch script |
-| M5 | `vbm-dispatcher` from the application's pool, claim-plan, lease, heartbeat and host-life specifications; its interpreter | the application's dispatch script |
-| M6 | vocabulary extracted as second consumers appear (judge, money, route, host); the application's agent core extracted LAST | the application's copies |
+| M0 (done 2026-11-11) | this design approved; planned registry entries and the guideline land | nothing |
+| M1 (done: the vendored closure works, proven by experiment) | the vendored-closure spike (section 5.2) | the per-host `prep` commands, if it works |
+| M1b (done: every repository has a signed release) | cut `v0.1.0` on each existing library, after the spike (which may touch their build files); `land-pin` and `land-release` (vbm-land v0.10.0) and their skills are the mechanism | untagged pins |
+| M2 (planned) | `vbm-work`: Task, typed Outcome, round and run end, extracted from the application's own specifications (typed outcome, session, run end, worker outcome); the application depends on it by expand-and-contract | the application's duplicates |
+| M3 (planned) | `vbm-orchestrator`: the cycle SPEC first (the missing piece), proofs, reference model | nothing yet |
+| M4 (planned) | the orchestrator's interpreter and the application's bindings; the dispatch script calls it | the application's task script; the worker, repair and landing parts of its dispatch script |
+| M5 (planned) | `vbm-dispatcher` from the application's pool, claim-plan, lease, heartbeat and host-life specifications; its interpreter | the application's dispatch script |
+| M6 (planned) | vocabulary extracted as second consumers appear (judge, money, route, host); the application's agent core extracted LAST | the application's copies |
 
 Each step: specification, proofs, reference model, conformance vectors, release, then the binding. A step is done
 when what it replaced is deleted.

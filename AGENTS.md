@@ -10,6 +10,7 @@
 - Everything runs before the push, once, on the commit rebased onto main. Nothing runs after the push.
 - Proofs, not tests. A test exists only for what the proofs do not cover (the boundary), never for the development tooling.
 - A failure is a root-cause question, never a reason to add a check, gate, script or document. Nothing is added to the process without deleting something.
+- This repository is what third parties (agents and humans) read. When a convention, a tool version or a repository's status changes, the README, the ROADMAP, the guidelines, the skills and the registry change in the same piece of work, or a hub issue is filed that day; a non-normative page that no longer matches reality is a defect.
 - The worker owns its change: when the lander refuses it, the worker fixes it and lands again until it converges.
 
 # AGENTS.md

@@ -1,5 +1,5 @@
 # The registry allowlist (scorecard/SPEC.md, rule 10 and "Registry and contribution flow"). Until the Level 2 isolation exists (a microVM per job on a credential-free host; DECISIONS 13, 14)
 # the registry accepts ONLY these repos, and an outside submission is refused. An edit to it is never part of a contribution PR.
 # measured_per_month caps the Level 2 requests a maintainer may approve in one calendar month.
-repos = ["witt3rd/vbm-json", "witt3rd/vbm-land", "witt3rd/vbm-rt", "witt3rd/vbm-sse", "witt3rd/vbm-llm", "witt3rd/vbm-simd", "witt3rd/vbm-context"]
+repos = ["witt3rd/vbm-json", "witt3rd/vbm-land", "witt3rd/vbm-rt", "witt3rd/vbm-sse", "witt3rd/vbm-llm", "witt3rd/vbm-simd", "witt3rd/vbm-context", "witt3rd/vbm-journal", "witt3rd/vbm-memory"]
 measured_per_month = 2

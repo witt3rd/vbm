@@ -1,0 +1,16 @@
+kind = "library"
+status = "live"
+what = "Verified agent memory: scopes, append-only notes, cited recall, supersession; pure Lean specifications and proofs with a reference model and conformance vectors"
+milestone = "released v0.1.0; not scored yet"
+depends_on = []
+repo = "https://github.com/witt3rd/vbm-memory"
+commit = "8910f9f0c5fb66f31bf1ae63069bf669d522e8e5"
+targets = ["Lean"]
+manifest = "vbm-proof.toml"
+
+[latest]
+date = ""
+correctness = "unscored"
+landedness = "unscored"
+level = "unscored"
+card = ""

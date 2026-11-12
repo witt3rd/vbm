@@ -23,3 +23,7 @@ How we land
 - `single-lander.md`: one writer, the gate on the exact combination, a plain fast-forward push.
 - `revert-first.md`: a red main is reverted, then debugged.
 - `no-pull-requests-for-a-single-owner.md`: when the pull request is ceremony and when it is not.
+
+Depending and releasing
+- `vendor-and-pin.md`: one way to take a dependency (vendor a signed release, lock it, verify it) and to release.
+- `where-things-live.md`: one layout convention, the habits other ecosystems use.

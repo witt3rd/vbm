@@ -1,5 +1,16 @@
 kind = "library"
-status = "planned"
+status = "live"
 what = "Append-only, hash-chained log and a generic chain checker"
-milestone = "generic chain checker"
-depends_on = ["vbm-rt"]
+milestone = "released v0.1.0; not scored yet"
+depends_on = []
+repo = "https://github.com/witt3rd/vbm-journal"
+commit = "16540cbcbfe19f4463e2d89bff0abf1f48c0c4cf"
+targets = ["Lean"]
+manifest = "vbm-proof.toml"
+
+[latest]
+date = ""
+correctness = "unscored"
+landedness = "unscored"
+level = "unscored"
+card = ""

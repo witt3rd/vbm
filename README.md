@@ -4,7 +4,7 @@ VBM is a standard for software that is specified and proved in Lean, builds free
 
 [**Read the manifesto**](MANIFESTO.md): what the standard is, what it claims and what it does not.
 
-**Status: early.** This repository is the standard and its tooling: the [guidelines](guidelines/INDEX.md), the scorecard program, and the registry of scored repositories. Seven repositories are public. Live tools: [vbm-land](https://github.com/witt3rd/vbm-land), the landing tool; it is not scored. Libraries: [vbm-json](https://github.com/witt3rd/vbm-json) and [vbm-sse](https://github.com/witt3rd/vbm-sse) are live and scored; [vbm-llm](https://github.com/witt3rd/vbm-llm) and [vbm-context](https://github.com/witt3rd/vbm-context) are pre-release and have no card yet. Foundation: [vbm-simd](https://github.com/witt3rd/vbm-simd) is pre-release and unscored, and [vbm-rt](https://github.com/witt3rd/vbm-rt) is early (a repository with a README and a license, nothing extracted yet). Two libraries are scored so far. Their cards say what passes and what does not, and every number is on the card, not here: see the [vbm-json card](registry/scores/witt3rd__vbm-json.md) and the [vbm-sse card](registry/scores/witt3rd__vbm-sse.md). The rows without a link are plans, not releases. Nothing here is a finished product, and the scorecard says what it cannot measure instead of guessing.
+**Status: early.** This repository is the standard and its tooling: the [guidelines](guidelines/INDEX.md), the scorecard program, and the registry of scored repositories. Ten repositories are public, each with a signed release. The tool: [vbm-land](https://github.com/witt3rd/vbm-land) (not scored) lands changes and ships everything the repositories share. Libraries: [vbm-json](https://github.com/witt3rd/vbm-json) and [vbm-sse](https://github.com/witt3rd/vbm-sse) are live and scored; [vbm-llm](https://github.com/witt3rd/vbm-llm), [vbm-context](https://github.com/witt3rd/vbm-context), [vbm-journal](https://github.com/witt3rd/vbm-journal) and [vbm-memory](https://github.com/witt3rd/vbm-memory) are released and unscored (no card yet). Foundation: [vbm-simd](https://github.com/witt3rd/vbm-simd) is released and unscored, and [vbm-rt](https://github.com/witt3rd/vbm-rt) is early (a repository with a README and a license, nothing extracted yet). Two libraries are scored so far. Their cards say what passes and what does not, and every number is on the card, not here: see the [vbm-json card](registry/scores/witt3rd__vbm-json.md) and the [vbm-sse card](registry/scores/witt3rd__vbm-sse.md). The rows without a link are plans, not releases. Nothing here is a finished product, and the scorecard says what it cannot measure instead of guessing.
 
 ## Start here
 
@@ -29,11 +29,12 @@ Also: [flip-checklist](skills/flip-checklist/SKILL.md) (publishing a repo), [wri
 | [vbm-context](https://github.com/witt3rd/vbm-context) | A typed, verified agent context state (goal, obligations, facts with provenance, bounded compaction) for long-horizon LLM agents | library | live | unscored | unscored | - |
 | vbm-dispatcher | Host capacity, claim, lease, heartbeat and hand-over of work to an orchestrator, as a sans-I/O state machine | library | planned | unscored | unscored | - |
 | vbm-http1 | HTTP/1.1 message framing and body length | library | planned | unscored | unscored | - |
-| vbm-journal | Append-only, hash-chained log and a generic chain checker | library | planned | unscored | unscored | - |
+| [vbm-journal](https://github.com/witt3rd/vbm-journal) | Append-only, hash-chained log and a generic chain checker | library | live | unscored | unscored | - |
 | [vbm-json](https://github.com/witt3rd/vbm-json) | Verified JSON codec | library | live | **FAIL** (2 of 3; Trusted generation not yet defined) | **FAIL** | [card](registry/scores/witt3rd__vbm-json.md) |
 | vbm-jsonrpc | JSON-RPC 2.0 codec and request/response matching | library | planned | unscored | unscored | - |
 | [vbm-llm](https://github.com/witt3rd/vbm-llm) | The wire contract of the LLM provider conventions (OpenAI, Anthropic, OpenRouter): codecs, stream fold, tool-call turns, usage and finish-reason arithmetic | library | live | unscored | unscored | - |
 | vbm-mcp | Model context protocol client, pinned profile over stdio | library | planned | unscored | unscored | - |
+| [vbm-memory](https://github.com/witt3rd/vbm-memory) | Verified agent memory: scopes, append-only notes, cited recall, supersession; pure Lean specifications and proofs with a reference model and conformance vectors | library | live | unscored | unscored | - |
 | vbm-oauth | OAuth client flows as a state machine | library | planned | unscored | unscored | - |
 | vbm-orchestrator | The task cycle as a sans-I/O state machine: run the worker, the checks and the reviewers, cycle back on failure or criticism, close out | library | planned | unscored | unscored | - |
 | [vbm-sse](https://github.com/witt3rd/vbm-sse) | Server-sent event streams | library | live | **PASS** (2 of 3; Trusted generation not yet defined) | **PASS** | [card](registry/scores/witt3rd__vbm-sse.md) |
@@ -45,7 +46,13 @@ The adapter for the first row runs its subject as described in these [notes](sco
 
 ## The foundation
 
-The pieces every library shares are being split out so that each repository stops carrying its own copy. **Live:** [vbm-land](https://github.com/witt3rd/vbm-land), the landing tool, tag `v0.1.0` (signed). **Early:** [vbm-rt](https://github.com/witt3rd/vbm-rt), the freestanding runtime shim together with the ABI description and the C header and binding generators (consumers vbm-json and vbm-sse); the repository exists, nothing is extracted into it yet. There is no kit file and no bundle: a library pins each of them by signed tag through the one update flow, with hermetic tests. Every gate carve-out must be documented and protected: an exception that is not written down and on the protected list is a hole, not a carve-out.
+Everything the libraries share comes from one place, in one way ([how we got here](docs/family-design.md)).
+- **The tool.** [vbm-land](https://github.com/witt3rd/vbm-land) is released as signed `vX.Y.Z` tags and ships the landing tool and the shared machinery: the test-running runtime (the ran-evidence reader, the parallel test runner, the heavy-host guard), `land-pin` and `land-release`. Each repository vendors a pinned, hash-checked copy in `.land/tool/` and carries no copy of anything the tool ships.
+- **The libraries.** A library takes another by vendoring a signed release at `vendor/NAME/`, locked in `.land/pins.lock` (tag, commit, tree hash). Nothing is fetched at build time; `land-pin verify` is a step of every fast gate, and the scorer re-checks each vendored library against the signed release it names ([vendor and pin](guidelines/vendor-and-pin.md)).
+- **Where things live.** One layout convention, the habits other ecosystems use ([where things live](guidelines/where-things-live.md)).
+- **The runtime shim.** [vbm-rt](https://github.com/witt3rd/vbm-rt) is the freestanding runtime shim with the ABI description and the C header and binding generators; the repository exists and nothing is extracted into it yet.
+
+Every gate carve-out is written down with its reason in the trust ledger ([DECISIONS 20](scorecard/DECISIONS.md)): an exception that is not written down is a hole, not a carve-out.
 
 ## Build and check
 
@@ -89,6 +96,7 @@ Small files, one idea each ([index](guidelines/INDEX.md)):
 - [Verified by construction](guidelines/verified-by-construction.md), [the trusted base is a budget](guidelines/trusted-base-is-a-budget.md), [the boundary never decides](guidelines/boundary-never-decides.md), [specification first](guidelines/spec-first.md), [logic lives in the specification](guidelines/logic-lives-in-the-spec.md), [gates need negative self-tests](guidelines/gates-need-negative-self-tests.md)
 - [Write once, generate many](guidelines/write-once-generate-many.md), [generated code is checked independently](guidelines/generated-code-is-checked-independently.md), [tests come from the specification](guidelines/tests-from-the-spec.md), [efficiency is a budget](guidelines/efficiency-is-a-budget.md)
 - [Trunk-based landing](guidelines/trunk-based-landing.md), [choose the landing mechanism](guidelines/choose-the-landing-mechanism.md), [a fast gate and small changes](guidelines/fast-gate-small-changes.md), [one lander](guidelines/single-lander.md), [revert first](guidelines/revert-first.md), [no pull requests for a single owner](guidelines/no-pull-requests-for-a-single-owner.md)
+- [Vendor and pin](guidelines/vendor-and-pin.md) (one way to take a dependency and to release), [where things live](guidelines/where-things-live.md) (one layout convention).
 
 ## Contributing and security
 

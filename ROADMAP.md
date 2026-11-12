@@ -1,6 +1,6 @@
 # VBM roadmap: the next verified bare-metal libraries (draft, revision 2)
 
-Status: draft for this repository, 2026-11-05. Nothing in this document is built. It lists the libraries we intend to write next in the `vbm-<name>` family, in dependency order, with an honest estimate of what each can prove, what it cannot, and how it is likely to score.
+Status: draft, revised 2026-11-12. The tooling layers drawn below are built (one way to land, vendor, pin and release across ten repositories; see docs/family-design.md), and so are the libraries already released; none of the libraries LISTED below as next is. It lists the libraries we intend to write next in the `vbm-<name>` family, in dependency order, with an honest estimate of what each can prove, what it cannot, and how it is likely to score.
 
 ## Target architecture
 
@@ -9,9 +9,9 @@ Everything in this roadmap is ordered to reach one factoring. A VBM library is a
 ```
  libraries     vbm-json  vbm-sse  vbm-jsonrpc  vbm-acp  vbm-mcp  vbm-http1 ...    Lean specification + proofs, compiled to C and WebAssembly, generated bindings
                   |   every claim carries a clause tag and a review tier
- foundation    vbm-rt (freestanding runtime, ABI description and generators)   vbm-simd (later)
-                  |   the foundation pieces plug into vbm-land through hook points
- process       vbm-land      the landing tool: lander, one red definition, freeze marker, revert-first watchdog, known-flaky list
+ foundation    vbm-rt (freestanding runtime, ABI description and generators)   vbm-simd (live)
+                  |   the shared machinery is the vbm-land payload, vendored by every repository
+ process       vbm-land      the landing tool (lander, one red definition, freeze marker, revert-first watchdog) and what every repository shares: the test-running runtime, land-pin, land-release
  conventions   spec-clause tags  |  two tiers: fidelity-reviewed / agent-built  |  claim and blueprint for outside contributors
 ```
 
