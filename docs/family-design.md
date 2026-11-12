@@ -65,6 +65,19 @@ run. It also performs the landing step. It runs nothing agentic and knows nothin
 Names and grouping are for you to confirm. Rule for new packages: a package is created when its specification is
 ready and a second consumer exists; it is never created empty.
 
+### 4a. The whole system (decided 2026-11-12)
+
+The two machines are two of several components, and the same rule applies to all of them: each is its own repository, specified and verified alone, then assembled; the application that uses them ends as the composition root (the bindings to the real world, the wiring, the command line, and the statement of what the assembly guarantees). The planned components, none created yet (each when its specification is ready and a second consumer exists):
+
+| component | what it is | a port it owns |
+|---|---|---|
+| vbm-capacity | the capacity of all the hosts, fixed and elastic: the host lifecycle and a pure reconcile of policy and observed state into actions | `Provider` (provision, status, terminate, list) |
+| vbm-agent | the agent core: the session, context, tools and parallel calls, memory use, recovery; extracted last | `Model`, `Tools`, `Journal`, `Memory` |
+| gateways | how an outside channel (a chat service, mail) meets the one inbox: what must happen to a message in and an event out | `Channel` |
+| vbm-observer | a read-only view of the hosts, the runs and the journals: the pure projection from typed state to a view; the interface itself is a boundary | `Feed` |
+
+Rules that make them fit: **a port is owned by the component that calls it** (the consumer states the contract it needs, as a type with laws; any implementation that meets the laws is correct, and the component's theorems hold for all of them), and shared data lives in vbm-work, which depends on nothing. A gateway or an interface is mostly a boundary: what is verified is what it must do, not the channel's own protocol. The assembly proves no new fact about a component; what holds of the whole is a theorem over the composed specifications.
+
 **Ports** (each a contract in the spec, one reference implementation, generated conformance vectors; the package
 names no concrete backend):
 - Orchestrator: `Agent` (run a role with instructions and tools, get a typed result), `Lander` (check; land),
