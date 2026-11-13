@@ -8,7 +8,7 @@ VBM is a standard for software that is specified and proved in Lean, builds free
 
 ## Start here
 
-1. **Read the guidelines**: [the index](guidelines/INDEX.md); start with [specification first](guidelines/spec-first.md), [logic lives in the specification](guidelines/logic-lives-in-the-spec.md).
+1. **Read the guidelines**: [the index](guidelines/INDEX.md); start with [specification first](guidelines/spec-first.md), [logic lives in the specification](guidelines/logic-lives-in-the-spec.md), [no decision is made from text](guidelines/no-decisions-from-text.md).
 2. **Scaffold** a library with the [new-vbm-library](skills/new-vbm-library/SKILL.md) skill.
 3. **Land** with [vbm-land](https://github.com/witt3rd/vbm-land), the landing tool (trunk-based, one lander, no pull requests for a single owner).
 4. **Gate and prove**: [prove-and-gate](skills/prove-and-gate/SKILL.md); every gate gets a negative self-test.
