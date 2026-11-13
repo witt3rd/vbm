@@ -1,5 +1,16 @@
 kind = "library"
-status = "planned"
-what = "The task cycle as a sans-I/O state machine: run the worker, the checks and the reviewers, cycle back on failure or criticism, close out"
-milestone = "the cycle specification first"
+status = "live"
+what = "The task cycle as a pure state machine: prepare, run a worker, validate, review, land, clean up; criticism returns to the same session when a decision model judges the task converging, and only a money ceiling and a deadline stop it; pure Lean specification and proofs"
+milestone = "released v0.3.0; not scored yet; next: non-interference (control never reads prose), the reference model and the conformance vectors"
 depends_on = ["vbm-work"]
+repo = "https://github.com/witt3rd/vbm-orchestrator"
+commit = "bb7dbe7e06395fb261a8d0bc717e01fcd26e32ef"
+targets = ["Lean"]
+manifest = "vbm-proof.toml"
+
+[latest]
+date = ""
+correctness = "unscored"
+landedness = "unscored"
+level = "unscored"
+card = ""
