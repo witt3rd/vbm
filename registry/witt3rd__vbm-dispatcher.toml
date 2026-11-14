@@ -1,5 +1,16 @@
 kind = "library"
-status = "planned"
-what = "Host capacity, claim, lease, heartbeat and hand-over of work to an orchestrator, as a sans-I/O state machine"
-milestone = "specification from the first application's pool, claim-plan, lease, heartbeat and host-life specifications"
+status = "live"
+what = "A work dispatcher as pure Lean: a leased queue's guard and chooser with the store's port laws, and the two machines that drive one host: the tick (read the host, choose, claim) and the run of one claimed item (renew the lease, finish once, clean up once); proofs and language-neutral conformance vectors"
+milestone = "released v0.1.0; not scored yet; the pool (guard, chooser, store laws) and both machines are specified and proved (21 claims and the ports limit, 28 conformance vectors); the interpreter is next"
 depends_on = ["vbm-work"]
+repo = "https://github.com/witt3rd/vbm-dispatcher"
+commit = "699a361caabde3f1bab89bd373506c26a30d6591"
+targets = ["Lean"]
+manifest = "vbm-proof.toml"
+
+[latest]
+date = ""
+correctness = "unscored"
+landedness = "unscored"
+level = "unscored"
+card = ""
