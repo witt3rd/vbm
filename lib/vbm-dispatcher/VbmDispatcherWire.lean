@@ -77,9 +77,9 @@ def itemOf (j : Json) : Except String Item := do
          keys := ← strs (← getList j "keys"), deps := ← (← getList j "deps").mapM fun x => x.getNat?, needs := ← strs (← getList j "needs"), retries := ← getNat j "retries" }
 
 def entryJ (e : Entry) : Json :=
-  Json.mkObj [("item", itemJ e.item), ("state", stateJ e.state), ("left", toJson e.left), ("lostOn", arr (e.lostOn.map toJson))]
+  Json.mkObj [("item", itemJ e.item), ("state", stateJ e.state), ("left", toJson e.left), ("lostOn", arr (e.lostOn.map toJson)), ("lostAt", toJson e.lostAt)]
 def entryOf (j : Json) : Except String Entry := do
-  pure { item := ← itemOf (← j.getObjVal? "item"), state := ← stateOf (← j.getObjVal? "state"), left := ← getNat j "left", lostOn := ← (← getList j "lostOn").mapM fun x => x.getNat? }
+  pure { item := ← itemOf (← j.getObjVal? "item"), state := ← stateOf (← j.getObjVal? "state"), left := ← getNat j "left", lostOn := ← (← getList j "lostOn").mapM fun x => x.getNat?, lostAt := ← getNat j "lostAt" }
 
 def queueJ (q : Queue) : Json := arr (q.entries.map entryJ)
 def queueOf (j : Json) : Except String Queue := do pure ⟨← (← j.getArr?).toList.mapM entryOf⟩

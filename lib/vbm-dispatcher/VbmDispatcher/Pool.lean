@@ -114,6 +114,7 @@ structure Entry where
   state  : State
   left   : Nat                 -- retries left
   lostOn : List HostId := []   -- hosts that lost it: they defer it to others for a while
+  lostAt : Nat := 0            -- when the loss showed: the end of the lease that lapsed (the instant the patience counts from)
   deriving DecidableEq, Repr
 
 /-- The queue as `choose` reads it: a SNAPSHOT of the store's live rows (see `rowEntry`). No registry of hosts: a host judges no other host (`ready` is its own slice), and nothing here levels. -/
@@ -153,9 +154,9 @@ def best? {α : Type} (lt : α → α → Bool) : List α → Option α
   | []      => none
   | x :: xs => some (xs.foldl (fun m y => if lt y m then y else m) x)
 
-/-- A host that LOST the item defers it to the others, but only for `patience` ticks: then any qualified ready host claims it. That is the only deferral: there is no leveling between hosts. -/
+/-- A host that LOST the item defers it to the others, but only for `patience` ticks AFTER THE LOSS (`lostAt`, the end of the lease that lapsed), not after the item was enqueued: then any qualified ready host claims it. That is the only deferral: there is no leveling between hosts. -/
 def deferred (pr : Params) (now : Nat) (me : Quals) (e : Entry) : Bool :=
-  me.id ∈ e.lostOn && now < e.item.enqueuedAt + pr.patience
+  me.id ∈ e.lostOn && now < e.lostAt + pr.patience
 
 /-- THE STEP OF THE PER-HOST DISPATCHER: nothing while the host's transient guard says no, else the best claimable, not deferred item this host
 is qualified for. No central dispatcher: every host calls this on its own copy of the queue, then `Port.claimOver`. -/
@@ -177,7 +178,7 @@ def round (pr : Params) (hosts : List Quals) (L : HostId → Local) (q : Queue) 
 def hq (i : Nat) (labels : List Label := []) : Quals := ⟨i, labels, false⟩
 def item (i : Nat) (prio : Nat := 1) (keys : List Key := []) (deps : List ItemId := []) (needs : List Label := []) : Item :=
   ⟨i, 0, .impl, prio, 0, keys, deps, needs, 1⟩
-def mk (items : List Item) : Queue := ⟨items.map fun i => ⟨i, .pending, i.retries, []⟩⟩
+def mk (items : List Item) : Queue := ⟨items.map fun i => ⟨i, .pending, i.retries, [], 0⟩⟩
 def holders (q : Queue) (ids : List ItemId) : List (Option HostId) := ids.map q.holder?
 
 /-- "spread": six items, three equal idle hosts, each running ITS OWN dispatcher: two each, in a fixed order. -/
@@ -204,7 +205,7 @@ example : let q := mk [item 1]
           let tight : Local := ⟨0, false, 0, 950, 100, 30⟩
           (choose pr₀ q (hq 1) busy, choose pr₀ q (hq 1) tight, choose pr₀ q (hq 1) lc₀) = (none, none, some 1) := by decide
 /-- "host dies for good": its lease lapses, the row is claimable again, the dead host defers it (it is in `lostOn`) and another host takes it. -/
-example : let q : Queue := ⟨[⟨item 1, .pending, 0, [1]⟩]⟩
+example : let q : Queue := ⟨[⟨item 1, .pending, 0, [1], 0⟩]⟩
           (choose pr₀ q (hq 1) (lc₀ 1), choose pr₀ q (hq 2) (lc₀ 1)) = (none, some 1) := by decide
 
 theorem quantum_pos (n : Nat) : 0 < max 1 n := Nat.lt_of_lt_of_le Nat.one_pos (Nat.le_max_left _ _)
@@ -315,17 +316,17 @@ theorem deferred_of_not_lost (pr : Params) (now : Nat) (me : Quals) (e : Entry) 
 
 /-- A host that DID lose the item defers it to the others for `patience` ticks after it was enqueued. -/
 theorem lost_item_deferred (pr : Params) (now : Nat) (me : Quals) (e : Entry) (hl : me.id ∈ e.lostOn)
-    (hyoung : now < e.item.enqueuedAt + pr.patience) : deferred pr now me e = true := by
+    (hyoung : now < e.lostAt + pr.patience) : deferred pr now me e = true := by
   simp [deferred, hl, hyoung]
 
 theorem patience_bounds_deferral (pr : Params) (q : Queue) (me : Quals) (lc : Local) (e : Entry) (he : e ∈ q.entries)
-    (hr : ready pr me lc = true) (hc : q.canClaim e me = true) (old : e.item.enqueuedAt + pr.patience ≤ lc.now) :
+    (hr : ready pr me lc = true) (hc : q.canClaim e me = true) (old : e.lostAt + pr.patience ≤ lc.now) :
     (choose pr q me lc).isSome = true := by
   unfold choose
   simp only [hr, Bool.not_true, Bool.false_eq_true, ite_false, Option.isSome_map]
   apply best?_isSome _ _ e.item
   refine List.mem_map.2 ⟨e, List.mem_filter.2 ⟨he, ?_⟩, rfl⟩
-  have : ¬ lc.now < e.item.enqueuedAt + pr.patience := Nat.not_lt.2 old
+  have : ¬ lc.now < e.lostAt + pr.patience := Nat.not_lt.2 old
   simp [deferred, hc, this]
 
 
@@ -792,9 +793,9 @@ theorem finish_other (s s' : Store) (id h gen o) (hc : s.finish id h gen o = som
 holder; a delayed row with no holder is not offered at all. A host that last held a visible row lost it: it defers the row to the others for a while (`lostOn`). -/
 def Row.entry? (it : Item) (r : Row) (now : Nat) : Option Entry :=
   if r.visible now then
-    some ⟨it, if r.spent then .blocked .lost else .pending, it.retries - r.gen, if r.gen > 0 then r.holder.toList else []⟩
+    some { item := it, state := if r.spent then .blocked .lost else .pending, left := it.retries - r.gen, lostOn := if r.gen > 0 then r.holder.toList else [], lostAt := if r.gen > 0 then r.vt else 0 }
   else match r.holder with
-    | some h => some ⟨it, .claimed ⟨h⟩, it.retries - r.gen, []⟩
+    | some h => some ⟨it, .claimed ⟨h⟩, it.retries - r.gen, [], 0⟩
     | none => none
 
 /-- The queue a host reads: the items it knows (the backlog) that have a live row, as the snapshot shows them. -/

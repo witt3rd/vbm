@@ -92,7 +92,7 @@ theorem tick_ends_at_most_once (cfg : TickConfig) (s : TickPhase) (es : List Tic
 
 /-- A host with room, and a queue holding one pending item it is qualified for. -/
 def cfg₀ : TickConfig := ⟨pr₀, hq 1⟩
-def q₀ : Queue := ⟨[⟨item 7, .pending, 0, [], ⟩]⟩
+def q₀ : Queue := ⟨[⟨item 7, .pending, 0, [], 0⟩]⟩
 
 /-- The whole happy tick: readings with headroom, the queue, a won claim: the tick ends having started item 7. -/
 example : (Tick.run cfg₀ .reading [.readings (lc₀ 0), .queue q₀, .claimWon 41 1]).1 = .ended (.started 7 41 1) := by decide

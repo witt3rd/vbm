@@ -20,12 +20,14 @@ private def cfgDrain : TickConfig := ⟨pr₀, ⟨1, [], true⟩⟩
 private def lcBusy : Local := { lc₀ 0 with cpuPressure := 900 }
 private def lcFull : Local := { lc₀ 0 with diskFreeGb := 1 }
 private def lcOff : Local := { lc₀ 0 with off := true }
-private def qOne : Queue := ⟨[⟨item 7, .pending, 0, []⟩]⟩
-private def qTwo : Queue := ⟨[⟨item 7 (prio := 1), .pending, 0, []⟩, ⟨item 9 (prio := 5), .pending, 0, []⟩]⟩
-private def qDep : Queue := ⟨[⟨item 7 (deps := [3]), .pending, 0, []⟩]⟩
-private def qKey : Queue := ⟨[⟨item 6 (keys := ["file:a"]), .running ⟨2⟩, 0, []⟩, ⟨item 7 (keys := ["file:a"]), .pending, 0, []⟩]⟩
-private def qNeeds : Queue := ⟨[⟨item 7 (needs := ["lean"]), .pending, 0, []⟩]⟩
-private def qDefer : Queue := ⟨[⟨item 7, .pending, 0, [1]⟩]⟩
+private def qOne : Queue := ⟨[⟨item 7, .pending, 0, [], 0⟩]⟩
+private def qTwo : Queue := ⟨[⟨item 7 (prio := 1), .pending, 0, [], 0⟩, ⟨item 9 (prio := 5), .pending, 0, [], 0⟩]⟩
+private def qDep : Queue := ⟨[⟨item 7 (deps := [3]), .pending, 0, [], 0⟩]⟩
+private def qKey : Queue := ⟨[⟨item 6 (keys := ["file:a"]), .running ⟨2⟩, 0, [], 0⟩, ⟨item 7 (keys := ["file:a"]), .pending, 0, [], 0⟩]⟩
+private def qNeeds : Queue := ⟨[⟨item 7 (needs := ["lean"]), .pending, 0, [], 0⟩]⟩
+private def qDefer : Queue := ⟨[{ item := item 7, state := .pending, left := 0, lostOn := [1], lostAt := 0 }]⟩
+/-- The same item lost by this host a long time ago (an item enqueued long before its loss is the case the first version got wrong). -/
+private def qDeferOld : Queue := ⟨[{ item := item 7, state := .pending, left := 0, lostOn := [1], lostAt := 100 }]⟩
 private def rep1 : Report := ⟨.done [], some "abc1234"⟩
 private def repBlocked : Report := ⟨.blocked .noFinish "no typed end" [], none⟩
 
@@ -42,6 +44,8 @@ def scenarios : List Scenario := [
   .tick "idle-label-not-held" cfg0 [.readings (lc₀ 0), .queue qNeeds],
   .tick "claims-when-label-held" cfgLean [.readings (lc₀ 0), .queue qNeeds, .claimWon 60 1],
   .tick "idle-deferred-to-others" cfg0 [.readings (lc₀ 0), .queue qDefer],
+  .tick "claims-after-the-patience-ends" cfg0 [.readings (lc₀ 10), .queue qDefer, .claimWon 61 1],
+  .tick "deferred-after-a-late-loss" cfg0 [.readings (lc₀ 102), .queue qDeferOld],
   .tick "lost-race-then-won" cfg0 [.readings (lc₀ 0), .queue qTwo, .claimLost, .queue qOne, .claimWon 52 2],
   .tick "lost-race-then-idle" cfg0 [.readings (lc₀ 0), .queue qOne, .claimLost, .queue Queue.empty],
   .tick "store-down-reading-the-queue" cfg0 [.readings (lc₀ 0), .storeDown],
