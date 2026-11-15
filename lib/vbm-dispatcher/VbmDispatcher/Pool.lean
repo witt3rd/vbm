@@ -4,7 +4,7 @@ Specification: any leased queue that meets the port's laws implements the store,
 
 Two halves. (1) `choose`, UNCHANGED from the event-log shape (types, aging, determinism, the gates): a pure function of a SNAPSHOT of the queue, this host's qualifications and its own slice's headroom.
 A host's SHARE of the machine is the kernel's (a cgroup CPU quota on the slice the pool runs in): the spec counts no items per host and weighs none, and no host levels against another; `ready` reads the
-slice's own pressure and memory use, never the machine's load average.
+slice's own pressure and memory use AND the machine's pressure stall (the kernel's PSI for the whole box: how long some task waited for a CPU, how long every task was stalled on memory), never its load average. The slice's own pressure is zero while it runs nothing, so an idle slice on a machine that someone else is drowning looks free: the machine's pressure is what sees that.
 (2) the STORE, as rows and not as a log: a leased queue with five operations (send, claim, renew, finish, and the snapshot that `choose` reads), whose laws are the conformance suite (pool/conformance.sh):
 sent once, a live claim excludes every other host, a takeover after expiry raises the delivery number (the fencing token: the fencing law (`takeover_raises_gen`)), renew and finish are fenced by it, finish is
 idempotent on retry, a finished id is never sendable again, delay hides, exhaustion is derived. A log with a version compare-and-swap is gone: leases do not fit a log (a renewal every 30 s is event noise).
@@ -46,6 +46,8 @@ structure Local where
   memUsedPermille : Nat            -- the slice's memory in use, permille of its limit; 0 when it has none
   diskFreeGb     : Nat
   memFreeGb      : Nat
+  sysCpuPressure : Nat             -- permille of the last 10 s that SOME task of the whole machine waited for a CPU (`/proc/pressure/cpu`, the `some` line's `avg10`): other tenants' load, which an idle slice cannot see
+  sysMemPressure : Nat             -- permille of the last 10 s that EVERY non-idle task of the whole machine was stalled on memory (`/proc/pressure/memory`, the `full` line's `avg10`): thrashing
   deriving DecidableEq, Repr
 
 structure Params where
@@ -55,12 +57,15 @@ structure Params where
   memCeil      : Nat   -- permille of the slice's memory limit at or above which it has no headroom
   diskFloor    : Nat
   memFloor     : Nat
+  sysCpuCeil   : Nat   -- permille of the machine's CPU pressure at or above which this host claims nothing
+  sysMemCeil   : Nat   -- permille of the machine's memory stall at or above which this host claims nothing
   deriving DecidableEq, Repr
 
 /-- The transient guard of one host: pure in the host's own facts. The slice's headroom, not a count of items. -/
 def ready (pr : Params) (me : Quals) (lc : Local) : Bool :=
   !lc.off && !me.draining && lc.cpuPressure < pr.pressureCeil && lc.memUsedPermille < pr.memCeil &&
-    pr.diskFloor ≤ lc.diskFreeGb && pr.memFloor ≤ lc.memFreeGb
+    pr.diskFloor ≤ lc.diskFreeGb && pr.memFloor ≤ lc.memFreeGb &&
+    lc.sysCpuPressure < pr.sysCpuCeil && lc.sysMemPressure < pr.sysMemCeil
 
 /-- The stable qualification: every needed label. How much of the machine the host has is the kernel's quota, not a count here. -/
 def qualified (h : Quals) (it : Item) : Bool := it.needs.all (· ∈ h.labels)
@@ -164,8 +169,8 @@ def choose (pr : Params) (q : Queue) (me : Quals) (lc : Local) : Option ItemId :
   if !ready pr me lc then none
   else (best? (prec pr lc.now) ((q.entries.filter fun e => q.canClaim e me && !deferred pr lc.now me e).map (·.item))).map (·.id)
 
-def pr₀ : Params := ⟨10, 5, 750, 900, 20, 8⟩
-def lc₀ (now : Nat := 0) : Local := ⟨now, false, 0, 0, 100, 30⟩   -- an idle host's slice with headroom and room on disk
+def pr₀ : Params := ⟨10, 5, 750, 900, 20, 8, 500, 100⟩
+def lc₀ (now : Nat := 0) : Local := ⟨now, false, 0, 0, 100, 30, 0, 0⟩   -- an idle host's slice with headroom and room on disk
 
 /-- What the store's claim gives the claimant's copy of the queue: the item is held by `h` (the snapshot the next reader sees). -/
 def Queue.take (q : Queue) (id : ItemId) (h : HostId) : Queue := q.set id fun e => { e with state := .claimed ⟨h⟩ }
@@ -196,13 +201,13 @@ example : (choose pr₀ (mk [item 1 1 [] [] ["lean"]]) (hq 1) lc₀,
            choose pr₀ (mk [item 1 1 [] [] ["lean"]]) (hq 2 ["lean"]) lc₀) = (none, some 1) := by decide
 /-- "a full disk is not an exclusion": below the floor the host claims nothing now, and with room it claims it. -/
 example : let q := mk [item 1]
-          let full : Local := ⟨0, false, 0, 0, 5, 30⟩
+          let full : Local := ⟨0, false, 0, 0, 5, 30, 0, 0⟩
           (choose pr₀ q (hq 1) full, choose pr₀ q (hq 1) lc₀) = (none, some 1) := by decide
 /-- "the slice has no headroom": a slice that waited for a CPU (`cpuPressure` over `pressureCeil`), or whose memory is at its limit (`memUsedPermille` over `memCeil`), claims nothing now and does once it
-has headroom again. The machine's load average is not read anywhere: another host's work is the kernel's business, not this host's. -/
+has headroom again. The machine's load average is not read anywhere (it counts waiting tasks of every kind and says nothing of whether this host can do work: a box at load 27 can have no CPU pressure at all); the machine's PRESSURE is (`sysCpuPressure` over `sysCpuCeil`, `sysMemPressure` over `sysMemCeil`), because a slice that runs nothing cannot feel a box that someone else is drowning. -/
 example : let q := mk [item 1]
-          let busy : Local := ⟨0, false, 800, 0, 100, 30⟩
-          let tight : Local := ⟨0, false, 0, 950, 100, 30⟩
+          let busy : Local := ⟨0, false, 800, 0, 100, 30, 0, 0⟩
+          let tight : Local := ⟨0, false, 0, 950, 100, 30, 0, 0⟩
           (choose pr₀ q (hq 1) busy, choose pr₀ q (hq 1) tight, choose pr₀ q (hq 1) lc₀) = (none, none, some 1) := by decide
 /-- "host dies for good": its lease lapses, the row is claimable again, the dead host defers it (it is in `lostOn`) and another host takes it. -/
 example : let q : Queue := ⟨[⟨item 1, .pending, 0, [1], 0⟩]⟩

@@ -18,6 +18,8 @@ private def cfg0 : TickConfig := ⟨pr₀, hq 1⟩
 private def cfgLean : TickConfig := ⟨pr₀, hq 1 ["lean"]⟩
 private def cfgDrain : TickConfig := ⟨pr₀, ⟨1, [], true⟩⟩
 private def lcBusy : Local := { lc₀ 0 with cpuPressure := 900 }
+private def lcSysBusy : Local := { lc₀ 0 with sysCpuPressure := 900 }
+private def lcSysMem : Local := { lc₀ 0 with sysMemPressure := 400 }
 private def lcFull : Local := { lc₀ 0 with diskFreeGb := 1 }
 private def lcOff : Local := { lc₀ 0 with off := true }
 private def qOne : Queue := ⟨[⟨item 7, .pending, 0, [], 0⟩]⟩
@@ -34,6 +36,8 @@ private def repBlocked : Report := ⟨.blocked .noFinish "no typed end" [], none
 def scenarios : List Scenario := [
   .tick "happy-claim" cfg0 [.readings (lc₀ 0), .queue qOne, .claimWon 41 1],
   .tick "skipped-no-headroom" cfg0 [.readings lcBusy],
+  .tick "skipped-machine-cpu-busy" cfg0 [.readings lcSysBusy],
+  .tick "skipped-machine-memory-stalled" cfg0 [.readings lcSysMem],
   .tick "skipped-disk-floor" cfg0 [.readings lcFull],
   .tick "skipped-off-switch" cfg0 [.readings lcOff],
   .tick "skipped-draining" cfgDrain [.readings (lc₀ 0)],

@@ -17,5 +17,5 @@ An interpreter conforms when, with its ports answering the events in order (an a
 
 ## Coverage
 
-Tick: a won claim; skipped for no CPU headroom, a disk floor, the off switch and draining; idle for an empty queue, an unmet dependency, a held serialisation key, a label the host lacks and an item deferred to other hosts after a loss, and the end of that deferral (counted from the loss, not from the enqueue); the highest priority first; a lost race then won, then idle; the store unreachable while reading the queue, while claiming and after a lost race.
+Tick: a won claim; skipped for no CPU headroom, the machine's CPU pressure, the machine's memory stall, a disk floor, the off switch and draining; idle for an empty queue, an unmet dependency, a held serialisation key, a label the host lacks and an item deferred to other hosts after a loss, and the end of that deferral (counted from the loss, not from the enqueue); the highest priority first; a lost race then won, then idle; the store unreachable while reading the queue, while claiming and after a lost race.
 Run: the happy run; several beats; a renewal that is unreachable and then succeeds; a lost lease; the deadline; a worker that exits with no report; a worker that exits while being stopped; a finish that is refused or unreachable; a blocked report finished as it is.

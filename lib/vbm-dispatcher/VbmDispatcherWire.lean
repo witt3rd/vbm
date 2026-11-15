@@ -85,14 +85,14 @@ def queueJ (q : Queue) : Json := arr (q.entries.map entryJ)
 def queueOf (j : Json) : Except String Queue := do pure ⟨← (← j.getArr?).toList.mapM entryOf⟩
 
 def localJ (l : Local) : Json :=
-  Json.mkObj [("now", toJson l.now), ("off", l.off), ("cpuPressure", toJson l.cpuPressure), ("memUsedPermille", toJson l.memUsedPermille), ("diskFreeGb", toJson l.diskFreeGb), ("memFreeGb", toJson l.memFreeGb)]
+  Json.mkObj [("now", toJson l.now), ("off", l.off), ("cpuPressure", toJson l.cpuPressure), ("memUsedPermille", toJson l.memUsedPermille), ("diskFreeGb", toJson l.diskFreeGb), ("memFreeGb", toJson l.memFreeGb), ("sysCpuPressure", toJson l.sysCpuPressure), ("sysMemPressure", toJson l.sysMemPressure)]
 def localOf (j : Json) : Except String Local := do
-  pure { now := ← getNat j "now", off := ← getBool j "off", cpuPressure := ← getNat j "cpuPressure", memUsedPermille := ← getNat j "memUsedPermille", diskFreeGb := ← getNat j "diskFreeGb", memFreeGb := ← getNat j "memFreeGb" }
+  pure { now := ← getNat j "now", off := ← getBool j "off", cpuPressure := ← getNat j "cpuPressure", memUsedPermille := ← getNat j "memUsedPermille", diskFreeGb := ← getNat j "diskFreeGb", memFreeGb := ← getNat j "memFreeGb", sysCpuPressure := ← getNat j "sysCpuPressure", sysMemPressure := ← getNat j "sysMemPressure" }
 
 def paramsJ (p : Params) : Json :=
-  Json.mkObj [("quantum", toJson p.quantum), ("patience", toJson p.patience), ("pressureCeil", toJson p.pressureCeil), ("memCeil", toJson p.memCeil), ("diskFloor", toJson p.diskFloor), ("memFloor", toJson p.memFloor)]
+  Json.mkObj [("quantum", toJson p.quantum), ("patience", toJson p.patience), ("pressureCeil", toJson p.pressureCeil), ("memCeil", toJson p.memCeil), ("diskFloor", toJson p.diskFloor), ("memFloor", toJson p.memFloor), ("sysCpuCeil", toJson p.sysCpuCeil), ("sysMemCeil", toJson p.sysMemCeil)]
 def paramsOf (j : Json) : Except String Params := do
-  pure ⟨← getNat j "quantum", ← getNat j "patience", ← getNat j "pressureCeil", ← getNat j "memCeil", ← getNat j "diskFloor", ← getNat j "memFloor"⟩
+  pure ⟨← getNat j "quantum", ← getNat j "patience", ← getNat j "pressureCeil", ← getNat j "memCeil", ← getNat j "diskFloor", ← getNat j "memFloor", ← getNat j "sysCpuCeil", ← getNat j "sysMemCeil"⟩
 
 def qualsJ (q : Quals) : Json := Json.mkObj [("id", toJson q.id), ("labels", arr (q.labels.map Json.str)), ("draining", q.draining)]
 def qualsOf (j : Json) : Except String Quals := do pure ⟨← getNat j "id", ← strs (← getList j "labels"), ← getBool j "draining"⟩

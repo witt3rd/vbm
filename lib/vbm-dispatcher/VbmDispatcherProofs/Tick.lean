@@ -100,6 +100,22 @@ example : (Tick.run cfg₀ .reading [.readings (lc₀ 0), .queue q₀, .claimWon
 /-- A lost race reads the queue again; when the item is gone the tick ends idle. -/
 example : (Tick.run cfg₀ .reading [.readings (lc₀ 0), .queue q₀, .claimLost, .queue Queue.empty]).1 = .ended .idle := by decide
 
+/-- **A machine under pressure has no headroom, whatever the slice says.** The machine's CPU pressure at or above its ceiling makes the host claim nothing, though its own slice is idle (an idle slice feels no
+pressure of its own: it cannot see a box that someone else is drowning). Rules out a host claiming onto a machine whose kernel says its tasks are waiting for a CPU. -/
+theorem ready_machine_cpu_busy (pr : Params) (me : Quals) (lc : Local) (h : pr.sysCpuCeil ≤ lc.sysCpuPressure) : ready pr me lc = false := by
+  have : ¬ lc.sysCpuPressure < pr.sysCpuCeil := Nat.not_lt.mpr h
+  simp [ready, this]
+
+/-- **The same for memory**: every task of the machine stalled on memory for at least the ceiling's share of the last 10 s means no headroom. -/
+theorem ready_machine_memory_stalled (pr : Params) (me : Quals) (lc : Local) (h : pr.sysMemCeil ≤ lc.sysMemPressure) : ready pr me lc = false := by
+  have : ¬ lc.sysMemPressure < pr.sysMemCeil := Nat.not_lt.mpr h
+  simp [ready, this]
+
+/-- Non-vacuity: the hypothesis of `ready_machine_cpu_busy` can hold with an idle slice, and the same host with a quiet machine IS ready (so the guard does not simply refuse everything). -/
+example : ready cfg₀.params cfg₀.me { lc₀ 0 with sysCpuPressure := 900 } = false := by decide
+example : ready cfg₀.params cfg₀.me { lc₀ 0 with sysMemPressure := 400 } = false := by decide
+example : ready cfg₀.params cfg₀.me (lc₀ 0) = true := by decide
+
 /-- A host with no headroom (a pressure above the ceiling) ends skipped, and asks for nothing but its own end. -/
 example : (Tick.run cfg₀ .reading [.readings { lc₀ 0 with cpuPressure := 900 }]) = (.ended .skipped, [.endTick .skipped]) := by decide
 
