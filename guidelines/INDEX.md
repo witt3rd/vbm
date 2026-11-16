@@ -22,6 +22,7 @@ How we land
 - `trunk-based-landing.md`: a small change reaches main in minutes, and main is always green.
 - `choose-the-landing-mechanism.md`: three questions pick direct landing or a queue.
 - `fast-gate-small-changes.md`: the gate's speed and the change's size are the throughput ceiling.
+- `factor-for-disjointness.md`: factor the code and the validation so changes overlap little; factor, then schedule, then reuse, then batch, then buy.
 - `single-lander.md`: one writer, the gate on the exact combination, a plain fast-forward push.
 - `revert-first.md`: a red main is reverted, then debugged.
 - `no-pull-requests-for-a-single-owner.md`: when the pull request is ceremony and when it is not.
