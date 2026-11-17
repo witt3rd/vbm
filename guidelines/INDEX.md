@@ -19,7 +19,7 @@ Generating code
 - `efficiency-is-a-budget.md`: measure it, ratchet it, second to correctness.
 
 How we land
-- `trunk-based-landing.md`: a small change reaches main in minutes, and main is always green.
+- `trunk-based-landing.md`: a small change reaches main in minutes and the push is best-effort; a declared release candidate runs the full suite and is fixed until green before a release.
 - `choose-the-landing-mechanism.md`: three questions pick direct landing or a queue.
 - `fast-gate-small-changes.md`: the gate's speed and the change's size are the throughput ceiling.
 - `factor-for-disjointness.md`: factor the code and the validation so changes overlap little; factor, then schedule, then reuse, then batch, then buy.
