@@ -13,7 +13,7 @@ tests=(); par() { tests+=("$@"); }   # independent test scripts, run in parallel
 bgdir=$(mktemp -d); bgnames=()
 bg() { local n=$1; shift; bgnames+=("$n"); ( "$@" ) > "$bgdir/$n.log" 2>&1 & echo $! > "$bgdir/$n.pid"; }
 bgwait() { local bad=0 n; for n in "${bgnames[@]}"; do if wait "$(cat "$bgdir/$n.pid")"; then cat "$bgdir/$n.log"; else echo "tier1: FAILED: $n" >&2; cat "$bgdir/$n.log" >&2; bad=1; fi; done; [ $bad = 0 ] || exit 1; }
-lean_sources() { find VbmScoreboard VbmScoreboardProofs vectors -name '*.lean' 2>/dev/null; ls VbmScoreboard.lean VbmScoreboardProofs.lean 2>/dev/null; }
+lean_sources() { find VbmScoreboard VbmScoreboardWire VbmScoreboardProofs vectors -name '*.lean' 2>/dev/null; ls VbmScoreboard.lean VbmScoreboardWire.lean VbmScoreboardProofs.lean 2>/dev/null; }
 
 # 1. Forbidden constructs anywhere in Lean sources (AGENTS.md). A comment may mention one only on a line marked `-- tier1-allow`.
 forbidden() { grep -HnE '\b(sorry|admit|axiom|unsafe|implemented_by|csimp)\b' "$@" | grep -v 'tier1-allow' || true; }
@@ -37,12 +37,24 @@ done
 printf 'import VbmScoreboard.State\n' > "$st"; [ -z "$(bad_imports "$st")" ] || { echo "tier1: the import scan flags an allowed import" >&2; exit 1; }
 echo "tier1: import scan: negative self-tests ok (each import outside Init and VbmScoreboard is flagged)"
 
+# 1b. VbmScoreboardWire/ (the wire layer, linked) imports Lean, VbmScoreboard and itself only: no Std, no VbmScoreboardProofs, no `prelude`.
+bad_wire_imports() { grep -HnE '^[[:space:]]*((public|meta|private)[[:space:]]+)*(import|prelude)\b' "$@" | grep -vE ':[0-9]+:import (Lean|VbmScoreboard|VbmScoreboardWire)(\.[A-Za-z0-9_]+)*[[:space:]]*$' || true; }
+bad=$(bad_wire_imports $(find VbmScoreboardWire -name '*.lean') VbmScoreboardWire.lean)
+if [ -n "$bad" ]; then echo "tier1: VbmScoreboardWire may import only Lean, VbmScoreboard and VbmScoreboardWire modules:" >&2; echo "$bad" >&2; exit 1; fi
+for imp in 'import Std.Data.HashMap' 'import VbmScoreboardProofs.Wire' 'import VbmScoreboardProofs' 'prelude' 'public import Std' 'import VbmScoreboardWireX' 'import LeanX'; do
+  printf '%s\n' "$imp" > "$st"; [ -n "$(bad_wire_imports "$st")" ] || { echo "tier1: the wire import scan does not flag: $imp" >&2; exit 1; }
+done
+for imp in 'import Lean' 'import Lean.Data.Json' 'import VbmScoreboard.Core' 'import VbmScoreboardWire.Format'; do
+  printf '%s\n' "$imp" > "$st"; [ -z "$(bad_wire_imports "$st")" ] || { echo "tier1: the wire import scan flags an allowed import: $imp" >&2; exit 1; }
+done
+echo "tier1: wire import scan: negative self-tests ok (each import outside Lean, VbmScoreboard and VbmScoreboardWire is flagged)"
+
 scripts/lint-pipefail.sh   # a producer piped into an early-exiting consumer is flaky by construction; the lint has a negative self-test
 .land/tool/bin/land-check   # the vendored lander is the pinned copy (no local patch), offline
 
 # 2. Build, zero warnings (scripts/check-zero-warning.sh: the warning's own diagnostic is required, a clean file must pass; prints `ran: zero-warning: 3 cases`).
 scripts/check-zero-warning.sh
-lake build VbmScoreboard VbmScoreboardProofs LandLedger   # once, for the gates and every test (they build nothing more)
+lake build VbmScoreboard VbmScoreboardWire VbmScoreboardProofs LandLedger   # once, for the gates and every test (they build nothing more)
 
 # 2a. The axiom gate: every constant of ours depends only on propext, Classical.choice, Quot.sound (--selftest: a non-standard axiom is rejected).
 bg axiom-gate .land/tool/bin/land-lean axiom --selftest

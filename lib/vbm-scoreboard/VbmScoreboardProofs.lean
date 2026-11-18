@@ -1,3 +1,4 @@
 import VbmScoreboardProofs.Direction
 import VbmScoreboardProofs.Core
+import VbmScoreboardProofs.Wire
 import VbmScoreboardProofs.Ledger

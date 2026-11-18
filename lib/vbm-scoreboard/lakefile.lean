@@ -9,6 +9,10 @@ package «vbm-scoreboard» where
 lean_lib VbmScoreboard where
   globs := #[.andSubmodules `VbmScoreboard]
 
+/-- The wire formats (the provider protocol, the baseline and the history files): a sibling library that MAY import `Lean`, is linked, and imports the core. Imports `Lean`, `VbmScoreboard` and itself only (checked by Tier 1). -/
+lean_lib VbmScoreboardWire where
+  globs := #[.andSubmodules `VbmScoreboardWire]
+
 /-- The proofs: may import `Std` and `Lean`; NEVER linked (nothing in `VbmScoreboard` may import it). -/
 lean_lib VbmScoreboardProofs where
   globs := #[.andSubmodules `VbmScoreboardProofs]

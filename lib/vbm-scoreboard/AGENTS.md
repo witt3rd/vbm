@@ -18,7 +18,7 @@ A project's scorecard, written once in Lean 4 and machine-checked: a set of name
 **Scope.** Pure data and total functions over `Init`. No input or output, no wire format, no model call, no network, no storage. It decides whether a floor held and what the history says; it measures nothing (providers measure) and decides nothing about what to build (a steward judges that). The wire formats of the provider protocol and the baseline and history files are a separate library, `VbmScoreboardWire`, which may import `Lean`.
 
 ## Status
-Seeded 2026-11-18 from the scoreboard specifications of the family's first consumer. Slices (docs/decisions/0001-vbm-scoreboard.md): S0 the skeleton and the direction order; planned: S1 the core (check, bank, reset, history, progress), S2 the wire formats, S3 the command-line tool.
+Seeded 2026-11-18 from the scoreboard specifications of the family's first consumer. Slices (docs/decisions/0001-vbm-scoreboard.md): S0 the skeleton and the direction order; S1 the core (check, bank, reset, history, progress); S2 the wire formats (`VbmScoreboardWire`); planned: S3 the command-line tool.
 
 ## Hard rules
 - **Forbidden anywhere in Lean:** `sorry`, `admit`, `axiom`, `unsafe`, `implemented_by`, `csimp` (Tier 1 scans for them; a comment may mention one only on a line marked `tier1-allow`). A proof is hard? Decompose it; never weaken the statement.
@@ -30,11 +30,11 @@ Seeded 2026-11-18 from the scoreboard specifications of the family's first consu
 - **No secrets in the repository.** No paid model call and no network call from a test or a gate.
 
 ## Library rules
-- **Module roots:** `VbmScoreboard` imports `Init` and itself only (Tier 1 scans the imports); `VbmScoreboardProofs` may import `Std` and `Lean` and is never linked, and nothing in `VbmScoreboard` may import it.
+- **Module roots:** `VbmScoreboard` imports `Init` and itself only (Tier 1 scans the imports); `VbmScoreboardWire` (the wire formats, linked) imports `Lean`, `VbmScoreboard` and itself only (Tier 1 scans them); `VbmScoreboardProofs` may import `Std` and `Lean` and is never linked, and nothing in `VbmScoreboard` or `VbmScoreboardWire` may import it. **The words of the wire formats are kept exactly once released** (the keys, the version, `higher`/`lower`, `banked`/`added`/`reset`, the refusals): a change to one needs the consumers' word.
 - **A metric is a name and an integer.** The unit is the provider's, said in the metric's name (a share in hundredths of a percent, a ratio in permille, a count, a duration in seconds). Nothing here names a project, a language or a vendor.
 
 ## Gates
 **Tier 1** (`scripts/tier1.sh`): forbidden-constructs scan, import scan, pipefail lint, the vendored lander's drift check, zero-warning build, axiom gate, trust ledger, proof recheck, public-readiness lint, ran-evidence self-tests. It runs before every landing, on the commit rebased onto main.
 
 ## Layout
-`VbmScoreboard/` spec and code · `VbmScoreboardProofs/` proofs and the obligation ledger (never linked) · `docs/decisions/` design · `scripts/` gates, lints and their self-tests, `.land/land.d/` the lander's hooks, the pinned lander.
+`VbmScoreboard/` spec and code · `VbmScoreboardWire/` the wire formats (linked) · `VbmScoreboardProofs/` proofs and the obligation ledger (never linked) · `docs/decisions/` design · `scripts/` gates, lints and their self-tests, `.land/land.d/` the lander's hooks, the pinned lander.

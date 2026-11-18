@@ -1,5 +1,6 @@
 import VbmScoreboardProofs.Direction
 import VbmScoreboardProofs.Core
+import VbmScoreboardProofs.Wire
 import LandLedger
 /-! # The obligation ledger
 
@@ -25,5 +26,13 @@ def ledger : List Obligation := [
   O "a-history-is-append-only" (.proved [``VbmScoreboard.history_append_only]),
   O "progress-is-between-0-and-1000-permille" (.proved [``VbmScoreboard.progress_bounds]),
   O "progress-is-1000-once-the-target-is-reached" (.proved [``VbmScoreboard.progress_target_reached]),
-  O "progress-never-falls-as-the-reading-improves" (.proved [``VbmScoreboard.progress_monotone_in_now])
+  O "progress-never-falls-as-the-reading-improves" (.proved [``VbmScoreboard.progress_monotone_in_now]),
+  O "a-reading-a-floor-and-a-history-entry-read-back-from-their-objects" (.proved [``VbmScoreboardWire.readingOfJson_readingJson, ``VbmScoreboardWire.floorOfJson_floorJson, ``VbmScoreboardWire.entryOfJson_entryJson]),
+  O "readings-written-and-read-back-are-the-same-readings" (.proved [``VbmScoreboardWire.decode_encode_readings]),
+  O "a-baseline-written-and-read-back-is-the-same-baseline-in-order" (.proved [``VbmScoreboardWire.decode_encode_baseline]),
+  O "a-history-written-and-read-back-is-the-same-history" (.proved [``VbmScoreboardWire.decode_encode_history]),
+  O "a-refusal-names-the-line-it-is-about" (.proved [``VbmScoreboardWire.decodeReadings_names_line, ``VbmScoreboardWire.decodeReadings_names_line_general]),
+  O "a-version-other-than-1-is-refused-with-that-version" (.proved [``VbmScoreboardWire.decodeReadings_refuses_unknown_version]),
+  O "a-repeated-metric-is-refused-at-the-line-of-the-second" (.proved [``VbmScoreboardWire.decodeReadings_refuses_duplicate, ``VbmScoreboardWire.dupCheck_refuses_any]),
+  O "a-baseline-is-written-in-the-order-of-its-metrics-names" (.proved [``VbmScoreboardWire.encodeBaseline_sorted, ``VbmScoreboardWire.sortFloors_perm])
 ]
