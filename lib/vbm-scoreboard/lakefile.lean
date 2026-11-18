@@ -1,0 +1,17 @@
+import Lake
+open System Lake DSL
+
+package «vbm-scoreboard» where
+  leanOptions := #[⟨`warningAsError, true⟩, ⟨`autoImplicit, false⟩]
+
+/-- The library: specification and code, one Lean core. Imports `Init` and itself only (checked by Tier 1). No dependency. -/
+@[default_target]
+lean_lib VbmScoreboard where
+  globs := #[.andSubmodules `VbmScoreboard]
+
+/-- The proofs: may import `Std` and `Lean`; NEVER linked (nothing in `VbmScoreboard` may import it). -/
+lean_lib VbmScoreboardProofs where
+  globs := #[.andSubmodules `VbmScoreboardProofs]
+
+/-- The landing tool's Lean modules (the obligation-ledger vocabulary and the reach walk, `land-lean ledger`), a small package it ships; required, never declared here, so a repository that vendors this library and requires it too shares one copy. -/
+require «land-ledger» from ".land/tool/lean"
