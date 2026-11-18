@@ -1,2 +1,3 @@
 import VbmScoreboardProofs.Direction
+import VbmScoreboardProofs.Core
 import VbmScoreboardProofs.Ledger

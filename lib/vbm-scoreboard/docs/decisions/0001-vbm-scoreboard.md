@@ -10,7 +10,7 @@ Metrics (a name and an integer; the unit is the provider's, in the name), a dire
 
 ## Slices
 - S0 (this commit): the skeleton and the direction order (`better`), each theorem with a non-vacuity witness.
-- S1: the core (`check`, `bank`, `reset`, `history`, `progress`), extracted from the first consumer's specification.
+- S1 (landed): the core (`check`, `bank`, `reset`, `history`, `progress`), extracted from the first consumer's specification; definitions in `VbmScoreboard/Core.lean`, theorems and witnesses in `VbmScoreboardProofs/Core.lean`.
 - S2: `VbmScoreboardWire`, extracted from the first consumer's format specification.
 - S3: the command-line tool, which replaces the first consumer's shell script.
 
