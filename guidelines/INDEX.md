@@ -32,3 +32,4 @@ Depending and releasing
 - `vendor-and-pin.md`: one way to take a dependency (vendor a signed release, lock it, verify it) and to release.
 - `where-things-live.md`: one layout convention, the habits other ecosystems use.
 - `code-placement.md`: the language's core first, then the family's libraries, then the product; a general thing defined twice is a defect.
+- `library-design.md`: a library is a concept with one purpose sentence; extend before you create; tiers, naming, the set, the incubator, and a placement battery that fails closed.
