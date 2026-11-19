@@ -5,6 +5,7 @@ import VbmProbProofs.Prob
 import VbmProbProofs.Prob.Bayes
 import VbmProbProofs.Scaled
 import VbmProbProofs.Apportion
+import VbmProbProofs.Dist.Canon
 import LandLedger
 /-! # The obligation ledger
 
@@ -54,5 +55,7 @@ def ledger : List Obligation := [
     ``VbmProb.Apportion.chosen_rem_pos]),
   O "FX10-apportion-refusal" (.proved [``VbmProb.apportion_refuses_iff, ``VbmProb.apportion_ok_of_pos]),
   O "FX11-apportion-ties" (.proved [``VbmProb.apportion_tie]),
-  O "FX12-apportion-idempotent" (.proved [``VbmProb.apportion_idem])
+  O "FX12-apportion-idempotent" (.proved [``VbmProb.apportion_idem]),
+  O "DS4-canon" (.proved [``VbmProb.canon_keys_increasing, ``VbmProb.canon_weightSum, ``VbmProb.canon_weightAt,
+    ``VbmProb.canon_idem])
 ]

@@ -6,4 +6,5 @@ import VbmProbProofs.Prob
 import VbmProbProofs.Prob.Bayes
 import VbmProbProofs.Scaled
 import VbmProbProofs.Apportion
+import VbmProbProofs.Dist.Canon
 import VbmProbProofs.Ledger
