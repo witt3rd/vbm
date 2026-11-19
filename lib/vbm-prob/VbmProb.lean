@@ -7,3 +7,4 @@ import VbmProb.Scaled
 import VbmProb.Apportion
 import VbmProb.Dist
 import VbmProb.Dist.Canon
+import VbmProb.Dist.Query

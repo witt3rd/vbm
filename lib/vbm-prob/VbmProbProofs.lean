@@ -8,4 +8,5 @@ import VbmProbProofs.Scaled
 import VbmProbProofs.Apportion
 import VbmProbProofs.Dist
 import VbmProbProofs.Dist.Canon
+import VbmProbProofs.Dist.Query
 import VbmProbProofs.Ledger

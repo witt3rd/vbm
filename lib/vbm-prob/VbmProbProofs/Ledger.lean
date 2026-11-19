@@ -7,6 +7,7 @@ import VbmProbProofs.Scaled
 import VbmProbProofs.Apportion
 import VbmProbProofs.Dist
 import VbmProbProofs.Dist.Canon
+import VbmProbProofs.Dist.Query
 import LandLedger
 /-! # The obligation ledger
 
@@ -65,5 +66,10 @@ def ledger : List Obligation := [
   O "DS2-dist-ext" (.proved [``VbmProb.Dist.ext, ``VbmProb.Dist.ext_iff, ``VbmProb.Dist.make_unique]),
   O "DS3-point-atoms" (.proved [``VbmProb.Dist.point_atoms, ``VbmProb.Dist.point_support, ``VbmProb.Dist.point_size,
     ``VbmProb.Dist.size_pos, ``VbmProb.Dist.make_point]),
-  O "DS3-point-mean-cdf" (.open_ "the mean of `point a` is `a` and its cdf is 0 below `a` and 1 from `a` on: `mean` and `cdf` are defined in slice S7 (`VbmProb.Dist.Query`), so this clause is proved there")
+  O "DS3-point-mean-cdf" (.proved [``VbmProb.Dist.mean_point, ``VbmProb.Dist.point_cdf_ge, ``VbmProb.Dist.point_cdf_lt]),
+  O "DS6-mass" (.proved [``VbmProb.Dist.mass_true, ``VbmProb.Dist.mass_false, ``VbmProb.Dist.mass_or_val, ``VbmProb.Dist.mass_or,
+    ``VbmProb.Dist.mass_not, ``VbmProb.Dist.mass_mono, ``VbmProb.Dist.mass_congr]),
+  O "DS7-cdf" (.proved [``VbmProb.Dist.cdf_mono, ``VbmProb.Dist.cdf_below, ``VbmProb.Dist.cdf_above, ``VbmProb.Dist.cdf_right_cont]),
+  O "DS10-expect" (.proved [``VbmProb.Dist.expect_add, ``VbmProb.Dist.expect_smul, ``VbmProb.Dist.expect_const,
+    ``VbmProb.Dist.expect_mono, ``VbmProb.Dist.expect_point, ``VbmProb.Dist.mean_point])
 ]
