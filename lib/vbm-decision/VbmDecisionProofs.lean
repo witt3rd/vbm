@@ -1,3 +1,4 @@
 import VbmDecisionProofs.Core
 import VbmDecisionProofs.Ledger
 import VbmDecisionProofs.Prob
+import VbmDecisionProofs.Types
