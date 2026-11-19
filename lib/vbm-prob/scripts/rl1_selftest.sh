@@ -21,5 +21,5 @@ printf -- '-- a comment about Float\n' > "$T/VbmProb/Sub/F.lean"; chk "a Float i
 printf 'structure Ratio where\n  num : Int\n  den : Nat\n' > "$T/VbmProb/Sub/R.lean"; chk "a ratio structure" "Sub/R.lean:1: a structure with fields num and den"; rm "$T/VbmProb/Sub/R.lean"
 printf 'structure Ratio where\n  den : Nat\n  pos : 0 < den\n  num : Int\n  deriving Repr\n' > "$T/VbmProb/Sub/R.lean"; chk "a ratio structure with other fields" "Sub/R.lean:1: a structure with fields num and den"; rm "$T/VbmProb/Sub/R.lean"
 printf 'def x : Float := 1\n' > "$T/VbmProb.lean"; chk "a Float in the root module" "VbmProb.lean:1: Float"
-ran_done test_rl1
+ran_done rl1_selftest
 echo "tier1: rl1: the library has no Float and no second ratio, and the scan flags both: ok"

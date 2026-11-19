@@ -117,7 +117,7 @@ def ledger : List Obligation := [
     ``VbmProb.Dist.sum_wt]),
   O "FX14-dist-ofScaled" (.proved [``VbmProb.Dist.ofScaled_ok_iff, ``VbmProb.Dist.ofScaled_sumNotScale,
     ``VbmProb.Dist.ofScaled_keysNotIncreasing, ``VbmProb.Dist.ofScaled_vals, ``VbmProb.Dist.ofScaled_prob]),
-  O "RL1-no-float-no-second-ratio" (.limit "scripts/scan_rl1.sh, a Tier 1 scan with its negative self-test scripts/test_rl1.sh: no `Float` in VbmProb/ and no structure there with the fields `num` and `den`; a scan, not a Lean theorem"),
+  O "RL1-no-float-no-second-ratio" (.limit "scripts/scan_rl1.sh, a Tier 1 scan with its negative self-test scripts/rl1_selftest.sh: no `Float` in VbmProb/ and no structure there with the fields `num` and `den`; a scan, not a Lean theorem"),
   O "vectors-probability" (.proved [
     ``VbmProb.Vectors.prob_01, ``VbmProb.Vectors.prob_02, ``VbmProb.Vectors.prob_03, ``VbmProb.Vectors.prob_04, ``VbmProb.Vectors.prob_05,
     ``VbmProb.Vectors.prob_06, ``VbmProb.Vectors.prob_07, ``VbmProb.Vectors.prob_08, ``VbmProb.Vectors.prob_09, ``VbmProb.Vectors.prob_10,

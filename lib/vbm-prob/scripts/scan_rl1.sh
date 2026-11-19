@@ -3,7 +3,7 @@
 #   1. the word `Float` does not occur in VbmProb/ or VbmProb.lean;
 #   2. no `structure` in VbmProb/ has both a field `num` and a field `den` (a ratio is `Rat`, from `Init`).
 # Usage: scripts/scan_rl1.sh [ROOT]   (default: the repository root). Prints each finding as FILE:LINE: WHY and exits 1 if there is any.
-# scripts/test_rl1.sh is its negative self-test.
+# scripts/rl1_selftest.sh is its negative self-test.
 set -euo pipefail
 root=${1:-$(dirname "$0")/..}
 cd "$root"
