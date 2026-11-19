@@ -2,6 +2,7 @@ import VbmForecastProofs.Core
 import VbmForecastProofs.Rep
 import VbmForecastProofs.Brier
 import VbmForecastProofs.Ordered
+import VbmForecastProofs.LogScore
 import LandLedger
 /-! # The obligation ledger
 
@@ -46,5 +47,14 @@ def ledger : List Obligation := [
     ``VbmForecast.rpsEvents_hit, ``VbmForecast.intervalScore_eq_pinball]),
   O "p9-pinball-quantile-minimises-expected-score" (.proved [``VbmForecast.pinball_support, ``VbmForecast.expPinball_support,
     ``VbmForecast.expPinball_quantile_le]),
-  O "ordered-validated-entry-points" (.proved [``VbmForecast.rpsV_ok, ``VbmForecast.pinballV_ok, ``VbmForecast.intervalScoreV_ok])
+  O "ordered-validated-entry-points" (.proved [``VbmForecast.rpsV_ok, ``VbmForecast.pinballV_ok, ``VbmForecast.intervalScoreV_ok]),
+  O "p10-log-comparison-is-exact-and-consistent" (.proved [``VbmForecast.logCompare_antisymm, ``VbmForecast.logCompare_trans,
+    ``VbmForecast.logCompare_gt_iff, ``VbmForecast.logCompare_gt_swap, ``VbmForecast.logCompare_perm, ``VbmForecast.logCompare_append,
+    ``VbmForecast.natProd_append, ``VbmForecast.natProd_perm, ``VbmForecast.logCompare_enclosure, ``VbmForecast.separated_lt,
+    ``VbmForecast.logCompare_of_separated, ``VbmForecast.logCompareV_ok, ``VbmForecast.logCompareV_lengthMismatch,
+    ``VbmForecast.logCompareV_empty, ``VbmForecast.logVerdict_refused, ``VbmForecast.logVerdict_decided]),
+  O "p11-log-enclosure-is-sound-and-has-width-at-most-2" (.proved [``VbmForecast.log2Enclosure_sound, ``VbmForecast.log2Enclosure_total,
+    ``VbmForecast.log2Enclosure_badScale, ``VbmForecast.log2Enclosure_zero, ``VbmForecast.log2Enclosure_over,
+    ``VbmForecast.log2EnclosureV_sound, ``VbmForecast.log2EnclosureV_limit, ``VbmForecast.log2Enclosure_half,
+    ``VbmForecast.log2Enclosure_one, ``VbmForecast.logRun_inv])
 ]
