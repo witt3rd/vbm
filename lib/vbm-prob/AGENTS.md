@@ -13,12 +13,12 @@
 - The worker owns its change: when the lander refuses it, the worker fixes it and lands again until it converges.
 # AGENTS.md: vbm-prob
 
-Exact probabilities and discrete distributions: a probability as an exact value, validation and refusals, normalisation, mixture, mean, cumulative distribution and quantile, with proofs.
+Exact discrete probability, valid by construction and kept valid by every operation: a value that is a probability, or a finite distribution of them, and every function either returns a value of those types or refuses with a typed value, with proofs.
 
 **Scope.** Pure data and total functions over `Init`: no input or output, no network, no storage, no model call. A wire layer, if the library needs one, is a separate sibling library that may import `Lean`. It decides what its specification says and nothing else; a boundary only moves bytes.
 
 ## Status
-Seeded 2026-11-19 by `bin/new-vbm-lib` (S0: the skeleton and one proved claim). The first slice item writes `docs/spec.md` BEFORE any Lean (the inputs, the outputs, every named limit, every typed refusal, one sentence per property to prove), then the specification, the proofs and the ledger.
+Seeded 2026-11-19 by `bin/new-vbm-lib`. `docs/spec.md` is the contract; slices S1 to S15 (the specification, the proofs, the ledger, the known-answer vectors in `VbmProbProofs/Vectors.lean`, the RL1 scan `scripts/scan_rl1.sh`) are landed. Next: the release (M0).
 
 ## Hard rules
 - **Forbidden anywhere in Lean:** `sorry`, `admit`, `axiom`, `unsafe`, `implemented_by`, `csimp` (Tier 1 scans for them; a comment may mention one only on a line marked `tier1-allow`). A proof is hard? Decompose it; never weaken the statement.

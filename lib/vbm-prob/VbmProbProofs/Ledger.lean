@@ -14,6 +14,7 @@ import VbmProbProofs.Dist.Mixture
 import VbmProbProofs.Dist.Map
 import VbmProbProofs.Dist.Condition
 import VbmProbProofs.Dist.Scaled
+import VbmProbProofs.Vectors
 import LandLedger
 /-! # The obligation ledger
 
@@ -115,5 +116,31 @@ def ledger : List Obligation := [
   O "FX13-dist-toScaled-error" (.proved [``VbmProb.Dist.toScaled_close, ``VbmProb.Dist.toScaled_error, ``VbmProb.Dist.wt_cast,
     ``VbmProb.Dist.sum_wt]),
   O "FX14-dist-ofScaled" (.proved [``VbmProb.Dist.ofScaled_ok_iff, ``VbmProb.Dist.ofScaled_sumNotScale,
-    ``VbmProb.Dist.ofScaled_keysNotIncreasing, ``VbmProb.Dist.ofScaled_vals, ``VbmProb.Dist.ofScaled_prob])
+    ``VbmProb.Dist.ofScaled_keysNotIncreasing, ``VbmProb.Dist.ofScaled_vals, ``VbmProb.Dist.ofScaled_prob]),
+  O "RL1-no-float-no-second-ratio" (.limit "scripts/scan_rl1.sh, a Tier 1 scan with its negative self-test scripts/test_rl1.sh: no `Float` in VbmProb/ and no structure there with the fields `num` and `den`; a scan, not a Lean theorem"),
+  O "vectors-probability" (.proved [
+    ``VbmProb.Vectors.prob_01, ``VbmProb.Vectors.prob_02, ``VbmProb.Vectors.prob_03, ``VbmProb.Vectors.prob_04, ``VbmProb.Vectors.prob_05,
+    ``VbmProb.Vectors.prob_06, ``VbmProb.Vectors.prob_07, ``VbmProb.Vectors.prob_08, ``VbmProb.Vectors.prob_09, ``VbmProb.Vectors.prob_10,
+    ``VbmProb.Vectors.prob_11, ``VbmProb.Vectors.prob_12, ``VbmProb.Vectors.prob_13, ``VbmProb.Vectors.prob_14, ``VbmProb.Vectors.prob_15,
+    ``VbmProb.Vectors.prob_16, ``VbmProb.Vectors.prob_17, ``VbmProb.Vectors.prob_18, ``VbmProb.Vectors.prob_19]),
+  O "vectors-fixed-point" (.proved [
+    ``VbmProb.Vectors.fixed_01, ``VbmProb.Vectors.fixed_02, ``VbmProb.Vectors.fixed_03, ``VbmProb.Vectors.fixed_04, ``VbmProb.Vectors.fixed_05,
+    ``VbmProb.Vectors.fixed_06, ``VbmProb.Vectors.fixed_07, ``VbmProb.Vectors.fixed_08, ``VbmProb.Vectors.fixed_09, ``VbmProb.Vectors.fixed_10,
+    ``VbmProb.Vectors.fixed_11, ``VbmProb.Vectors.fixed_12, ``VbmProb.Vectors.fixed_13, ``VbmProb.Vectors.fixed_14]),
+  O "vectors-largest-remainder" (.proved [
+    ``VbmProb.Vectors.apportion_01, ``VbmProb.Vectors.apportion_02, ``VbmProb.Vectors.apportion_03, ``VbmProb.Vectors.apportion_04,
+    ``VbmProb.Vectors.apportion_05, ``VbmProb.Vectors.apportion_06, ``VbmProb.Vectors.apportion_07, ``VbmProb.Vectors.apportion_08,
+    ``VbmProb.Vectors.apportion_09, ``VbmProb.Vectors.apportion_10]),
+  O "vectors-distributions" (.proved [
+    ``VbmProb.Vectors.dist_01, ``VbmProb.Vectors.dist_02, ``VbmProb.Vectors.dist_03, ``VbmProb.Vectors.dist_04, ``VbmProb.Vectors.dist_05,
+    ``VbmProb.Vectors.dist_06, ``VbmProb.Vectors.dist_07, ``VbmProb.Vectors.dist_08, ``VbmProb.Vectors.dist_09, ``VbmProb.Vectors.dist_10,
+    ``VbmProb.Vectors.dist_11, ``VbmProb.Vectors.dist_12, ``VbmProb.Vectors.dist_13, ``VbmProb.Vectors.dist_14, ``VbmProb.Vectors.dist_15,
+    ``VbmProb.Vectors.dist_16, ``VbmProb.Vectors.dist_17, ``VbmProb.Vectors.dist_18, ``VbmProb.Vectors.dist_19, ``VbmProb.Vectors.dist_20,
+    ``VbmProb.Vectors.dist_21, ``VbmProb.Vectors.dist_22, ``VbmProb.Vectors.dist_23, ``VbmProb.Vectors.dist_24, ``VbmProb.Vectors.dist_25,
+    ``VbmProb.Vectors.dist_26, ``VbmProb.Vectors.dist_27, ``VbmProb.Vectors.dist_28, ``VbmProb.Vectors.dist_29, ``VbmProb.Vectors.dist_30,
+    ``VbmProb.Vectors.dist_31, ``VbmProb.Vectors.dist_32, ``VbmProb.Vectors.dist_33, ``VbmProb.Vectors.dist_34, ``VbmProb.Vectors.dist_35,
+    ``VbmProb.Vectors.dist_36, ``VbmProb.Vectors.dist_37, ``VbmProb.Vectors.dist_38, ``VbmProb.Vectors.dist_39, ``VbmProb.Vectors.dist_40,
+    ``VbmProb.Vectors.dist_41, ``VbmProb.Vectors.dist_42]),
+  O "vectors-distributions-at-a-scale" (.proved [
+    ``VbmProb.Vectors.scaled_01, ``VbmProb.Vectors.scaled_02, ``VbmProb.Vectors.scaled_03, ``VbmProb.Vectors.scaled_04])
 ]
