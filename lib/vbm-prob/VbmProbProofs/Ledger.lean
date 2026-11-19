@@ -1,6 +1,7 @@
 import VbmProbProofs.Core
 import VbmProbProofs.Refusal
 import VbmProbProofs.Limits
+import VbmProbProofs.Prob
 import LandLedger
 /-! # The obligation ledger
 
@@ -16,5 +17,15 @@ def ledger : List Obligation := [
     ``VbmProb.lt_two_pow_bitLength, ``VbmProb.two_pow_bitLength_pred_le, ``VbmProb.bitLength_mono]),
   O "rat-bits-positive" (.proved [``VbmProb.Rat.bits_pos, ``VbmProb.Rat.bits_ofInt]),
   O "key-order-laws" (.proved [``VbmProb.Key.le_iff, ``VbmProb.Key.le_refl, ``VbmProb.Key.le_trans, ``VbmProb.Key.le_total,
-    ``VbmProb.Key.le_antisymm, ``VbmProb.Key.lt_asymm])
+    ``VbmProb.Key.le_antisymm, ``VbmProb.Key.lt_asymm]),
+  O "PR1-prob-make" (.proved [``VbmProb.Prob.make_ok_iff, ``VbmProb.Prob.make_val, ``VbmProb.Prob.make_belowZero, ``VbmProb.Prob.make_aboveOne]),
+  O "PR2-prob-ofFrac" (.proved [``VbmProb.Prob.ofFrac_denominatorZero_iff, ``VbmProb.Prob.ofFrac_eq_make]),
+  O "PR3-prob-complement" (.proved [``VbmProb.Prob.complement_val, ``VbmProb.Prob.complement_complement, ``VbmProb.Prob.complement_zero,
+    ``VbmProb.Prob.val_add_complement]),
+  O "PR4-prob-mul" (.proved [``VbmProb.Prob.mul_val, ``VbmProb.Prob.mul_comm, ``VbmProb.Prob.mul_assoc, ``VbmProb.Prob.one_mul,
+    ``VbmProb.Prob.mul_one, ``VbmProb.Prob.zero_mul, ``VbmProb.Prob.mul_zero, ``VbmProb.Prob.mul_le_left, ``VbmProb.Prob.mul_le_right]),
+  O "PR5-prob-add" (.proved [``VbmProb.Prob.add_ok_iff, ``VbmProb.Prob.add_val, ``VbmProb.Prob.add_refuses, ``VbmProb.Prob.add_comm,
+    ``VbmProb.Prob.add_complement]),
+  O "PR10-prob-order" (.proved [``VbmProb.Prob.le_refl, ``VbmProb.Prob.le_trans, ``VbmProb.Prob.le_antisymm, ``VbmProb.Prob.le_total]),
+  O "prob-ext" (.proved [``VbmProb.Prob.ext])
 ]
