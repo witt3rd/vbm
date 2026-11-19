@@ -5,6 +5,7 @@ import VbmRngProofs.Stream
 import VbmRngProofs.Split
 import VbmRngProofs.Below
 import VbmRngProofs.Fraction
+import VbmRngProofs.Shuffle
 import LandLedger
 /-! # The obligation ledger
 
@@ -38,6 +39,11 @@ def ledger : List Obligation := [
   O "f2-exactness" (.proved [``VbmRng.uniformFraction_exact, ``VbmRng.uniformFraction_exact_shift, ``VbmRng.shift_toNat, ``VbmRng.count_div]),
   O "f3-refusals" (.proved [``VbmRng.uniformFraction_zero, ``VbmRng.uniformFraction_tooMany]),
   O "f4-consumption" (.proved [``VbmRng.uniformFraction_advance, ``VbmRng.uniformFraction_det]),
+  O "s1-permutation" (.proved [``VbmRng.shuffleWith_perm, ``VbmRng.shuffle_perm]),
+  O "s2-function-of-stream-and-list" (.proved [``VbmRng.shuffleWith_det, ``VbmRng.shuffleWith_map, ``VbmRng.shuffle_map]),
+  O "s3-length-and-consumption" (.proved [``VbmRng.shuffleWith_length, ``VbmRng.shuffleWith_advance, ``VbmRng.shuffle_advance, ``VbmRng.shuffleWith_small]),
+  O "s4-refusal-propagates" (.proved [``VbmRng.shuffleWith_refuses, ``VbmRng.shuffleWith_error]),
+  O "s5-the-permutation-is-uniform" (.limit "stated, not proved: the optional stretch of docs/spec.md part S, a counting argument over the whole draw sequence left to its own follow-up slice (open question 2)"),
   O "q1-independence-of-split-children-and-mixed-outputs" (.limit "trusted, not proved: docs/trust-ledger.md Q1; only the distinctness of keys (P1) is proved"),
   O "q2-stream-overlap-bound" (.limit "trusted, not proved: docs/trust-ledger.md Q2; users keep m^2 L far below 2^64"),
   O "q3-expectation-and-tail-of-rejection" (.limit "trusted, not proved: docs/trust-ledger.md Q3; a consequence of Q1, only the accepted fraction above one half (U4) is proved")

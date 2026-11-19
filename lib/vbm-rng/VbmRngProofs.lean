@@ -6,3 +6,4 @@ import VbmRngProofs.Mix
 import VbmRngProofs.Refusal
 import VbmRngProofs.Split
 import VbmRngProofs.Stream
+import VbmRngProofs.Shuffle
