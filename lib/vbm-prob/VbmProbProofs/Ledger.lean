@@ -5,6 +5,7 @@ import VbmProbProofs.Prob
 import VbmProbProofs.Prob.Bayes
 import VbmProbProofs.Scaled
 import VbmProbProofs.Apportion
+import VbmProbProofs.Dist
 import VbmProbProofs.Dist.Canon
 import LandLedger
 /-! # The obligation ledger
@@ -57,5 +58,12 @@ def ledger : List Obligation := [
   O "FX11-apportion-ties" (.proved [``VbmProb.apportion_tie]),
   O "FX12-apportion-idempotent" (.proved [``VbmProb.apportion_idem]),
   O "DS4-canon" (.proved [``VbmProb.canon_keys_increasing, ``VbmProb.canon_weightSum, ``VbmProb.canon_weightAt,
-    ``VbmProb.canon_idem])
+    ``VbmProb.canon_idem]),
+  O "DS1-dist-make" (.proved [``VbmProb.Dist.make_atoms, ``VbmProb.Dist.make_tooManyAtoms, ``VbmProb.Dist.make_numberTooLarge,
+    ``VbmProb.Dist.make_emptyDist, ``VbmProb.Dist.make_keysNotIncreasing, ``VbmProb.Dist.make_zeroAtom,
+    ``VbmProb.Dist.make_atomSumNotOne, ``VbmProb.Dist.make_ok_iff]),
+  O "DS2-dist-ext" (.proved [``VbmProb.Dist.ext, ``VbmProb.Dist.ext_iff, ``VbmProb.Dist.make_unique]),
+  O "DS3-point-atoms" (.proved [``VbmProb.Dist.point_atoms, ``VbmProb.Dist.point_support, ``VbmProb.Dist.point_size,
+    ``VbmProb.Dist.size_pos, ``VbmProb.Dist.make_point]),
+  O "DS3-point-mean-cdf" (.open_ "the mean of `point a` is `a` and its cdf is 0 below `a` and 1 from `a` on: `mean` and `cdf` are defined in slice S7 (`VbmProb.Dist.Query`), so this clause is proved there")
 ]
