@@ -3,6 +3,7 @@ import VbmProbProofs.Refusal
 import VbmProbProofs.Limits
 import VbmProbProofs.Prob
 import VbmProbProofs.Prob.Bayes
+import VbmProbProofs.Scaled
 import LandLedger
 /-! # The obligation ledger
 
@@ -36,5 +37,14 @@ def ledger : List Obligation := [
     ``VbmProb.Prob.conditional_zeroMarginal, ``VbmProb.Prob.conditional_jointExceedsMarginal]),
   O "PR9-prob-bayes-is-conditional" (.proved [``VbmProb.Prob.bayes_eq_conditional,
     ``VbmProb.Prob.conditional_evidence_ne_jointExceeds, ``VbmProb.Prob.bayes_conditional_zero]),
-  O "prob-ext" (.proved [``VbmProb.Prob.ext])
+  O "prob-ext" (.proved [``VbmProb.Prob.ext]),
+  O "FX1-scale-make" (.proved [``VbmProb.Scale.make_zero, ``VbmProb.Scale.make_tooLarge, ``VbmProb.Scale.make_ok,
+    ``VbmProb.Scale.make_n]),
+  O "FX2-toScaled-range" (.proved [``VbmProb.toScaled_le, ``VbmProb.toScaled_zero, ``VbmProb.toScaled_one]),
+  O "FX3-toScaled-error-bound" (.proved [``VbmProb.toScaled_bounds, ``VbmProb.toScaled_error]),
+  O "FX4-toScaled-monotone" (.proved [``VbmProb.div_round_mono, ``VbmProb.toScaled_mono]),
+  O "FX5-ofScaled" (.proved [``VbmProb.ofScaled_ok_iff, ``VbmProb.ofScaled_val, ``VbmProb.ofScaled_above]),
+  O "FX6-toScaled-ofScaled" (.proved [``VbmProb.num_mul_scale, ``VbmProb.toScaled_ofScaled]),
+  O "FX7-ofScaledInt" (.proved [``VbmProb.ofScaledInt_neg, ``VbmProb.ofScaledInt_above, ``VbmProb.ofScaledInt_in_range,
+    ``VbmProb.ofScaledInt_natCast])
 ]
