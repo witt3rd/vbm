@@ -8,3 +8,4 @@ import VbmProb.Apportion
 import VbmProb.Dist
 import VbmProb.Dist.Canon
 import VbmProb.Dist.Query
+import VbmProb.Dist.Quantile

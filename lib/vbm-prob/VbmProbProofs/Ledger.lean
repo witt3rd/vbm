@@ -8,6 +8,7 @@ import VbmProbProofs.Apportion
 import VbmProbProofs.Dist
 import VbmProbProofs.Dist.Canon
 import VbmProbProofs.Dist.Query
+import VbmProbProofs.Dist.Quantile
 import LandLedger
 /-! # The obligation ledger
 
@@ -71,5 +72,9 @@ def ledger : List Obligation := [
     ``VbmProb.Dist.mass_not, ``VbmProb.Dist.mass_mono, ``VbmProb.Dist.mass_congr]),
   O "DS7-cdf" (.proved [``VbmProb.Dist.cdf_mono, ``VbmProb.Dist.cdf_below, ``VbmProb.Dist.cdf_above, ``VbmProb.Dist.cdf_right_cont]),
   O "DS10-expect" (.proved [``VbmProb.Dist.expect_add, ``VbmProb.Dist.expect_smul, ``VbmProb.Dist.expect_const,
-    ``VbmProb.Dist.expect_mono, ``VbmProb.Dist.expect_point, ``VbmProb.Dist.mean_point])
+    ``VbmProb.Dist.expect_mono, ``VbmProb.Dist.expect_point, ``VbmProb.Dist.mean_point]),
+  O "DS8-quantile-total" (.proved [``VbmProb.Dist.quantile_levelNotPositive, ``VbmProb.Dist.quantile_levelAboveOne,
+    ``VbmProb.Dist.quantile_ok, ``VbmProb.Dist.quantile_mem]),
+  O "DS9-quantile-galois" (.proved [``VbmProb.Dist.quantile_galois, ``VbmProb.Dist.quantile_cdf_ge, ``VbmProb.Dist.quantile_cdf_lt,
+    ``VbmProb.Dist.quantile_least, ``VbmProb.Dist.quantile_mono])
 ]
