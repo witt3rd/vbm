@@ -9,6 +9,7 @@ Verified by construction
 - `boundary-never-decides.md`: code at the edge moves bytes; it does not choose.
 - `logic-lives-in-the-spec.md`: decisions are in the specification; scripts only bind ports.
 - `no-decisions-from-text.md`: a decision comes from typed data or a model's typed answer, never from matching a string.
+- `decision-kinds.md`: every decision point is decidable, judgmental or probabilistic, and the kind fixes the evidence it must meet.
 - `spec-first.md`: the specification lands before the implementation.
 - `gates-need-negative-self-tests.md`: a gate that cannot fail is a label.
 
