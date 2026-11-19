@@ -13,6 +13,7 @@ import VbmProbProofs.Dist.Normalize
 import VbmProbProofs.Dist.Mixture
 import VbmProbProofs.Dist.Map
 import VbmProbProofs.Dist.Condition
+import VbmProbProofs.Dist.Scaled
 import LandLedger
 /-! # The obligation ledger
 
@@ -108,5 +109,11 @@ def ledger : List Obligation := [
   O "DS17-condition-atoms" (.proved [``VbmProb.Dist.condition_vals, ``VbmProb.Dist.condition_mem,
     ``VbmProb.Dist.eventW_sum', ``VbmProb.Dist.eventW_pos, ``VbmProb.Dist.eventW_keys]),
   O "DS17-condition-mass" (.proved [``VbmProb.Dist.mass_condition, ``VbmProb.Dist.mass_condition_self,
-    ``VbmProb.Dist.condition_true, ``VbmProb.Dist.condition_condition])
+    ``VbmProb.Dist.condition_true, ``VbmProb.Dist.condition_condition]),
+  O "FX13-dist-toScaled-sum-and-keys" (.proved [``VbmProb.Dist.toScaled_sum, ``VbmProb.Dist.toScaled_keys,
+    ``VbmProb.Dist.toScaled_length, ``VbmProb.Dist.scaledWeights_sum, ``VbmProb.Dist.thirds_toScaled]),
+  O "FX13-dist-toScaled-error" (.proved [``VbmProb.Dist.toScaled_close, ``VbmProb.Dist.toScaled_error, ``VbmProb.Dist.wt_cast,
+    ``VbmProb.Dist.sum_wt]),
+  O "FX14-dist-ofScaled" (.proved [``VbmProb.Dist.ofScaled_ok_iff, ``VbmProb.Dist.ofScaled_sumNotScale,
+    ``VbmProb.Dist.ofScaled_keysNotIncreasing, ``VbmProb.Dist.ofScaled_vals, ``VbmProb.Dist.ofScaled_prob])
 ]
