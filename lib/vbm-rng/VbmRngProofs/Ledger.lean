@@ -1,5 +1,6 @@
 import VbmRngProofs.Core
 import VbmRngProofs.Refusal
+import VbmRngProofs.Mix
 import LandLedger
 /-! # The obligation ledger
 
@@ -9,5 +10,9 @@ open Land.Ledger
 
 def ledger : List Obligation := [
   O "the-library-has-a-name" (.proved [``VbmRng.libraryName_nonempty]),
-  O "the-refusals-are-distinct" (.proved [``VbmRng.refusal_pairwise_distinct, ``VbmRng.refusal_ne_ok])
+  O "the-refusals-are-distinct" (.proved [``VbmRng.refusal_pairwise_distinct, ``VbmRng.refusal_ne_ok]),
+  O "m1-xor-shift-is-invertible" (.proved [``VbmRng.invXorShift_xorshift, ``VbmRng.xorshift_invXorShift]),
+  O "m2-mix-is-a-bijection-with-its-inverse" (.proved [``VbmRng.unmix_mix, ``VbmRng.mix_unmix]),
+  O "m3-mix-is-injective" (.proved [``VbmRng.mix_injective]),
+  O "m4-multiplication-by-an-odd-constant-is-a-bijection" (.proved [``VbmRng.mul_gamma_injective, ``VbmRng.gamma_gammaInv])
 ]
