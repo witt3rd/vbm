@@ -11,6 +11,7 @@ import VbmProbProofs.Dist.Query
 import VbmProbProofs.Dist.Quantile
 import VbmProbProofs.Dist.Normalize
 import VbmProbProofs.Dist.Mixture
+import VbmProbProofs.Dist.Map
 import LandLedger
 /-! # The obligation ledger
 
@@ -92,5 +93,13 @@ def ledger : List Obligation := [
     ``VbmProb.Dist.mixture_self]),
   O "DS13-mixture-mean" (.proved [``VbmProb.Dist.mixture_expect, ``VbmProb.Dist.mixture_mean]),
   O "DS14-mixture-refusals" (.proved [``VbmProb.Dist.mixture_numberTooLarge, ``VbmProb.Dist.mixture_tooManyAtoms_iff,
-    ``VbmProb.Dist.mixture_ok_iff, ``VbmProb.Dist.rows_keys_mem, ``VbmProb.Dist.rows_keys_inc, ``VbmProb.Dist.unionSize_eq])
+    ``VbmProb.Dist.mixture_ok_iff, ``VbmProb.Dist.rows_keys_mem, ``VbmProb.Dist.rows_keys_inc, ``VbmProb.Dist.unionSize_eq]),
+  O "DS15-map-queries" (.proved [``VbmProb.Dist.map_vals, ``VbmProb.Dist.mass_map, ``VbmProb.Dist.expect_map,
+    ``VbmProb.Dist.map_core, ``VbmProb.Dist.canon_gsum, ``VbmProb.Dist.canon_pos]),
+  O "DS15-map-laws" (.proved [``VbmProb.Dist.map_id, ``VbmProb.Dist.map_map, ``VbmProb.Dist.map_const,
+    ``VbmProb.Dist.eq_of_expect, ``VbmProb.Dist.inc_pos_unique]),
+  O "DS15-map-monotone" (.proved [``VbmProb.Dist.map_eq_mapMono, ``VbmProb.Dist.size_map, ``VbmProb.Dist.expect_mapMono,
+    ``VbmProb.Dist.mass_mapMono]),
+  O "DS16-shift" (.proved [``VbmProb.Dist.shift_atoms, ``VbmProb.Dist.mean_shift, ``VbmProb.Dist.cdf_shift,
+    ``VbmProb.Dist.shift_zero, ``VbmProb.Dist.shift_shift])
 ]
