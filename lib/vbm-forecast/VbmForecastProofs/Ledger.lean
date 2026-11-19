@@ -1,6 +1,7 @@
 import VbmForecastProofs.Core
 import VbmForecastProofs.Rep
 import VbmForecastProofs.Brier
+import VbmForecastProofs.Ordered
 import LandLedger
 /-! # The obligation ledger
 
@@ -36,5 +37,14 @@ def ledger : List Obligation := [
   O "p4-brier-additive-over-events" (.proved [``VbmForecast.brierTotal_append, ``VbmForecast.brierCatTotal_append,
     ``VbmForecast.brierTotal_cons, ``VbmForecast.brierMean_ok, ``VbmForecast.brierMean_badScale, ``VbmForecast.brierMean_empty]),
   O "p5-brier-permutation-invariant" (.proved [``VbmForecast.brierTotal_perm, ``VbmForecast.brierCatTotal_perm]),
-  O "brier-validated-entry-points" (.proved [``VbmForecast.brierBinaryV_ok, ``VbmForecast.brierCategoricalV_ok])
+  O "brier-validated-entry-points" (.proved [``VbmForecast.brierBinaryV_ok, ``VbmForecast.brierCategoricalV_ok]),
+  O "p4-ordered-totals-additive-over-events" (.proved [``VbmForecast.rpsTotal_append, ``VbmForecast.pinballTotal_append,
+    ``VbmForecast.intervalTotal_append, ``VbmForecast.rpsTotal_cons, ``VbmForecast.pinballTotal_cons, ``VbmForecast.intervalTotal_cons]),
+  O "p5-ordered-totals-permutation-invariant" (.proved [``VbmForecast.rpsTotal_perm, ``VbmForecast.pinballTotal_perm,
+    ``VbmForecast.intervalTotal_perm]),
+  O "p8-rps-is-brier-thresholds-interval-is-two-pinballs" (.proved [``VbmForecast.rps_eq_sum_brier, ``VbmForecast.rpsTotal_eq_sum_brier,
+    ``VbmForecast.rpsEvents_hit, ``VbmForecast.intervalScore_eq_pinball]),
+  O "p9-pinball-quantile-minimises-expected-score" (.proved [``VbmForecast.pinball_support, ``VbmForecast.expPinball_support,
+    ``VbmForecast.expPinball_quantile_le]),
+  O "ordered-validated-entry-points" (.proved [``VbmForecast.rpsV_ok, ``VbmForecast.pinballV_ok, ``VbmForecast.intervalScoreV_ok])
 ]
