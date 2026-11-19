@@ -3,6 +3,7 @@ import VbmForecastProofs.Rep
 import VbmForecastProofs.Brier
 import VbmForecastProofs.Ordered
 import VbmForecastProofs.LogScore
+import VbmForecastProofs.Calibration
 import LandLedger
 /-! # The obligation ledger
 
@@ -56,5 +57,12 @@ def ledger : List Obligation := [
   O "p11-log-enclosure-is-sound-and-has-width-at-most-2" (.proved [``VbmForecast.log2Enclosure_sound, ``VbmForecast.log2Enclosure_total,
     ``VbmForecast.log2Enclosure_badScale, ``VbmForecast.log2Enclosure_zero, ``VbmForecast.log2Enclosure_over,
     ``VbmForecast.log2EnclosureV_sound, ``VbmForecast.log2EnclosureV_limit, ``VbmForecast.log2Enclosure_half,
-    ``VbmForecast.log2Enclosure_one, ``VbmForecast.logRun_inv])
+    ``VbmForecast.log2Enclosure_one, ``VbmForecast.logRun_inv]),
+  O "p5-reliability-table-permutation-invariant" (.proved [``VbmForecast.table_perm, ``VbmForecast.reliability_perm]),
+  O "p6-reliability-counts-and-every-probability-in-one-bin" (.proved [``VbmForecast.bin_unique, ``VbmForecast.binOf_iff,
+    ``VbmForecast.reliability_n_sum, ``VbmForecast.reliability_hits_sum, ``VbmForecast.reliability_sumP_sum,
+    ``VbmForecast.reliability_length, ``VbmForecast.reliability_ok]),
+  O "p7-calibration-error-zero-iff-perfectly-calibrated" (.proved [``VbmForecast.calibrationError_ok,
+    ``VbmForecast.calibrationError_zero_iff, ``VbmForecast.calibNum_zero_iff]),
+  O "calibration-in-the-large" (.proved [``VbmForecast.citl_ok, ``VbmForecast.citl_gap_zero_iff])
 ]
