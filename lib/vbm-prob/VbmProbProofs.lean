@@ -10,4 +10,5 @@ import VbmProbProofs.Dist
 import VbmProbProofs.Dist.Canon
 import VbmProbProofs.Dist.Query
 import VbmProbProofs.Dist.Quantile
+import VbmProbProofs.Dist.Normalize
 import VbmProbProofs.Ledger

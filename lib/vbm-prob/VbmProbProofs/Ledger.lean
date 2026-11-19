@@ -9,6 +9,7 @@ import VbmProbProofs.Dist
 import VbmProbProofs.Dist.Canon
 import VbmProbProofs.Dist.Query
 import VbmProbProofs.Dist.Quantile
+import VbmProbProofs.Dist.Normalize
 import LandLedger
 /-! # The obligation ledger
 
@@ -76,5 +77,11 @@ def ledger : List Obligation := [
   O "DS8-quantile-total" (.proved [``VbmProb.Dist.quantile_levelNotPositive, ``VbmProb.Dist.quantile_levelAboveOne,
     ``VbmProb.Dist.quantile_ok, ``VbmProb.Dist.quantile_mem]),
   O "DS9-quantile-galois" (.proved [``VbmProb.Dist.quantile_galois, ``VbmProb.Dist.quantile_cdf_ge, ``VbmProb.Dist.quantile_cdf_lt,
-    ``VbmProb.Dist.quantile_least, ``VbmProb.Dist.quantile_mono])
+    ``VbmProb.Dist.quantile_least, ``VbmProb.Dist.quantile_mono]),
+  O "DS5-normalize-sum-and-probability" (.proved [``VbmProb.Dist.normalize_ok, ``VbmProb.Dist.normalize_total,
+    ``VbmProb.Dist.normalize_prob, ``VbmProb.Dist.normalize_support, ``VbmProb.Dist.normalize_vals]),
+  O "DS5-normalize-refusals" (.proved [``VbmProb.Dist.normalize_tooManyAtoms, ``VbmProb.Dist.normalize_numberTooLarge,
+    ``VbmProb.Dist.normalize_negativeWeight, ``VbmProb.Dist.normalize_zeroTotalWeight_iff]),
+  O "DS5-normalize-make-and-scale" (.proved [``VbmProb.Dist.normalize_of_make, ``VbmProb.Dist.canon_of_increasing,
+    ``VbmProb.Dist.normalize_scale, ``VbmProb.Dist.normalize_eq_core, ``VbmProb.Dist.normCore_scale])
 ]
