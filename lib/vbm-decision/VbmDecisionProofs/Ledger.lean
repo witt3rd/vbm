@@ -1,5 +1,7 @@
 import VbmDecisionProofs.Core
 import VbmDecisionProofs.Prob
+import VbmDecisionProofs.Refusal
+import VbmDecisionProofs.Limits
 import LandLedger
 /-! # The obligation ledger
 
@@ -12,5 +14,8 @@ def ledger : List Obligation := [
   O "prob-ofdecimal-exact" (.proved [``VbmDecision.ofDecimal_exact]),
   O "prob-toscaled-refuses-imprecise" (.proved [``VbmDecision.toScaled_tooPrecise]),
   O "prob-roundtrip" (.proved [``VbmDecision.ofDecimal_toDecimal]),
-  O "prob-range" (.proved [``VbmDecision.ofDecimal_range, ``VbmDecision.ofDecimal_negative, ``VbmDecision.ofDecimal_outOfRange])
+  O "prob-range" (.proved [``VbmDecision.ofDecimal_range, ``VbmDecision.ofDecimal_negative, ``VbmDecision.ofDecimal_outOfRange]),
+  O "refusal-codes-complete" (.proved [``VbmDecision.refusalCode_all_complete, ``VbmDecision.refusalCode_all_nodup, ``VbmDecision.refusalCode_count, ``VbmDecision.refusal_ext_code, ``VbmDecision.scaleRefusal_toCode_injective]),
+  O "named-limits-values" (.proved [``VbmDecision.limits_values, ``VbmDecision.maxSample_quadratic]),
+  O "named-limits-consistent" (.proved [``VbmDecision.sumEpsilon_le, ``VbmDecision.sumEpsilon_lt_scale, ``VbmDecision.calibration_limits_consistent, ``VbmDecision.structural_limits_roomy])
 ]
