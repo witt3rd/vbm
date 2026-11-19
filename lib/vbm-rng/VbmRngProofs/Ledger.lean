@@ -7,6 +7,7 @@ import VbmRngProofs.Below
 import VbmRngProofs.Fraction
 import VbmRngProofs.Shuffle
 import VbmRngProofs.Bernoulli
+import VbmRngProofs.Vectors
 import LandLedger
 /-! # The obligation ledger
 
@@ -49,6 +50,7 @@ def ledger : List Obligation := [
   O "b2-certain-cases" (.proved [``VbmRng.bernoulli_zero, ``VbmRng.bernoulli_full, ``VbmRng.bernoulli_zero_ok, ``VbmRng.bernoulli_full_ok]),
   O "b3-refusals" (.proved [``VbmRng.bernoulli_denZero, ``VbmRng.bernoulli_neg, ``VbmRng.bernoulli_big, ``VbmRng.bernoulli_tooLarge]),
   O "b4-function-of-stream-advance" (.proved [``VbmRng.bernoulli_det, ``VbmRng.bernoulli_advance]),
+  O "v1-known-answer-vectors" (.proved [``VbmRng.splitmix64_conformance]),
   O "q1-independence-of-split-children-and-mixed-outputs" (.limit "trusted, not proved: docs/trust-ledger.md Q1; only the distinctness of keys (P1) is proved"),
   O "q2-stream-overlap-bound" (.limit "trusted, not proved: docs/trust-ledger.md Q2; users keep m^2 L far below 2^64"),
   O "q3-expectation-and-tail-of-rejection" (.limit "trusted, not proved: docs/trust-ledger.md Q3; a consequence of Q1, only the accepted fraction above one half (U4) is proved")

@@ -8,3 +8,4 @@ import VbmRngProofs.Split
 import VbmRngProofs.Stream
 import VbmRngProofs.Shuffle
 import VbmRngProofs.Bernoulli
+import VbmRngProofs.Vectors
