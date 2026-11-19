@@ -1,6 +1,8 @@
 import VbmScoreboardProofs.Direction
 import VbmScoreboardProofs.Core
 import VbmScoreboardProofs.Wire
+import VbmScoreboardProofs.Journal
+import VbmScoreboardProofs.Provider
 import LandLedger
 /-! # The obligation ledger
 
@@ -34,5 +36,11 @@ def ledger : List Obligation := [
   O "a-refusal-names-the-line-it-is-about" (.proved [``VbmScoreboardWire.decodeReadings_names_line, ``VbmScoreboardWire.decodeReadings_names_line_general]),
   O "a-version-other-than-1-is-refused-with-that-version" (.proved [``VbmScoreboardWire.decodeReadings_refuses_unknown_version]),
   O "a-repeated-metric-is-refused-at-the-line-of-the-second" (.proved [``VbmScoreboardWire.decodeReadings_refuses_duplicate, ``VbmScoreboardWire.dupCheck_refuses_any]),
-  O "a-baseline-is-written-in-the-order-of-its-metrics-names" (.proved [``VbmScoreboardWire.encodeBaseline_sorted, ``VbmScoreboardWire.sortFloors_perm])
+  O "a-baseline-is-written-in-the-order-of-its-metrics-names" (.proved [``VbmScoreboardWire.encodeBaseline_sorted, ``VbmScoreboardWire.sortFloors_perm]),
+  O "banking-is-refused-unless-every-floor-held" (.proved [``VbmScoreboard.bankIfPassing_ok, ``VbmScoreboard.bankIfPassing_error, ``VbmScoreboard.bankIfPassing_unmeasured]),
+  O "banking-writes-one-history-line-for-each-floor-it-moved-and-none-else" (.proved [``VbmScoreboard.bankEntries_self, ``VbmScoreboard.bankEntries_length, ``VbmScoreboard.bankEntries_mem]),
+  O "a-metric-is-added-once-with-a-name-and-its-added-entry" (.proved [``VbmScoreboard.addMetric_ok, ``VbmScoreboard.addMetric_refuses_empty, ``VbmScoreboard.addMetric_refuses_present]),
+  O "a-floor-the-history-never-mentions-starts-at-itself-and-progress-stays-within-1000" (.proved [``VbmScoreboard.startOf_unmentioned, ``VbmScoreboard.progressOf_le, ``VbmScoreboard.progressOf_no_target]),
+  O "a-provider-that-failed-or-was-stopped-is-refused-whatever-it-printed" (.proved [``VbmScoreboardWire.readProvider_failed, ``VbmScoreboardWire.readProvider_timedOut]),
+  O "a-provider-that-exited-0-is-read-as-the-protocol-and-no-other-way" (.proved [``VbmScoreboardWire.readProvider_ok, ``VbmScoreboardWire.readProvider_malformed])
 ]

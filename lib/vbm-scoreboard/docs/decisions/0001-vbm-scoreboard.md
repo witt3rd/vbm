@@ -12,7 +12,7 @@ Metrics (a name and an integer; the unit is the provider's, in the name), a dire
 - S0 (this commit): the skeleton and the direction order (`better`), each theorem with a non-vacuity witness.
 - S1 (landed): the core (`check`, `bank`, `reset`, `history`, `progress`), extracted from the first consumer's specification; definitions in `VbmScoreboard/Core.lean`, theorems and witnesses in `VbmScoreboardProofs/Core.lean`.
 - S2 (landed): `VbmScoreboardWire`, extracted from the first consumer's format specification; definitions in `VbmScoreboardWire/Format.lean` (it imports `Lean` and the core, and is linked), theorems and witnesses in `VbmScoreboardProofs/Wire.lean`. The text round trips are proved of any parser and renderer faithful on the lines the encoder writes; that `Lean.Json.parse` reads back `Lean.Json.compress` is the one trusted fact, checked by `#guard` on concrete values.
-- S3: the command-line tool, which replaces the first consumer's shell script.
+- S3 (landed): the command-line tool `vbm-scoreboard` (`VbmScoreboardTool/`, a `lean_exe`), which replaces the first consumer's shell script. It is a boundary: the decisions it needs were added to the libraries first, with proofs (`VbmScoreboard/Journal.lean`: banking refused unless every floor held, one history line per moved floor, adding a metric, where a floor started; `VbmScoreboardWire/Provider.lean`: what a provider's exit and output mean). Its process-boundary test is `scripts/test_tool.sh`.
 
 ## Rules
 Pure data and total functions over `Init`. The words of the wire formats are kept exactly once released; a change to one needs the consumers' word.

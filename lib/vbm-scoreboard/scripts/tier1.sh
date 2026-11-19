@@ -13,7 +13,7 @@ tests=(); par() { tests+=("$@"); }   # independent test scripts, run in parallel
 bgdir=$(mktemp -d); bgnames=()
 bg() { local n=$1; shift; bgnames+=("$n"); ( "$@" ) > "$bgdir/$n.log" 2>&1 & echo $! > "$bgdir/$n.pid"; }
 bgwait() { local bad=0 n; for n in "${bgnames[@]}"; do if wait "$(cat "$bgdir/$n.pid")"; then cat "$bgdir/$n.log"; else echo "tier1: FAILED: $n" >&2; cat "$bgdir/$n.log" >&2; bad=1; fi; done; [ $bad = 0 ] || exit 1; }
-lean_sources() { find VbmScoreboard VbmScoreboardWire VbmScoreboardProofs vectors -name '*.lean' 2>/dev/null; ls VbmScoreboard.lean VbmScoreboardWire.lean VbmScoreboardProofs.lean 2>/dev/null; }
+lean_sources() { find VbmScoreboard VbmScoreboardWire VbmScoreboardTool VbmScoreboardProofs vectors -name '*.lean' 2>/dev/null; ls VbmScoreboard.lean VbmScoreboardWire.lean VbmScoreboardTool.lean VbmScoreboardProofs.lean 2>/dev/null; }
 
 # 1. Forbidden constructs anywhere in Lean sources (AGENTS.md). A comment may mention one only on a line marked `-- tier1-allow`.
 forbidden() { grep -HnE '\b(sorry|admit|axiom|unsafe|implemented_by|csimp)\b' "$@" | grep -v 'tier1-allow' || true; }
@@ -54,7 +54,7 @@ scripts/lint-pipefail.sh   # a producer piped into an early-exiting consumer is 
 
 # 2. Build, zero warnings (scripts/check-zero-warning.sh: the warning's own diagnostic is required, a clean file must pass; prints `ran: zero-warning: 3 cases`).
 scripts/check-zero-warning.sh
-lake build VbmScoreboard VbmScoreboardWire VbmScoreboardProofs LandLedger   # once, for the gates and every test (they build nothing more)
+lake build VbmScoreboard VbmScoreboardWire VbmScoreboardTool VbmScoreboardProofs vbm-scoreboard LandLedger   # once, for the gates and every test (they build nothing more)
 
 # 2a. The axiom gate: every constant of ours depends only on propext, Classical.choice, Quot.sound (--selftest: a non-standard axiom is rejected).
 bg axiom-gate .land/tool/bin/land-lean axiom --selftest
@@ -63,6 +63,7 @@ bg axiom-gate .land/tool/bin/land-lean axiom --selftest
 .land/tool/bin/land-lean ledger --selftest   # the obligation ledger: docs/proof-ledger.md rendered, every theorem checked, the ratchet (vbm-land docs/lean-gates.md)
 # 2d. The public-readiness lint: no private name, no path of ours, anywhere in the tree; it is shown able to fail.
 par scripts/test_lint_public.sh
+par scripts/test_tool.sh   # the product binary at its process boundary (a fake provider, throwaway files)
 # 2e. The test-running runtime (ran-evidence, the parallel runner) is the vendored tool's and is tested in vbm-land. Every concurrent gate must say how its count is read: a `bg NAME` of this script has a line in
 # scripts/ran-gates.txt, or prints its own `ran: NAME: N cases` (the tests job does).
 for g in $(sed -nE 's/^bg ([A-Za-z0-9_-]+) .*/\1/p' scripts/tier1.sh); do

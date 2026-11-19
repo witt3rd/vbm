@@ -2,11 +2,33 @@
 
 **A project's scorecard.** A set of named metrics, each with a direction, a floor that only moves toward better, a target and a history, written once in Lean 4 and machine-checked. A check refuses a regression; banking records an improvement and never a worse number; a floor is loosened only by a reasoned, recorded reset. The same schema lets a project judge its own health, measure its progress, and set its priorities, and lets a manager compare projects.
 
-> **Status: pre-release.** The skeleton and the first definitions. Nothing is published to a package registry.
+> **Status: pre-release.** The core, the wire formats and the command-line tool. Nothing is published to a package registry.
 
 ## What it is, and what it is not
 
-A specification and its proofs, over `Init` alone: no input or output, no wire format, no dependency. It measures nothing: providers (commands, in any language) print typed readings, and this library decides whether a floor held. What to build to move a metric is a judgment and is not here.
+A specification and its proofs: the core (`VbmScoreboard`) is over `Init` alone, with no input or output; the wire formats (`VbmScoreboardWire`) read and write the provider protocol, the baseline file and the history file; the tool `vbm-scoreboard` (`VbmScoreboardTool`) is the thin boundary that reads files and runs a provider. It measures nothing: providers (commands, in any language) print typed readings, and the library decides whether a floor held. What to build to move a metric is a judgment and is not here.
+
+## The tool
+
+`lake build vbm-scoreboard` builds `.lake/build/bin/vbm-scoreboard`. It reads files and the output of a provider command, calls the specified functions, prints their typed results and sets the exit code; it decides nothing (every refusal is a value of the library). The provider is run with `sh -c` and its standard output is the protocol, one JSON line per metric: `{"v":1,"metric":"covered","value":83,"unit":"permille"}`. The baseline file has one line per floor, `{"v":1,"metric":M,"direction":"higher"|"lower","floor":N}`; the history file one line per event (`banked`, `added`, `reset`).
+
+```
+vbm-scoreboard check    --provider CMD --baseline FILE
+vbm-scoreboard show     --provider CMD --baseline FILE
+vbm-scoreboard bank     --provider CMD --baseline FILE --history FILE [--author A --reason R]
+vbm-scoreboard reset    METRIC --to N --reason R --author A --baseline FILE --history FILE
+vbm-scoreboard progress --baseline FILE --history FILE [--target METRIC=N ...]
+vbm-scoreboard add      METRIC --direction higher|lower --floor N --baseline FILE --history FILE
+```
+
+* `check` exits 0 when every floor held, and otherwise 1, saying for each failing metric the floor and the reading (`regressed: covered: reading 79 is worse than floor 80 (higher is better)`); a baselined metric with no reading fails (`unmeasured`).
+* `bank` refuses (exit 1, nothing written) unless every floor held; otherwise it moves each floor whose reading is better and appends one `banked` history line per move. The baseline and the history are written to new files beside the old and renamed in together; if the second rename fails the first is put back. `--author` and `--reason` are accepted and not recorded: a `banked` line has no place for them in the wire format.
+* `reset` is the only way a floor moves toward worse: it needs a reason and an author, is refused for a value that is not looser (that is `bank`) or a metric with no floor, and appends a `reset` line with both.
+* `add` writes a new floor and an `added` line; it is refused for a metric that already has a floor. `progress` prints, for each floor, where it started (the earliest value in the history), the floor, the target given with `--target`, and the permille of the way (`progress` of the library). `show` prints the table of floor, direction and reading.
+* A provider that exits nonzero, prints a malformed line, repeats a metric or is stopped is a refusal (exit 3), never a guess. The one limit of the tool protects the machine: a provider that never exits holds its caller, its process and its memory for ever, so it is stopped (its whole process group) after `--timeout` seconds (default 300).
+* `--at SECONDS` sets the time written to a history line (default: the clock). Exit codes: 0 done, 1 the scoreboard says no, 2 usage, 3 provider refused, 4 a file could not be read, written or understood.
+
+The tool is tested at its process boundary by `scripts/test_tool.sh` (a fake provider and throwaway files, exact messages); what it trusts of the machine is in `docs/trust-ledger.md` (T3 to T6).
 
 ## Build and test
 

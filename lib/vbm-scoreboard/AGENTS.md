@@ -18,7 +18,7 @@ A project's scorecard, written once in Lean 4 and machine-checked: a set of name
 **Scope.** Pure data and total functions over `Init`. No input or output, no wire format, no model call, no network, no storage. It decides whether a floor held and what the history says; it measures nothing (providers measure) and decides nothing about what to build (a steward judges that). The wire formats of the provider protocol and the baseline and history files are a separate library, `VbmScoreboardWire`, which may import `Lean`.
 
 ## Status
-Seeded 2026-11-18 from the scoreboard specifications of the family's first consumer. Slices (docs/decisions/0001-vbm-scoreboard.md): S0 the skeleton and the direction order; S1 the core (check, bank, reset, history, progress); S2 the wire formats (`VbmScoreboardWire`); planned: S3 the command-line tool.
+Seeded 2026-11-18 from the scoreboard specifications of the family's first consumer. Slices (docs/decisions/0001-vbm-scoreboard.md): S0 the skeleton and the direction order; S1 the core (check, bank, reset, history, progress); S2 the wire formats (`VbmScoreboardWire`); S3 the command-line tool (`VbmScoreboardTool`, the `vbm-scoreboard` executable: a boundary that decides nothing).
 
 ## Hard rules
 - **Forbidden anywhere in Lean:** `sorry`, `admit`, `axiom`, `unsafe`, `implemented_by`, `csimp` (Tier 1 scans for them; a comment may mention one only on a line marked `tier1-allow`). A proof is hard? Decompose it; never weaken the statement.

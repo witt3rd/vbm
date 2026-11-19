@@ -19,3 +19,11 @@ lean_lib VbmScoreboardProofs where
 
 /-- The landing tool's Lean modules (the obligation-ledger vocabulary and the reach walk, `land-lean ledger`), a small package it ships; required, never declared here, so a repository that vendors this library and requires it too shares one copy. -/
 require «land-ledger» from ".land/tool/lean"
+
+/-- The command-line tool `vbm-scoreboard` (slice S3): the boundary over the core and the wire formats. It reads files and the output of a provider command, calls the specified functions, prints their typed results and sets the exit code; it decides nothing. -/
+lean_lib VbmScoreboardTool where
+  globs := #[.andSubmodules `VbmScoreboardTool]
+
+@[default_target]
+lean_exe «vbm-scoreboard» where
+  root := `VbmScoreboardTool.Main
