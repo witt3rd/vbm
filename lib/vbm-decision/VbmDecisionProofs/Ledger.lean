@@ -1,4 +1,5 @@
 import VbmDecisionProofs.Audit
+import VbmDecisionProofs.Battery
 import VbmDecisionProofs.Check
 import VbmDecisionProofs.Core
 import VbmDecisionProofs.Decode
@@ -38,5 +39,25 @@ def ledger : List Obligation := [
   O "decode-total" (.proved [``VbmDecision.decode_total, ``VbmDecision.Question.decode_nestingTooDeep, ``VbmDecision.Answer.decode_nestingTooDeep, ``VbmDecision.decode_within, ``VbmDecision.Request.decode_nestingTooDeep, ``VbmDecision.Response.decode_nestingTooDeep, ``VbmDecision.message_decode_total]),
   O "audit-roundtrip" (.proved [``VbmDecision.audit_roundtrip, ``VbmDecision.answer_audit_roundtrip, ``VbmDecision.outcome_roundtrip, ``VbmDecision.binding_roundtrip]),
   O "audit-faithful" (.proved [``VbmDecision.audit_faithful]),
-  O "audit-total-on-refusal" (.proved [``VbmDecision.audit_total_on_refusal, ``VbmDecision.audit_ok_iff, ``VbmDecision.audit_error_iff])
+  O "audit-total-on-refusal" (.proved [``VbmDecision.audit_total_on_refusal, ``VbmDecision.audit_ok_iff, ``VbmDecision.audit_error_iff]),
+  O "battery-check-sound-complete" (.partly [``VbmDecision.Battery.check_ok_iff, ``VbmDecision.Table.check_ok_iff, ``VbmDecision.checkItems_ok_iff, ``VbmDecision.checkBands_ok_iff, ``VbmDecision.checkOutcomes_ok_iff] "check is ok iff Valid is proved; that each refusal code arises at its path is witnessed by one example per code, not proved"),
+  O "battery-score-range" (.proved [``VbmDecision.battery_score_range, ``VbmDecision.score_ok_iff, ``VbmDecision.scoreN_le]),
+  O "battery-score-monotone" (.proved [``VbmDecision.battery_score_monotone, ``VbmDecision.score_le_iff, ``VbmDecision.score_lt_iff]),
+  O "battery-score-permutation" (.proved [``VbmDecision.battery_score_permutation]),
+  O "battery-score-zero-weight" (.proved [``VbmDecision.battery_score_zero_weight]),
+  O "battery-score-refuses" (.proved [``VbmDecision.battery_score_refuses, ``VbmDecision.scoreD_eq_zero_iff]),
+  O "battery-fail-closed" (.proved [``VbmDecision.battery_fail_closed, ``VbmDecision.evaluate_ok_iff]),
+  O "battery-faults-listed" (.proved [``VbmDecision.battery_faults_listed, ``VbmDecision.faults_mem, ``VbmDecision.faults_nodup]),
+  O "veto-decides" (.proved [``VbmDecision.veto_decides]),
+  O "veto-conflict" (.proved [``VbmDecision.veto_conflict, ``VbmDecision.verdictOf_conflict]),
+  O "veto-absent-score-decides" (.proved [``VbmDecision.veto_absent_score_decides, ``VbmDecision.veto_absent_no_veto_items]),
+  O "table-disjoint" (.proved [``VbmDecision.table_disjoint, ``VbmDecision.table_index_iff]),
+  O "table-monotone" (.proved [``VbmDecision.table_monotone]),
+  O "table-cut-side" (.proved [``VbmDecision.table_cut_lo, ``VbmDecision.table_cut_hi_next, ``VbmDecision.table_cut_hi_gap, ``VbmDecision.table_cut_one]),
+  O "table-gapless-total" (.proved [``VbmDecision.table_gapless_total]),
+  O "battery-verdict-in-table" (.proved [``VbmDecision.battery_verdict_in_table]),
+  O "battery-monotone" (.proved [``VbmDecision.battery_monotone]),
+  O "battery-permutation" (.proved [``VbmDecision.battery_permutation, ``VbmDecision.valid_perm]),
+  O "battery-record-replay" (.proved [``VbmDecision.battery_record_replay]),
+  O "battery-record-used" (.proved [``VbmDecision.battery_record_used])
 ]

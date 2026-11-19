@@ -1,4 +1,5 @@
 import VbmDecisionProofs.Audit
+import VbmDecisionProofs.Battery
 import VbmDecisionProofs.Check
 import VbmDecisionProofs.Core
 import VbmDecisionProofs.Decode
