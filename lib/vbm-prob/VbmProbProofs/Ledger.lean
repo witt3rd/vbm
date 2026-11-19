@@ -4,6 +4,7 @@ import VbmProbProofs.Limits
 import VbmProbProofs.Prob
 import VbmProbProofs.Prob.Bayes
 import VbmProbProofs.Scaled
+import VbmProbProofs.Apportion
 import LandLedger
 /-! # The obligation ledger
 
@@ -46,5 +47,12 @@ def ledger : List Obligation := [
   O "FX5-ofScaled" (.proved [``VbmProb.ofScaled_ok_iff, ``VbmProb.ofScaled_val, ``VbmProb.ofScaled_above]),
   O "FX6-toScaled-ofScaled" (.proved [``VbmProb.num_mul_scale, ``VbmProb.toScaled_ofScaled]),
   O "FX7-ofScaledInt" (.proved [``VbmProb.ofScaledInt_neg, ``VbmProb.ofScaledInt_above, ``VbmProb.ofScaledInt_in_range,
-    ``VbmProb.ofScaledInt_natCast])
+    ``VbmProb.ofScaledInt_natCast]),
+  O "FX8-apportion-sum" (.proved [``VbmProb.apportion_sum, ``VbmProb.Apportion.units_sum, ``VbmProb.Apportion.units_length,
+    ``VbmProb.Apportion.chosen_length, ``VbmProb.Apportion.sum_floor_rem]),
+  O "FX9-apportion-within-one" (.proved [``VbmProb.apportion_within_one, ``VbmProb.apportion_zero_weight,
+    ``VbmProb.Apportion.chosen_rem_pos]),
+  O "FX10-apportion-refusal" (.proved [``VbmProb.apportion_refuses_iff, ``VbmProb.apportion_ok_of_pos]),
+  O "FX11-apportion-ties" (.proved [``VbmProb.apportion_tie]),
+  O "FX12-apportion-idempotent" (.proved [``VbmProb.apportion_idem])
 ]
