@@ -2,6 +2,7 @@ import VbmProbProofs.Core
 import VbmProbProofs.Refusal
 import VbmProbProofs.Limits
 import VbmProbProofs.Prob
+import VbmProbProofs.Prob.Bayes
 import LandLedger
 /-! # The obligation ledger
 
@@ -27,5 +28,13 @@ def ledger : List Obligation := [
   O "PR5-prob-add" (.proved [``VbmProb.Prob.add_ok_iff, ``VbmProb.Prob.add_val, ``VbmProb.Prob.add_refuses, ``VbmProb.Prob.add_comm,
     ``VbmProb.Prob.add_complement]),
   O "PR10-prob-order" (.proved [``VbmProb.Prob.le_refl, ``VbmProb.Prob.le_trans, ``VbmProb.Prob.le_antisymm, ``VbmProb.Prob.le_total]),
+  O "PR6-prob-bayes" (.proved [``VbmProb.Prob.evidence_val, ``VbmProb.Prob.bayes_ok_iff, ``VbmProb.Prob.bayes_zeroEvidence,
+    ``VbmProb.Prob.bayes_val, ``VbmProb.Prob.bayes_mul_evidence, ``VbmProb.Prob.bayes_val_expanded]),
+  O "PR7-prob-bayes-boundaries" (.proved [``VbmProb.Prob.bayes_prior_zero, ``VbmProb.Prob.bayes_prior_one,
+    ``VbmProb.Prob.bayes_like_eq, ``VbmProb.Prob.bayes_likeNot_zero]),
+  O "PR8-prob-conditional" (.proved [``VbmProb.Prob.conditional_ok_iff, ``VbmProb.Prob.conditional_mul,
+    ``VbmProb.Prob.conditional_zeroMarginal, ``VbmProb.Prob.conditional_jointExceedsMarginal]),
+  O "PR9-prob-bayes-is-conditional" (.proved [``VbmProb.Prob.bayes_eq_conditional,
+    ``VbmProb.Prob.conditional_evidence_ne_jointExceeds, ``VbmProb.Prob.bayes_conditional_zero]),
   O "prob-ext" (.proved [``VbmProb.Prob.ext])
 ]
