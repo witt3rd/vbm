@@ -428,6 +428,7 @@ Each slice is about 150 production lines of Lean with its proofs, lands behind n
 | S5 | `VbmDecision/Calibrate.lean` | S1a, S1b | 2 | `countGE`, `hitsGE`, `Meets`, `calibrateYes`, `mirror`, `calibrateNo`, `calibrateNoul`; C1-C7 (needs `Thresholds.noul`: S2 lands the type first, or S5 states `calibrateNoul` over a local pair and S4's binding wraps it; the steward picks S2-first, it is about 40 lines) |
 | S3 | `VbmDecision/Check.lean` | S1a, S1b, S2 | 3 | `Question.check`, `WellFormed`, `checkAnswer`, threshold validity; T1 |
 | S4 | `VbmDecision/Truth.lean` | S3 | 4 | `decide`; T2-T9 |
+| S10 | `VbmDecision/Battery.lean`, `VbmDecisionProofs/Battery.lean` | S1a, S1b, S2, S3, S4 | 5 | the battery of section 14: `Weight`, `Item`, `Battery`, `Answers`, `Verdict`, `Table`, `Battery.score` over `Rat`, `evaluate` (fail closed, veto, table), the record; B1-B20 and the vectors BV1-BV18 (if the production lines pass 150, the table (B12-B15) is split off first; it shares no file with S7b or S6) |
 | S7a | `VbmDecision/Decode.lean` | S2, S3 | 4 | `Question`/`Answer` decode and encode over `J`, the path, the unknown-field and duplicate-key rules; W1, W2, W4 (for these) |
 | S7b | `VbmDecision/Message.lean` | S7a | 5 | `Request`/`Response` decode and encode; W3, W4 |
 | S6 | `VbmDecision/Audit.lean` | S4, S7a | 5 | `AuditRecord`, `audit`, `toJ`, `ofJ`; A1-A3 |
@@ -458,3 +459,159 @@ The critical path is S1a, S2, S3, S7a, S7b, S9: six slices. S5, S4, S6 and S8 ha
 8. Whether `minSupport` should become an exact lower-confidence-bound rule rather than a count.
 9. Whether the provider rounds or truncates to four decimals (the sum epsilon assumes the worse, truncation, 100 millionths per entry), and whether a `0` and a `1` are ever printed with other forms (`0.0`, `1.0`), which `Decimal` already accepts.
 10. Whether a response can carry fields beyond those listed (a created time, a request id): the library refuses them as `unknownField`, and a release of the provider that adds one breaks decoding until this page is amended. This is deliberate for an alpha surface.
+
+## 14. Battery: a weighted combination of typed answers
+
+Status: added after version 1 of sections 1 to 13, which it does not change. Slice S10 (section 12).
+
+**Why an extension and not a new library.** A decision that no single question settles is made from a **battery** of questions. Every part of it is already specified here: the item's probability is a `Prob` (section 3.1) read from a typed `noul` answer (section 3.3) or from code; an answer that is not well-formed is a typed refusal that fails closed (sections 5.2, 9); the verdict comes from exact comparisons of the same kind as the truth table (section 5); and the result carries an audit record (section 7). A new library would have to copy all four. The battery adds only the combination (a weighted mean), the veto and a band table over the score. The **calibration** of the cut points and of the veto thresholds belongs to the forecast library, which grades a verdict against what happened; this library has no calibration module for the battery and states no rule for choosing a cut point.
+
+**Representation.** The score is a `Rat` of `Init` (exact, no floating point, no new ratio type). `Init` has few lemmas about `Rat`, so every statement below that compares scores is proved through the integer pair `N` and `D` of 14.2 (cross-multiplied, as in section 6.1); a witness that evaluates a `Rat` is closed by `decide +kernel` (plain `decide` does not reduce a `Rat` order). No `native_decide`.
+
+### 14.1 Types
+
+```
+abbrev Weight := Nat                                   -- exact, non-negative; at most maxWeight
+inductive ItemKind where | decidable | judgmental      -- decidable: answered by code, 0 or 1; judgmental: a typed probability
+structure Veto (α) where  threshold : Prob   outcome : α      -- fires when the item's probability ≥ threshold; threshold ≠ 0
+structure Item (α) where  id : String   weight : Weight   kind : ItemKind   veto : Option (Veto α)
+structure Battery (α) where  items : List (Item α)             -- Battery.Valid: ids non-empty and distinct, 1 to maxItems items, every weight ≤ maxWeight, some weight > 0
+
+inductive Reply where
+  | code    (b : Bool)                                 -- a decidable item: true is 1, false is 0
+  | answer  (a : Answer)                               -- a judgmental item: a decoded typed answer of section 3.3
+  | refused (r : Refusal)                              -- the decoder or checkAnswer refused it (an out-of-range number arrives here)
+abbrev Answers := List (String × Reply)               -- keyed by item id; order is not meaningful
+
+inductive Verdict (α) where  | decided (o : α)  | abstain     -- α: the user's finite set of outcomes (DecidableEq); abstain is not in it
+```
+
+An item is **required** iff `weight > 0` or it has a veto. Only a required item is read; an item of weight 0 without a veto cannot change anything. `Item.read : Item α → Option Reply → Except Fault Prob`: `code b` on a decidable item gives `scale` or `0`; `answer (Answer.noul p)` on a judgmental item gives `p`; `none` is `missing`; `refused r` is `refused r`; every other pair (a `code` on a judgmental item, an `answer` on a decidable item, an answer of a kind other than `noul`) is `wrongKind`. A decidable item never reads a probability strictly between 0 and 1. Set-level faults: an answer id listed twice is `duplicateAnswer` (for a required item), an answer id that is no item of the battery is `unexpectedAnswer`; these block the score but not a veto. `Fault` is `missing | refused (r) | wrongKind | duplicateAnswer | unexpectedAnswer`, always paired with the item id.
+
+The table over the score, in ascending order:
+
+```
+structure Band (α) where  outcome : α   lo hi : Rat           -- the interval [lo, hi)
+structure Table (α) where bands : List (Band α)               -- Table.Valid: 1 to maxBands bands; 0 ≤ lo < hi ≤ 1; hi of a band ≤ lo of the next
+```
+
+Every veto outcome must be an outcome of some band (`vetoOutcomeUnknown` otherwise), so a verdict is always one of the table's outcomes or `abstain`.
+
+**Limits and refusals of the battery itself** (local to `Battery.lean`; the library-wide `RefusalCode` of section 9 is not edited by S10): `maxItems` 64 (unbounded work), `maxWeight` 1000000 (a hostile numeral in a weight: time and memory), `maxBands` 16. A bad battery or table is the AUTHOR's error, a typed `BatteryRefusal` (a code and a field path such as `items[2].weight`), never an abstention: `noItems`, `tooManyItems`, `badItemId`, `duplicateId`, `weightTooLarge`, `allWeightsZero`, `badVetoThreshold`, `vetoOutcomeUnknown`, `noBands`, `tooManyBands`, `bandRange`, `bandOrder`. `Battery.check` and `Table.check` return `Except BatteryRefusal Unit` and are proved equivalent to `Valid`.
+
+### 14.2 The score
+
+Over the required-and-weighted reads `(wᵢ, pᵢ)` of a battery (every item, in battery order, with its probability):
+
+```
+def N := Σ wᵢ × pᵢ.val                    -- Nat
+def D := scale × Σ wᵢ                     -- Nat; D = 0 iff every weight is 0
+def Battery.score (ps : List (Weight × Prob)) : Except BatteryRefusal Rat    -- allWeightsZero if D = 0, else ok (N / D)
+```
+
+The score is the weighted mean of the probabilities, exact, with no rounding and no division by zero (the refusal is returned before any division). An item of weight 0 adds 0 to `N` and to `D`.
+
+### 14.3 Fail closed
+
+`def evaluate (b : Battery α) (t : Table α) (as : Answers) : Except BatteryRefusal (Record α)` is total and applies the first rule that holds:
+
+1. `b` or `t` not valid (or a veto outcome unknown): the `BatteryRefusal`.
+2. **Veto.** An item with `veto = some v` whose `read` is `ok p` with `p.val ≥ v.threshold.val` has **fired**. If one or more fired and all name the same outcome `o`: `decided o`, basis `veto`. If they name different outcomes: `abstain`, basis `vetoConflict` (a stated design choice: an order among vetoes would make the verdict depend on the order of the battery, and the conflict is the author's to resolve). A veto does not read the other items: it decides whatever they say, including a missing or refused answer.
+3. No veto fired and some required item has a fault (or a set-level fault exists): `abstain`, basis `fault`, `score := none`, the faults listed. Never a guess, never a default probability, never a skipped item.
+4. Otherwise every required item read `ok`: `score := Battery.score`, and the table decides (14.4): `decided o` with basis `score` when the score is in a band, `abstain` with basis `gap` when it is in none.
+
+In every case where all required items read `ok` the record also carries the score, even when a veto decided.
+
+### 14.4 The truth table over the score
+
+A band is the interval `[lo, hi)`; a band with `hi = 1` is closed at 1 (it is the only band that can contain 1). `Table.index : Table α → Rat → Option Nat` is the index of the band that contains the score; `Table.lookup` is `decided (outcome of that band)` or `abstain`. The intervals do not overlap (the order and `hi ≤ next lo` of `Valid`). **A cut point goes to the band that starts at it**: a score equal to `lo` of band `i` is in band `i`, and a score equal to `hi` of band `i` is in band `i+1` when `hi = lo` of that band. **A gap is allowed and is a stated design choice**: when `hi` of band `i` is below `lo` of band `i+1`, a score in `[hi, lo)` is `abstain`, as is a score below the first `lo` or at or above the last `hi` when that is below 1. A table without gap (first `lo = 0`, every `hi` equal to the next `lo`, last `hi = 1`) decides every score in `[0, 1]`.
+
+### 14.5 The audit record
+
+```
+structure Record (α) where
+  specVersion : Nat                  -- 1
+  battery : Battery α   table : Table α   replies : Answers      -- the inputs, so the verdict can be replayed
+  verdict : Verdict α
+  basis : Basis                      -- veto | vetoConflict | score | gap | fault
+  score : Option Rat                 -- some iff every required item read ok
+  used : List (String × Prob)        -- every probability used: id and value, required items, battery order
+  vetoed : List String               -- the ids of the items that fired, battery order
+  faults : List (String × Fault)     -- empty unless some item or the answer set has a fault, battery order, then unexpected ids
+```
+
+The record is the result of `evaluate`, so a verdict is never returned without the score it came from, the answers it used and the item or items that vetoed. A journal stores the record through the wire layer (the `J` form of a `Rat` is its numerator and denominator); that encoding is not in S10 (`[battery open 1]`).
+
+### 14.6 Properties to prove
+
+One sentence each, with its slug for the ledger and the witness (vectors in 14.7).
+
+**Validity (slice S10)**
+- B1 `battery-check-sound-complete`: `Battery.check b = ok ()` iff `Battery.Valid b`, and `Table.check t = ok ()` iff `Table.Valid t`; the refusal codes arise exactly as 14.1 says. Witness: a valid battery and table (BV1) and one violating each code.
+
+**Score**
+- B2 `battery-score-range`: if `Battery.score ps = ok s` then `0 ≤ s ≤ 1` and `s × D = N` (exact). Witness: BV1 gives `17/20`.
+- B3 `battery-score-monotone`: raising one probability whose weight is positive, the others fixed, never lowers the score (and strictly raises it); if its weight is 0 the score is unchanged. Witness: BV1 with `b` from 0.8 to 0.9 gives `7/8`.
+- B4 `battery-score-permutation`: a permutation of the items (with their probabilities) gives the same score. Witness: BV1 reversed.
+- B5 `battery-score-zero-weight`: inserting an item of weight 0, with any probability, does not change the score. Witness: BV1 with `d` at 0 and at 1.
+- B6 `battery-score-refuses`: `Battery.score ps = error allWeightsZero` iff every weight is 0, and then no division is computed. Witness: BV9.
+
+**Fail closed**
+- B7 `battery-fail-closed`: if `verdict = decided o` then either every fired veto names `o` (and one fired), or no veto fired, every required item read `ok`, the score is `some s` and `Table.lookup s = decided o`. A decision always has a cause in a valid answer. Witness: BV1 (score), BV10 (veto); BV5 to BV8 are abstentions.
+- B8 `battery-faults-listed`: if no veto fired and a required item is missing, refused or of the wrong kind (or the answer set has a duplicate or unexpected id), the verdict is `abstain`, basis `fault`, `score = none`, and `faults` names exactly those items, each once. Witness: BV5, BV6, BV7, BV8.
+
+**Veto**
+- B9 `veto-decides`: if exactly one item has a veto and it fired with outcome `o`, the verdict is `decided o` for any replies to the other items. Witness: BV10 and BV11 (the other answer missing).
+- B10 `veto-conflict`: if two fired vetoes name different outcomes the verdict is `abstain` with basis `vetoConflict`. Witness: BV13.
+- B11 `veto-absent-score-decides`: if no veto fired and no fault exists, the verdict is `Table.lookup (Battery.score …)`, and it is so for a battery with no veto item at all. Witness: BV1, BV12 (threshold not reached).
+
+**Truth table**
+- B12 `table-disjoint`: for a valid table a score is in at most one band, so `Table.index` does not depend on the order of the search. Witness: scores 0.7 and 1 in the table of BV1.
+- B13 `table-monotone`: for `s ≤ s'`, if `Table.index s = some i` and `Table.index s' = some j` then `i ≤ j`. Witness: 0.35 abstains, 0.15 (reject) ≤ 0.4 (review) ≤ 0.7 (approve).
+- B14 `table-cut-side`: a score equal to `lo` of band `i` is in band `i`; equal to `hi` of band `i` it is in band `i+1` if `hi = lo` of band `i+1`, in no band if there is a gap, and 1 is in the last band when its `hi` is 1. Witness: BV14 to BV17.
+- B15 `table-gapless-total`: for a table without gap every score in `[0, 1]` has a band. Witness: the table of BV1 with the review band widened to `[3/10, 7/10)`; and BV2 abstains on the original (0.35 is in the gap).
+
+**The battery as a whole**
+- B16 `battery-verdict-in-table`: `verdict = decided o` implies `o` is the outcome of some band of the table. Witness: any decided vector.
+- B17 `battery-monotone`: for a battery without a veto item and no fault, raising one probability never lowers the band index of the verdict, when both verdicts are decided (B3 with B13). Witness: BV3 (reject) and BV1 (approve); BV1 with `b` at 0.8 and at 0.9 (approve both).
+- B18 `battery-permutation`: a permutation of the items of a valid battery (the answers equal) gives the same `verdict`, `basis` and `score`, and `used`, `vetoed` and `faults` equal up to permutation. Witness: BV1 reversed, BV13 reversed.
+
+**Audit**
+- B19 `battery-record-replay`: for every `r` with `evaluate b t as = ok r`, `evaluate r.battery r.table r.replies = ok r` (the record holds what it needs to be replayed), and `r.score = some s` iff `r.faults = []`. Witness: BV1, BV5, BV10.
+- B20 `battery-record-used`: `r.used` holds, for each required item whose read is `ok`, its id and probability, in battery order; `r.vetoed` holds exactly the fired items; and when `r.score = some s`, `s` is `Battery.score` of `r.used`'s probabilities with the items' weights. Witness: BV10: `used` has `a`, `b`, `s` and `vetoed = [s]`.
+
+### 14.7 Vectors
+
+The outcomes are `reject`, `review`, `approve`. Probabilities in decimals, `true` and `false` are `code` replies, a `judgmental` answer is `Answer.noul p`.
+
+```
+TABLE1   reject [0, 3/10)   review [2/5, 7/10)   approve [7/10, 1]            (a gap in [3/10, 2/5))
+BATTERY1 a (weight 2, decidable)  b (weight 1, judgmental)  c (weight 1, judgmental)  d (weight 0, judgmental)
+BATTERY2 a (weight 2, decidable)  b (weight 1, judgmental)  s (weight 0, judgmental, veto: threshold 0.9, outcome reject)
+BATTERY3 BATTERY2 plus t (weight 0, judgmental, veto: threshold 0.5, outcome review)
+```
+
+| Vector | Battery, answers | Score | Verdict |
+|---|---|---|---|
+| BV1 | BATTERY1: a true, b 0.8, c 0.6, d absent | 17/20 | `decided approve`, basis score, `used` a b c |
+| BV2 | BATTERY1: a false, b 0.8, c 0.6 | 7/20 | `abstain`, basis gap |
+| BV3 | BATTERY1: a false, b 0.4, c 0.2 | 3/20 | `decided reject` |
+| BV4 | BATTERY1: a true, b 0.8, c 0.6, d 1 | 17/20 | the same as BV1 (d has weight 0) |
+| BV5 | BATTERY1: a true, c 0.6 (b absent) | none | `abstain`, basis fault, `faults` b missing |
+| BV6 | BATTERY1: a true, b `refused outOfRange`, c 0.6 | none | `abstain`, `faults` b refused |
+| BV7 | BATTERY1: a answered `Answer.noul 1` (an answer on a decidable item), b 0.8, c 0.6 | none | `abstain`, `faults` a wrongKind |
+| BV8 | BATTERY1: a true, b 0.8, c 0.6, plus an answer `e` | none | `abstain`, `faults` e unexpectedAnswer |
+| BV9 | a battery whose weights are all 0 | refused | `BatteryRefusal allWeightsZero` at `items` |
+| BV10 | BATTERY2: a true, b 0.9, s 0.95 | 29/30 | `decided reject`, basis veto, `vetoed = [s]` |
+| BV11 | BATTERY2: a true, s 0.95 (b absent) | none | `decided reject`, basis veto, `faults` b missing |
+| BV12 | BATTERY2: a true, b 0.9, s 0.899999 | 29/30 | `decided approve` |
+| BV13 | BATTERY3: a true, b 0.9, s 0.95, t 0.6 | 29/30 | `abstain`, basis vetoConflict, `vetoed = [s, t]` |
+| BV14 | BATTERY1: a true, b 0.5, c 0.3 | 7/10 | `decided approve` (on the cut, the band that starts there) |
+| BV15 | BATTERY1: a false, b 0.7, c 0.5 | 3/10 | `abstain`, basis gap (the `hi` of reject, gap above it) |
+| BV16 | BATTERY1: a false, b 0.9, c 0.7 | 2/5 | `decided review` (a `lo`) |
+| BV17 | BATTERY1: a true, b 1, c 1 | 1 | `decided approve` (1 is in the closed last band) |
+| BV18 | BATTERY2 with `s` also id `a` | refused | `BatteryRefusal duplicateId` at `items[2].id` |
+
+BV9 is the battery of BATTERY1 with every weight 0, and BV18 is two items with one id; both are refusals of the author's battery, not abstentions.
+
+`[battery open 1]`: the `J` form of the record and of a `Rat`. `[battery open 2]`: whether a judgmental item may be a `choice` or `score` answer (the probability of one option, or of a level range) in a later version; in version 1 only a `noul` answer is an item.
