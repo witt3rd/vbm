@@ -4,4 +4,5 @@ import VbmDecisionProofs.Ledger
 import VbmDecisionProofs.Limits
 import VbmDecisionProofs.Prob
 import VbmDecisionProofs.Refusal
+import VbmDecisionProofs.Truth
 import VbmDecisionProofs.Types
