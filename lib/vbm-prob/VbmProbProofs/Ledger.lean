@@ -12,6 +12,7 @@ import VbmProbProofs.Dist.Quantile
 import VbmProbProofs.Dist.Normalize
 import VbmProbProofs.Dist.Mixture
 import VbmProbProofs.Dist.Map
+import VbmProbProofs.Dist.Condition
 import LandLedger
 /-! # The obligation ledger
 
@@ -101,5 +102,11 @@ def ledger : List Obligation := [
   O "DS15-map-monotone" (.proved [``VbmProb.Dist.map_eq_mapMono, ``VbmProb.Dist.size_map, ``VbmProb.Dist.expect_mapMono,
     ``VbmProb.Dist.mass_mapMono]),
   O "DS16-shift" (.proved [``VbmProb.Dist.shift_atoms, ``VbmProb.Dist.mean_shift, ``VbmProb.Dist.cdf_shift,
-    ``VbmProb.Dist.shift_zero, ``VbmProb.Dist.shift_shift])
+    ``VbmProb.Dist.shift_zero, ``VbmProb.Dist.shift_shift]),
+  O "DS17-condition-refusal" (.proved [``VbmProb.Dist.condition_nullEvent, ``VbmProb.Dist.condition_core,
+    ``VbmProb.Dist.condition_ok_iff]),
+  O "DS17-condition-atoms" (.proved [``VbmProb.Dist.condition_vals, ``VbmProb.Dist.condition_mem,
+    ``VbmProb.Dist.eventW_sum', ``VbmProb.Dist.eventW_pos, ``VbmProb.Dist.eventW_keys]),
+  O "DS17-condition-mass" (.proved [``VbmProb.Dist.mass_condition, ``VbmProb.Dist.mass_condition_self,
+    ``VbmProb.Dist.condition_true, ``VbmProb.Dist.condition_condition])
 ]

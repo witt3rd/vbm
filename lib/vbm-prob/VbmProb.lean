@@ -12,3 +12,4 @@ import VbmProb.Dist.Quantile
 import VbmProb.Dist.Normalize
 import VbmProb.Dist.Mixture
 import VbmProb.Dist.Map
+import VbmProb.Dist.Condition
