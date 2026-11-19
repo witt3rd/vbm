@@ -4,6 +4,7 @@ import VbmForecastProofs.Brier
 import VbmForecastProofs.Ordered
 import VbmForecastProofs.LogScore
 import VbmForecastProofs.Calibration
+import VbmForecastProofs.Compare
 import LandLedger
 /-! # The obligation ledger
 
@@ -64,5 +65,18 @@ def ledger : List Obligation := [
     ``VbmForecast.reliability_length, ``VbmForecast.reliability_ok]),
   O "p7-calibration-error-zero-iff-perfectly-calibrated" (.proved [``VbmForecast.calibrationError_ok,
     ``VbmForecast.calibrationError_zero_iff, ``VbmForecast.calibNum_zero_iff]),
-  O "calibration-in-the-large" (.proved [``VbmForecast.citl_ok, ``VbmForecast.citl_gap_zero_iff])
+  O "calibration-in-the-large" (.proved [``VbmForecast.citl_ok, ``VbmForecast.citl_gap_zero_iff]),
+  O "p12-bootstrap-is-a-function-of-data-and-draws" (.proved [``VbmForecast.bootstrapSums_deterministic,
+    ``VbmForecast.bootstrapSums_congr, ``VbmForecast.bootstrapSums_of_seed, ``VbmForecast.bootstrapSums_ok,
+    ``VbmForecast.bootstrapSums_length, ``VbmForecast.bootstrapSums_empty, ``VbmForecast.bootstrapSums_tooManyEvents,
+    ``VbmForecast.bootstrapSums_tooManyResamples, ``VbmForecast.bootstrapSums_mismatch, ``VbmForecast.bootstrapSums_badDraws,
+    ``VbmForecast.pairedDiffs_ok, ``VbmForecast.pairedDiffs_mismatch, ``VbmForecast.pairedDiffs_neg, ``VbmForecast.diffMean_ok]),
+  O "p13-identical-resamples-give-the-point-interval" (.proved [``VbmForecast.ci_const, ``VbmForecast.bootstrapSums_const,
+    ``VbmForecast.bootstrap_const_contains]),
+  O "p14-ci-is-well-formed" (.proved [``VbmForecast.ci_wellFormed, ``VbmForecast.ci_ok, ``VbmForecast.ci_badLevel,
+    ``VbmForecast.ci_empty, ``VbmForecast.ciK_lt, ``VbmForecast.ciK_le, ``VbmForecast.sortInts_perm, ``VbmForecast.sortInts_sorted]),
+  O "p15-verdict-refused-below-the-minimum-sample" (.proved [``VbmForecast.verdict_refused, ``VbmForecast.compare_refused]),
+  O "p16-verdict-is-monotone-in-the-evidence" (.proved [``VbmForecast.verdict_nested, ``VbmForecast.verdict_minEvents,
+    ``VbmForecast.verdict_minEvents_sign, ``VbmForecast.verdict_better_iff, ``VbmForecast.verdict_worse_iff,
+    ``VbmForecast.not_better_and_worse_evidence])
 ]
