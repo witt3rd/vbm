@@ -1,3 +1,4 @@
+import VbmDecisionProofs.Audit
 import VbmDecisionProofs.Check
 import VbmDecisionProofs.Core
 import VbmDecisionProofs.Decode
@@ -34,5 +35,8 @@ def ledger : List Obligation := [
   O "decode-refuses-unknown" (.partly [``VbmDecision.objOf_duplicate, ``VbmDecision.Question.decodeAt_duplicate, ``VbmDecision.Answer.decodeAt_duplicate, ``VbmDecision.Question.decodeAt_unknownField, ``VbmDecision.Answer.decodeAt_unknownField, ``VbmDecision.Question.decodeAt_extra, ``VbmDecision.Answer.decodeAt_extra, ``VbmDecision.Question.decodeAt_unknownType, ``VbmDecision.Answer.decodeAt_unknownType, ``VbmDecision.Request.decodeAt_duplicate, ``VbmDecision.Request.decodeAt_unknownField, ``VbmDecision.Response.decodeAt_duplicate, ``VbmDecision.Response.decodeAt_unknownField] "proved for the top-level object of a Question, an Answer, a Request and a Response, and a duplicate key in any object read by objOf; an extra key in a nested object (criteria, box, usage) is witnessed by examples only"),
   O "decode-wellformed" (.proved [``VbmDecision.Answer.decodeAt_wellFormed, ``VbmDecision.Answer.decode_wellFormed, ``VbmDecision.Question.decodeAt_valid, ``VbmDecision.Question.decode_valid]),
   O "message-roundtrip" (.proved [``VbmDecision.request_roundtrip, ``VbmDecision.request_encode_decode, ``VbmDecision.response_roundtrip, ``VbmDecision.response_encode_decode, ``VbmDecision.request_check_ok_iff, ``VbmDecision.request_encode_refuses, ``VbmDecision.Request.decode_valid]),
-  O "decode-total" (.proved [``VbmDecision.decode_total, ``VbmDecision.Question.decode_nestingTooDeep, ``VbmDecision.Answer.decode_nestingTooDeep, ``VbmDecision.decode_within, ``VbmDecision.Request.decode_nestingTooDeep, ``VbmDecision.Response.decode_nestingTooDeep, ``VbmDecision.message_decode_total])
+  O "decode-total" (.proved [``VbmDecision.decode_total, ``VbmDecision.Question.decode_nestingTooDeep, ``VbmDecision.Answer.decode_nestingTooDeep, ``VbmDecision.decode_within, ``VbmDecision.Request.decode_nestingTooDeep, ``VbmDecision.Response.decode_nestingTooDeep, ``VbmDecision.message_decode_total]),
+  O "audit-roundtrip" (.proved [``VbmDecision.audit_roundtrip, ``VbmDecision.answer_audit_roundtrip, ``VbmDecision.outcome_roundtrip, ``VbmDecision.binding_roundtrip]),
+  O "audit-faithful" (.proved [``VbmDecision.audit_faithful]),
+  O "audit-total-on-refusal" (.proved [``VbmDecision.audit_total_on_refusal, ``VbmDecision.audit_ok_iff, ``VbmDecision.audit_error_iff])
 ]

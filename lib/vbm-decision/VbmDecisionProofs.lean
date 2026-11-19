@@ -1,3 +1,4 @@
+import VbmDecisionProofs.Audit
 import VbmDecisionProofs.Check
 import VbmDecisionProofs.Core
 import VbmDecisionProofs.Decode
