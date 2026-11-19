@@ -4,6 +4,7 @@ import VbmDecisionProofs.Decode
 import VbmDecisionProofs.Prob
 import VbmDecisionProofs.Refusal
 import VbmDecisionProofs.Limits
+import VbmDecisionProofs.Message
 import VbmDecisionProofs.Truth
 import LandLedger
 /-! # The obligation ledger
@@ -30,7 +31,8 @@ def ledger : List Obligation := [
   O "score-monotone" (.proved [``VbmDecision.score_monotone_above, ``VbmDecision.score_monotone_below]),
   O "threshold-monotone" (.proved [``VbmDecision.threshold_monotone]),
   O "choice-characterised" (.proved [``VbmDecision.choice_decided_iff, ``VbmDecision.choice_lowProbability_iff, ``VbmDecision.choice_lowMargin_iff]),
-  O "decode-refuses-unknown" (.partly [``VbmDecision.objOf_duplicate, ``VbmDecision.Question.decodeAt_duplicate, ``VbmDecision.Answer.decodeAt_duplicate, ``VbmDecision.Question.decodeAt_unknownField, ``VbmDecision.Answer.decodeAt_unknownField, ``VbmDecision.Question.decodeAt_extra, ``VbmDecision.Answer.decodeAt_extra, ``VbmDecision.Question.decodeAt_unknownType, ``VbmDecision.Answer.decodeAt_unknownType] "proved for the top-level object of a Question and an Answer, and a duplicate key in any object read by objOf; an extra key in a nested object (criteria, box) is witnessed by examples only, and the Request and Response objects land with S7b"),
+  O "decode-refuses-unknown" (.partly [``VbmDecision.objOf_duplicate, ``VbmDecision.Question.decodeAt_duplicate, ``VbmDecision.Answer.decodeAt_duplicate, ``VbmDecision.Question.decodeAt_unknownField, ``VbmDecision.Answer.decodeAt_unknownField, ``VbmDecision.Question.decodeAt_extra, ``VbmDecision.Answer.decodeAt_extra, ``VbmDecision.Question.decodeAt_unknownType, ``VbmDecision.Answer.decodeAt_unknownType, ``VbmDecision.Request.decodeAt_duplicate, ``VbmDecision.Request.decodeAt_unknownField, ``VbmDecision.Response.decodeAt_duplicate, ``VbmDecision.Response.decodeAt_unknownField] "proved for the top-level object of a Question, an Answer, a Request and a Response, and a duplicate key in any object read by objOf; an extra key in a nested object (criteria, box, usage) is witnessed by examples only"),
   O "decode-wellformed" (.proved [``VbmDecision.Answer.decodeAt_wellFormed, ``VbmDecision.Answer.decode_wellFormed, ``VbmDecision.Question.decodeAt_valid, ``VbmDecision.Question.decode_valid]),
-  O "decode-total" (.partly [``VbmDecision.decode_total, ``VbmDecision.Question.decode_nestingTooDeep, ``VbmDecision.Answer.decode_nestingTooDeep, ``VbmDecision.decode_within] "proved for the Question and Answer decoders; the Request and Response decoders land with S7b")
+  O "message-roundtrip" (.proved [``VbmDecision.request_roundtrip, ``VbmDecision.request_encode_decode, ``VbmDecision.response_roundtrip, ``VbmDecision.response_encode_decode, ``VbmDecision.request_check_ok_iff, ``VbmDecision.request_encode_refuses, ``VbmDecision.Request.decode_valid]),
+  O "decode-total" (.proved [``VbmDecision.decode_total, ``VbmDecision.Question.decode_nestingTooDeep, ``VbmDecision.Answer.decode_nestingTooDeep, ``VbmDecision.decode_within, ``VbmDecision.Request.decode_nestingTooDeep, ``VbmDecision.Response.decode_nestingTooDeep, ``VbmDecision.message_decode_total])
 ]

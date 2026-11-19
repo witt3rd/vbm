@@ -2,6 +2,7 @@ import VbmDecision.Check
 import VbmDecision.Core
 import VbmDecision.Decode
 import VbmDecision.Limits
+import VbmDecision.Message
 import VbmDecision.Prob
 import VbmDecision.Refusal
 import VbmDecision.Truth
