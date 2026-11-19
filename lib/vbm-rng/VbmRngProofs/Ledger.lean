@@ -4,6 +4,7 @@ import VbmRngProofs.Mix
 import VbmRngProofs.Stream
 import VbmRngProofs.Split
 import VbmRngProofs.Below
+import VbmRngProofs.Fraction
 import LandLedger
 /-! # The obligation ledger
 
@@ -33,6 +34,10 @@ def ledger : List Obligation := [
   O "u5-the-fuel-is-enough-when-the-threshold-is-small" (.proved [``VbmRng.uniformBelowWith_ne_fuelExhausted]),
   O "u6-refusals" (.proved [``VbmRng.uniformBelowWith_boundZero, ``VbmRng.uniformBelowWith_boundTooLarge, ``VbmRng.uniformBelowWith_zero_fuel]),
   O "u7-determinism-and-advance" (.proved [``VbmRng.uniformBelowWith_det, ``VbmRng.uniformBelowWith_advance]),
+  O "f1-in-range" (.proved [``VbmRng.uniformFraction_lt]),
+  O "f2-exactness" (.proved [``VbmRng.uniformFraction_exact, ``VbmRng.uniformFraction_exact_shift, ``VbmRng.shift_toNat, ``VbmRng.count_div]),
+  O "f3-refusals" (.proved [``VbmRng.uniformFraction_zero, ``VbmRng.uniformFraction_tooMany]),
+  O "f4-consumption" (.proved [``VbmRng.uniformFraction_advance, ``VbmRng.uniformFraction_det]),
   O "q1-independence-of-split-children-and-mixed-outputs" (.limit "trusted, not proved: docs/trust-ledger.md Q1; only the distinctness of keys (P1) is proved"),
   O "q2-stream-overlap-bound" (.limit "trusted, not proved: docs/trust-ledger.md Q2; users keep m^2 L far below 2^64"),
   O "q3-expectation-and-tail-of-rejection" (.limit "trusted, not proved: docs/trust-ledger.md Q3; a consequence of Q1, only the accepted fraction above one half (U4) is proved")
