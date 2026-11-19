@@ -2,6 +2,7 @@ import VbmRngProofs.Core
 import VbmRngProofs.Refusal
 import VbmRngProofs.Mix
 import VbmRngProofs.Stream
+import VbmRngProofs.Split
 import LandLedger
 /-! # The obligation ledger
 
@@ -20,5 +21,10 @@ def ledger : List Obligation := [
   O "t2-no-repeats-the-full-range" (.proved [``VbmRng.Stream.at_injective, ``VbmRng.Stream.at_ne, ``VbmRng.Stream.at_surjective]),
   O "t3-skip-ahead-agrees-with-stepping" (.proved [``VbmRng.Stream.at_add]),
   O "t4-next-is-at-and-advance" (.proved [``VbmRng.Stream.next_fst, ``VbmRng.Stream.next_snd, ``VbmRng.Stream.advance_advance]),
-  O "t5-seeds-give-distinct-streams" (.proved [``VbmRng.Stream.ofSeed_key_injective])
+  O "t5-seeds-give-distinct-streams" (.proved [``VbmRng.Stream.ofSeed_key_injective]),
+  O "p1-distinct-children" (.proved [``VbmRng.childKey_injective, ``VbmRng.childKey_ne, ``VbmRng.Stream.split_key_ne]),
+  O "p2-split-is-a-function-of-the-parents-key-and-the-index" (.proved [``VbmRng.Stream.split_key_eq, ``VbmRng.Stream.split_key]),
+  O "p3-children-start-at-zero" (.proved [``VbmRng.Stream.split_pos]),
+  O "q1-independence-of-split-children-and-mixed-outputs" (.limit "trusted, not proved: docs/trust-ledger.md Q1; only the distinctness of keys (P1) is proved"),
+  O "q2-stream-overlap-bound" (.limit "trusted, not proved: docs/trust-ledger.md Q2; users keep m^2 L far below 2^64")
 ]
