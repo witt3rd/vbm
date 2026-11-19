@@ -1,2 +1,3 @@
 import VbmForecastProofs.Core
+import VbmForecastProofs.Rep
 import VbmForecastProofs.Ledger
