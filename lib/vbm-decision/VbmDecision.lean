@@ -1,3 +1,4 @@
+import VbmDecision.Check
 import VbmDecision.Core
 import VbmDecision.Limits
 import VbmDecision.Prob

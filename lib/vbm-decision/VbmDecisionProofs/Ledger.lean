@@ -1,3 +1,4 @@
+import VbmDecisionProofs.Check
 import VbmDecisionProofs.Core
 import VbmDecisionProofs.Prob
 import VbmDecisionProofs.Refusal
@@ -17,5 +18,6 @@ def ledger : List Obligation := [
   O "prob-range" (.proved [``VbmDecision.ofDecimal_range, ``VbmDecision.ofDecimal_negative, ``VbmDecision.ofDecimal_outOfRange]),
   O "refusal-codes-complete" (.proved [``VbmDecision.refusalCode_all_complete, ``VbmDecision.refusalCode_all_nodup, ``VbmDecision.refusalCode_count, ``VbmDecision.refusal_ext_code, ``VbmDecision.scaleRefusal_toCode_injective]),
   O "named-limits-values" (.proved [``VbmDecision.limits_values, ``VbmDecision.maxSample_quadratic]),
-  O "named-limits-consistent" (.proved [``VbmDecision.sumEpsilon_le, ``VbmDecision.sumEpsilon_lt_scale, ``VbmDecision.calibration_limits_consistent, ``VbmDecision.structural_limits_roomy])
+  O "named-limits-consistent" (.proved [``VbmDecision.sumEpsilon_le, ``VbmDecision.sumEpsilon_lt_scale, ``VbmDecision.calibration_limits_consistent, ``VbmDecision.structural_limits_roomy]),
+  O "check-sound-complete" (.proved [``VbmDecision.question_check_ok_iff, ``VbmDecision.checkAnswer_ok_iff, ``VbmDecision.checkThresholds_ok_iff, ``VbmDecision.checkAnswer_error_iff, ``VbmDecision.checkAnswer_typeMismatch])
 ]
