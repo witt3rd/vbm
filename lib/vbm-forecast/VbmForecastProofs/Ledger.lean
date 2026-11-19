@@ -1,5 +1,6 @@
 import VbmForecastProofs.Core
 import VbmForecastProofs.Rep
+import VbmForecastProofs.Brier
 import LandLedger
 /-! # The obligation ledger
 
@@ -24,5 +25,16 @@ def ledger : List Obligation := [
     ``VbmForecast.checkEdges_empty, ``VbmForecast.checkEdges_bad, ``VbmForecast.checkEdges_tooMany, ``VbmForecast.checkSample_ok,
     ``VbmForecast.checkSample_empty, ``VbmForecast.checkSample_tooMany, ``VbmForecast.checkDraws_ok,
     ``VbmForecast.checkDrawsFrom_refuses, ``VbmForecast.checkNonzero_ok, ``VbmForecast.checkNonzero_zero,
-    ``VbmForecast.checkAligned_ok, ``VbmForecast.checkAligned_refuses])
+    ``VbmForecast.checkAligned_ok, ``VbmForecast.checkAligned_refuses]),
+  O "p1-brier-bounded-and-zero-exactly-for-perfect" (.proved [``VbmForecast.brierBinary_nonneg, ``VbmForecast.brierBinary_le,
+    ``VbmForecast.brierBinary_eq_zero_iff, ``VbmForecast.brierCategorical_nonneg, ``VbmForecast.brierCategorical_le,
+    ``VbmForecast.brierCategorical_eq_zero_iff]),
+  O "p2-brier-binary-strictly-proper" (.proved [``VbmForecast.expBrierBinary_diff, ``VbmForecast.expBrierBinary_ge,
+    ``VbmForecast.expBrierBinary_eq_iff]),
+  O "p3-brier-categorical-strictly-proper" (.proved [``VbmForecast.expBrierCat_diff, ``VbmForecast.expBrierCat_ge,
+    ``VbmForecast.expBrierCat_eq_iff]),
+  O "p4-brier-additive-over-events" (.proved [``VbmForecast.brierTotal_append, ``VbmForecast.brierCatTotal_append,
+    ``VbmForecast.brierTotal_cons, ``VbmForecast.brierMean_ok, ``VbmForecast.brierMean_badScale, ``VbmForecast.brierMean_empty]),
+  O "p5-brier-permutation-invariant" (.proved [``VbmForecast.brierTotal_perm, ``VbmForecast.brierCatTotal_perm]),
+  O "brier-validated-entry-points" (.proved [``VbmForecast.brierBinaryV_ok, ``VbmForecast.brierCategoricalV_ok])
 ]
