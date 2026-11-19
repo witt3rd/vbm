@@ -10,3 +10,4 @@ import VbmProb.Dist.Canon
 import VbmProb.Dist.Query
 import VbmProb.Dist.Quantile
 import VbmProb.Dist.Normalize
+import VbmProb.Dist.Mixture

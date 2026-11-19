@@ -10,6 +10,7 @@ import VbmProbProofs.Dist.Canon
 import VbmProbProofs.Dist.Query
 import VbmProbProofs.Dist.Quantile
 import VbmProbProofs.Dist.Normalize
+import VbmProbProofs.Dist.Mixture
 import LandLedger
 /-! # The obligation ledger
 
@@ -83,5 +84,13 @@ def ledger : List Obligation := [
   O "DS5-normalize-refusals" (.proved [``VbmProb.Dist.normalize_tooManyAtoms, ``VbmProb.Dist.normalize_numberTooLarge,
     ``VbmProb.Dist.normalize_negativeWeight, ``VbmProb.Dist.normalize_zeroTotalWeight_iff]),
   O "DS5-normalize-make-and-scale" (.proved [``VbmProb.Dist.normalize_of_make, ``VbmProb.Dist.canon_of_increasing,
-    ``VbmProb.Dist.normalize_scale, ``VbmProb.Dist.normalize_eq_core, ``VbmProb.Dist.normCore_scale])
+    ``VbmProb.Dist.normalize_scale, ``VbmProb.Dist.normalize_eq_core, ``VbmProb.Dist.normCore_scale]),
+  O "DS11-mixture-sum" (.proved [``VbmProb.Dist.mixCore_ok, ``VbmProb.Dist.mixture_vals, ``VbmProb.Dist.mixture_atoms,
+    ``VbmProb.Dist.mixW_sum, ``VbmProb.Dist.mixture_prob]),
+  O "DS12-mixture-ends" (.proved [``VbmProb.Dist.mixCore_zero, ``VbmProb.Dist.mixCore_one, ``VbmProb.Dist.mixCore_swap,
+    ``VbmProb.Dist.mixCore_self, ``VbmProb.Dist.mixture_zero, ``VbmProb.Dist.mixture_one, ``VbmProb.Dist.mixture_swap,
+    ``VbmProb.Dist.mixture_self]),
+  O "DS13-mixture-mean" (.proved [``VbmProb.Dist.mixture_expect, ``VbmProb.Dist.mixture_mean]),
+  O "DS14-mixture-refusals" (.proved [``VbmProb.Dist.mixture_numberTooLarge, ``VbmProb.Dist.mixture_tooManyAtoms_iff,
+    ``VbmProb.Dist.mixture_ok_iff, ``VbmProb.Dist.rows_keys_mem, ``VbmProb.Dist.rows_keys_inc, ``VbmProb.Dist.unionSize_eq])
 ]
