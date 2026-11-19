@@ -1,5 +1,6 @@
 import VbmDecisionProofs.Check
 import VbmDecisionProofs.Core
+import VbmDecisionProofs.Decode
 import VbmDecisionProofs.Ledger
 import VbmDecisionProofs.Limits
 import VbmDecisionProofs.Prob

@@ -1,5 +1,6 @@
 import VbmDecisionProofs.Check
 import VbmDecisionProofs.Core
+import VbmDecisionProofs.Decode
 import VbmDecisionProofs.Prob
 import VbmDecisionProofs.Refusal
 import VbmDecisionProofs.Limits
@@ -28,5 +29,8 @@ def ledger : List Obligation := [
   O "noul-monotone" (.proved [``VbmDecision.noul_monotone_yes, ``VbmDecision.noul_monotone_no]),
   O "score-monotone" (.proved [``VbmDecision.score_monotone_above, ``VbmDecision.score_monotone_below]),
   O "threshold-monotone" (.proved [``VbmDecision.threshold_monotone]),
-  O "choice-characterised" (.proved [``VbmDecision.choice_decided_iff, ``VbmDecision.choice_lowProbability_iff, ``VbmDecision.choice_lowMargin_iff])
+  O "choice-characterised" (.proved [``VbmDecision.choice_decided_iff, ``VbmDecision.choice_lowProbability_iff, ``VbmDecision.choice_lowMargin_iff]),
+  O "decode-refuses-unknown" (.partly [``VbmDecision.objOf_duplicate, ``VbmDecision.Question.decodeAt_duplicate, ``VbmDecision.Answer.decodeAt_duplicate, ``VbmDecision.Question.decodeAt_unknownField, ``VbmDecision.Answer.decodeAt_unknownField, ``VbmDecision.Question.decodeAt_extra, ``VbmDecision.Answer.decodeAt_extra, ``VbmDecision.Question.decodeAt_unknownType, ``VbmDecision.Answer.decodeAt_unknownType] "proved for the top-level object of a Question and an Answer, and a duplicate key in any object read by objOf; an extra key in a nested object (criteria, box) is witnessed by examples only, and the Request and Response objects land with S7b"),
+  O "decode-wellformed" (.proved [``VbmDecision.Answer.decodeAt_wellFormed, ``VbmDecision.Answer.decode_wellFormed, ``VbmDecision.Question.decodeAt_valid, ``VbmDecision.Question.decode_valid]),
+  O "decode-total" (.partly [``VbmDecision.decode_total, ``VbmDecision.Question.decode_nestingTooDeep, ``VbmDecision.Answer.decode_nestingTooDeep, ``VbmDecision.decode_within] "proved for the Question and Answer decoders; the Request and Response decoders land with S7b")
 ]
