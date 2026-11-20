@@ -2,7 +2,7 @@
 
 **A project's scorecard.** A set of named metrics, each with a direction, a floor that only moves toward better, a target and a history, written once in Lean 4 and machine-checked. A check refuses a regression; banking records an improvement and never a worse number; a floor is loosened only by a reasoned, recorded reset. The same schema lets a project judge its own health, measure its progress, and set its priorities, and lets a manager compare projects.
 
-> **Status: pre-release.** The core, the wire formats and the command-line tool. Nothing is published to a package registry.
+> **Status: released (signed `vX.Y.Z` tags), not scored yet.** The scorecard has not been run, so the library is *unscored*; a draft card written from its own goals is [`docs/scorecard.md`](docs/scorecard.md); the claims and their proofs are in [`docs/proof-ledger.md`](docs/proof-ledger.md); what stays trusted is in [`docs/trust-ledger.md`](docs/trust-ledger.md). Nothing is published to a package registry: take a signed release by vendoring it with `land-pin vendor` ([vbm-land](https://github.com/witt3rd/vbm-land)).
 
 ## What it is, and what it is not
 
