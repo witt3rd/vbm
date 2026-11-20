@@ -236,3 +236,359 @@ Order for parallel workers: S1; then S2, S3, S4, S5, S6 together; then S7; S8 wh
 5. The generator's exact signature (the counter argument and `uniformBelow`'s type), read by slice S8 from the pinned copy.
 6. A dedicated refusal for an invalid limit (`minEvents = 0`): a constructor `badLimit` is proposed; confirm.
 7. Whether the verdict should also be offered at a significance given as an input (here the interval's tail `t/s` is the only knob, taken from the caller).
+
+## 11. Time: stamps, calendars, revisions, cuts and splits (the evaluation protocol)
+
+Status: written BEFORE any Lean, as the others are. Every slice of this section (T1 to T13, below) is written from this section alone; the decisions D1 to D10 were settled in a public thread with the two first consumers (a pre-registered held-out test, and a walk-forward guard that had been incubating in a consumer) and are recorded here as decisions, with the reason in one line each. They are not reopened here; the questions that are genuinely open are in 11.17.
+
+**Why it is here.** Forecast verification asks "how good were the forecasts"; the held-out discipline asks the question that comes first: "was the forecast made from what could be known at the time, and was it scored on something it did not see". Two products need the same protocol; by the family's placement rule (core first, then the family; the rule of two) it belongs in this library, as the evaluation protocol of forecast verification. It extends the library; it changes no existing function and no existing name.
+
+Conventions of this section (they differ from sections 1 to 10 only where stated):
+- An INSTANT is a `Nat`: an abstract index on ONE clock (the base clock) that the CALLER chooses and onto which the caller maps its dates. The library never parses, formats or compares a date; it compares `Nat`s. "Earlier" is `<`, "no later" is `≤`.
+- An ITEM is a `Stamped α` (D1). The word "event" is NOT used in this section: it keeps its meaning of section 1 (a (forecast, outcome) pair, and `Event` is untouched). The legacy function names `orderEvents*` below are kept verbatim only so that the port target (D7, D8) is recognisable; they order stamped items. `[open question 10]`
+- Exact integers only (instants, periods and counts are `Nat`); no floating point; every function is total; a refusal is a typed value (`Except Refusal _`, or the named leak values of D7 and D9) and is never turned into a default. No input, output, network or clock: "now" is an input. `VbmForecast` imports `Init` and itself only (Tier 1 scans it).
+- `Ordered es` means `List.Pairwise (fun a b => a.at ≤ b.at) es` (non-decreasing stamps). `Nodup` is core `List.Nodup`; `Perm` is `List.Perm`; `<+` is `List.Sublist`; `<+:` is `List.IsPrefix`.
+- Every predicate is a `Prop` with a `Decidable` instance, and has a `Bool` twin (`beforeB`, `knowableB`, `Ordered` via `orderedB`) used by `decide`-style witnesses. `List.mergeSort` of core is not evaluated by `decide`: witnesses that sort use `simp` (or `native`-free `rfl` on small literals if it works), never `decide`.
+
+### 11.1 The premise
+
+**a stamp is the source's publication date, not ours**
+
+Everything below is a statement about stamps. A theorem about stamps proves something about leakage in the WORLD only if each stamp is the instant at which the value became knowable to anyone, which is the date the SOURCE published it (an artefact outside the split), and not a date we chose, computed or assigned afterwards. This premise is the caller's; the library cannot check it. It makes it visible (the `origin` field, D2) and never hides it (11.10, `What this does NOT prove`).
+
+### 11.2 D1: one clock, the known-at stamp
+
+```
+structure Stamped (α : Type) where      -- constructor `mk` is PRIVATE to Time/Stamp.lean (see below)
+  at     : Nat        -- the instant at which the value BECAME KNOWABLE
+  origin : Origin     -- D2
+  value  : α          -- the payload
+
+def Stamped.ofInstant (pub : Option Nat) (origin : Origin) (v : α) : Except Refusal (Stamped α) :=
+  match pub with
+  | none   => .error .publishedAbsent
+  | some t => .ok { at := t, origin := origin, value := v }
+def Stamped.map (f : α → β) (s : Stamped α) : Stamped β := { s with value := f s.value }
+```
+- **Decision.** A `Stamped α` has exactly one stamp `at : Nat` and a payload. The stamp is when the value BECAME KNOWABLE, never the period it describes (the period travels in the payload, D3). The stamp field is UNCONDITIONAL: there is no stamp-less `Stamped` and no `Option` stamp. A value without a stamp is a different type (the consumer's own, for example a `Fact`); the only way from it to a `Stamped` is a constructor that returns `Except Refusal` (`Stamped.ofInstant`, `Stamped.ofPeriod`; the `pub : Option Nat` argument is how "the consumer has no date" is sayable at the boundary and refused).
+- **Reason.** A conditional field is how a refusal gets skipped; a mandatory stamp makes the refusal unbuildable.
+- The structure constructor `Stamped.mk` is `private` to `VbmForecast/Time/Stamp.lean` (`structure Stamped (α) where private mk :: ...`; the fields stay readable), so no other module can build a `Stamped` except through `ofInstant` (and `ofPeriod`, which calls it). `Stamped.map` keeps the stamp and the origin. If the pinned Lean cannot express a private constructor on a structure, slice T1 falls back to the convention "no anonymous constructor and no `Stamped.mk` outside `Time/Stamp.lean`" and records that in its ledger line `[open question 11]`.
+- One `Stamped` REPLACES the two parallel types of the incubating consumer (a pair `{at, value}` used by its point-in-time guard, and a pair `{stamp, payload}` used by its walk-forward splits).
+- Deriving: `Stamped`, `Origin`, `Observation` derive `DecidableEq` (when `α` has it), `Repr`, `BEq` and `Inhabited` only where Lean derives them without a `sorry`-like axiom.
+- Properties: `ofInstant_ok_iff : ofInstant pub o v = .ok s ↔ pub = some s.at ∧ s.origin = o ∧ s.value = v`; `ofInstant_none : ofInstant none o v = .error .publishedAbsent`; `map_at`, `map_origin`, `map_value` (`map` keeps stamp and origin). Witness: `ofInstant (some 7) .published 3` is `ok` with `at = 7`; `ofInstant none .published 3` is the refusal.
+
+### 11.3 D2: the origin of a stamp is typed
+
+```
+inductive Origin
+  | published     -- the source's own publication instant
+  | collected     -- the instant at which WE obtained it: later than or equal to the truth, so conservative
+```
+- **Decision.** Exactly two constructors. There is NO constructor for a REFERENT date (the period the value describes). A referent used as a stamp is anti-conservative (it makes a value look known before it was) and is therefore UNREPRESENTABLE: there is no way to say it.
+- **Reason.** The premise of 11.1 is non-circular only if the stamp's origin is outside the split; a typed origin makes the premise a visible field of every item instead of a hope.
+- A check can REPORT which origins a split relied on:
+  ```
+  structure OriginsUsed where published : Bool; collected : Bool
+  def originsUsed (sp : Split α) : OriginsUsed      -- over sp.train ++ sp.test
+  ```
+  `originsUsed_published : (originsUsed sp).published = true ↔ ∃ s ∈ sp.train ++ sp.test, s.origin = .published`, and likewise for `collected`. (`Split` is defined in D8; this function lives in `Time/Check.lean`.) Witness: a split of three items, two `published` and one `collected`, reports both `true`; a split of `published` items only reports `collected = false`.
+- Whether a `collected` stamp may be mixed with `published` stamps in one split is NOT decided here: the library reports it, the consumer decides `[open question 3]`.
+
+### 11.4 D3: the referent travels in the payload
+
+```
+structure Observation (α : Type) where
+  referent : Nat        -- a PERIOD index on a named calendar (D4): what the value describes
+  value    : α
+```
+- **Decision.** The cut tests KNOWABILITY (the stamp). A JOIN tests what the value DESCRIBES ("what did we know in year Y about year X"). So the library offers a standard payload pair `Observation α` and states the as-of join (below) over `Stamped (Observation α)`. A consumer is free to carry its own payload (any `α`): nothing in D5 to D9 requires `Observation`.
+- **Reason.** The library never drops the referent: a stamp alone cannot answer "about which period".
+- The as-of join (module `Time/Join.lean`), over `es : List (Stamped (Observation α))`:
+  ```
+  def asOfJoin       (t r : Nat) (es : List (Stamped (Observation α))) : Option (Stamped (Observation α)) :=
+    (es.filter (fun s => s.value.referent = r ∧ s.at ≤ t)).getLast?        -- latest in LIST order, known at t, about period r
+  def asOfJoinBefore (t r : Nat) (es : ...) : Option (Stamped (Observation α)) :=
+    (es.filter (fun s => s.value.referent = r ∧ s.at < t)).getLast?        -- the strict twin
+  ```
+  Theorems: `asOfJoin_referent` (a result has `value.referent = r`); `asOfJoin_knowable` (a result has `at ≤ t`); `asOfJoin_mem` (a result is an element of `es`); `asOfJoin_none_iff : asOfJoin t r es = none ↔ ∀ s ∈ es, s.value.referent = r → t < s.at`; `asOfJoin_append_gt : t < new.at → asOfJoin t r (es ++ [new]) = asOfJoin t r es` (a later publication does not change what was known then); `asOfJoin_nil`; `asOfJoin_eq_asOf` (the join equals `Vintages.asOf` of the versions of referent `r`, D5); `asOfJoinBefore_*` the strict twins (`_lt` instead of `_knowable`; `_append_ge : t ≤ new.at → unchanged`). Witness (instants, referents are years): items in list order `(at 10, referent 2018, value 100)`, `(at 15, referent 2017, value 90)`, `(at 20, referent 2018, value 110)` (a revision of 2018); `asOfJoin 12 2018 = the first`, `asOfJoin 25 2018 = the third`, `asOfJoin 12 2017 = none`, `asOfJoin 15 2017 = the second`, `asOfJoinBefore 10 2018 = none`, `asOfJoinBefore 11 2018 = the first`.
+
+### 11.5 D4: calendars are named, not a bare unit
+
+```
+structure Calendar where
+  name      : String
+  periodEnd : Nat → Nat       -- period index p ↦ the LAST instant (on the base clock) of period p
+
+def Calendar.WellFormed (c : Calendar) : Prop := ∀ p, c.periodEnd p < c.periodEnd (p + 1)    -- strictly increasing
+def Calendar.wfUpTo (c : Calendar) (n : Nat) : Bool := (List.range n).all (fun p => c.periodEnd p < c.periodEnd (p + 1))   -- a decidable check on a finite prefix
+
+structure PeriodRef where  calendarName : String;  index : Nat      -- "period `index` of the calendar called `calendarName`"
+
+def Stamped.ofPeriod (c : Calendar) (pub : Option PeriodRef) (origin : Origin) (v : α) : Except Refusal (Stamped α) :=
+  match pub with
+  | none   => .error .publishedAbsent
+  | some r => if r.calendarName = c.name then Stamped.ofInstant (some (c.periodEnd r.index)) origin v
+              else .error (.notExpressible c.name)
+```
+- **Decision.** "The last instant of a period" is conservative only if the period's end is KNOWN, and it is not 31 December for fiscal years, offset quarters or 52/53-week retail years. So a calendar is DATA the caller names: its `periodEnd` maps a period index to the last base-clock instant of that period. `Stamped.ofPeriod` stamps at `c.periodEnd p`: a coarse source is known no earlier than the end of its period, so the coarse stamp can make the protocol see LESS, never more.
+- **Reason.** A bare unit ("month", "year") hides the end-of-period assumption inside the library; a named calendar puts it in the caller's data, where it is auditable.
+- A period `p` covers the instants `periodEnd (p-1) + 1 .. periodEnd p` (period 0 starts at instant 0). Periods are therefore CONTIGUOUS in this release `[open question 1]`.
+- TWO DISTINCT REFUSALS, with different owners:
+  - `Refusal.publishedAbsent`: the consumer supplied no publication date (`pub = none`; also `ofInstant none _ _`, for any origin). The owner is the consumer's data.
+  - `Refusal.notExpressible (calendarName : String)`: a publication date WAS supplied but cannot be placed in the named calendar at its granularity (here: the date is given in the units of a calendar other than `c`, `r.calendarName ≠ c.name`; the payload names the TARGET calendar `c.name`). The owner is the mapping from the source's dates to the calendar. This release offers no conversion between calendars; the refusal is the typed way to say so `[open question 1]`.
+- Properties (for `c`, `r`, `o`, `v`): `ofPeriod_ok_iff : ofPeriod c (some r) o v = .ok s ↔ r.calendarName = c.name ∧ s.at = c.periodEnd r.index ∧ s.origin = o ∧ s.value = v`; `ofPeriod_none : ofPeriod c none o v = .error .publishedAbsent`; `ofPeriod_wrong_calendar : r.calendarName ≠ c.name → ofPeriod c (some r) o v = .error (.notExpressible c.name)`; `wfUpTo_iff : c.wfUpTo n = true ↔ ∀ p < n, c.periodEnd p < c.periodEnd (p+1)`; `wf_iff_wfUpTo : c.WellFormed ↔ ∀ n, c.wfUpTo n = true`; `periodEnd_mono : c.WellFormed → p ≤ q → c.periodEnd p ≤ c.periodEnd q` (and `periodEnd_lt : p < q → <`); `ofPeriod_conservative : c.WellFormed → p ≤ q → Knowable t (the stamp of period q) → Knowable t (the stamp of period p)` (an earlier period is never knowable later than a later one: the coarse stamp cannot show a later period earlier than an earlier one); `ofPeriod_after_period : (the stamp of period p).at ≥ every instant d of period p`.
+- Witnesses, with concrete `periodEnd` functions. The base clock is the DAY index, day 0 being 1 January of year 0; the witnesses use a TOY year of 365 days (no leap years): a caller with leap years supplies another `periodEnd`, and its correctness is the caller's. They are witnesses of well-formedness and of the arithmetic, not a calendar library.
+  | calendar | `periodEnd p` | `p = 0` | `p = 1` | `p = 2` |
+  |---|---|---|---|---|
+  | `calendarMonth` (toy: every month 31 days) | `31 * (p + 1) - 1` | 30 | 61 | 92 |
+  | `censusYear` (a calendar year, ending 31 December) | `365 * (p + 1) - 1` | 364 | 729 | 1094 |
+  | `fiscalJune` (a fiscal year ending 30 June, a NON-December end; year `p` ends on 30 June of year `p`) | `365 * p + 180` | 180 | 545 | 910 |
+  All three are well-formed (`wfUpTo 3 = true`, and the structural statement by `omega`). `ofPeriod fiscalJune (some ⟨"fiscalJune", 2⟩) .published v` is `ok` with `at = 910`; `ofPeriod fiscalJune (some ⟨"censusYear", 2⟩) .published v` is `error (notExpressible "fiscalJune")`; `ofPeriod fiscalJune none .published v` is `error publishedAbsent`. A non-well-formed counter-witness: `periodEnd p = 10` (constant) has `wfUpTo 2 = false`, so `WellFormed` is not vacuously true. A 52/53-week retail calendar (years of 364 or 371 days) is a `periodEnd` the caller supplies from a table; it is not given here `[open question 1]`.
+- The constructors do NOT check `c.WellFormed` (it is a statement about the whole function; the caller proves or checks it with `wfUpTo` over the periods it uses). The theorems that need it carry it as a hypothesis, and the witness above shows it can hold.
+
+### 11.6 D6 (stated before D5, which uses it): two predicates, in two modules
+
+```
+-- Time/Before.lean   (imports Time/Stamp only)
+def Before   (t : Nat) (s : Stamped α) : Prop := s.at < t        -- STRICTLY before t
+-- Time/Guard.lean    (imports Time/Before)
+def Knowable (t : Nat) (s : Stamped α) : Prop := s.at ≤ t        -- at or before t
+```
+- **Decision.** `Before t s` (items with stamp STRICTLY before `t`) and `Knowable t s` (stamp at or before `t`) are separate predicates in separate MODULES, so a consumer that wants the strict one imports only `Time/Before` (a pre-registered cut is strict: "everything dated before it is in; everything dated on or after it is out").
+- **Reason.** The two cuts differ by exactly the items stamped AT `t`; naming both, separately, keeps that choice explicit and stops one from being used for the other.
+- The relation is stated in `Time/Guard.lean`, in the arithmetic-free form, true for ANY discrete stamp with no granularity hypothesis and no successor: `before_iff_knowable_ne : Before t s ↔ Knowable t s ∧ s.at ≠ t`. Also `before_knowable : Before t s → Knowable t s`; `before_irrefl_at : ¬ Before s.at s`; `knowable_refl : Knowable s.at s`; `before_mono : t ≤ t' → Before t s → Before t' s`; `knowable_mono` likewise.
+- DO NOT state `Before t = Knowable (t - 1)`. It is not a statement about stamps: it says that `t - 1` is the instant just before `t` on the caller's clock, which holds only for contiguous unit stamps and is false for coarser clocks (month indices), and on `Nat` it is false even at `t = 0` (the stamp `0` is `Knowable 0` and not `Before 0`, and `0 - 1 = 0`). The public thread corrected it; the relation above is the only one the library states.
+- Witness: stamps `4, 5, 6`, `t = 5`: `Before` holds for `4` only; `Knowable` holds for `4` and `5`; the stamp `5` is `Knowable` and `at = t`, hence not `Before`, as `before_iff_knowable_ne` says.
+
+### 11.7 D5: a revision is a new stamped value (vintages)
+
+```
+structure Vintages (κ α : Type) where       -- ONE key's versions, in the order they were published
+  key      : κ
+  versions : List (Stamped α)
+def Vintages.Ordered (v : Vintages κ α) : Prop := List.Pairwise (fun a b => a.at ≤ b.at) v.versions     -- decidable
+def Vintages.empty (k : κ) : Vintages κ α := { key := k, versions := [] }
+def Vintages.append (v : Vintages κ α) (new : Stamped α) : Except Refusal (Vintages κ α) :=
+  match v.versions.getLast? with
+  | some last => if new.at < last.at then .error (.vintageOutOfOrder last.at new.at) else .ok { v with versions := v.versions ++ [new] }
+  | none      => .ok { v with versions := [new] }
+def Vintages.asOf       (t : Nat) (v : Vintages κ α) : Option (Stamped α) := (v.versions.filter (fun s => decide (s.at ≤ t))).getLast?
+def Vintages.asOfBefore (t : Nat) (v : Vintages κ α) : Option (Stamped α) := (v.versions.filter (fun s => decide (s.at < t))).getLast?
+```
+- **Decision.** The data model is APPEND-ONLY. A value published in one year and revised in a later one existed at BOTH instants; mutating the old value in place would make the later number visible at the earlier instant (anti-conservative, exactly what the rule exists to prevent). So a revision APPENDS a new `Stamped` whose stamp is the FIRST publication at which that value existed; nothing ever edits an element (there is no update function, and `Vintages` offers none). `asOf t` is the latest version whose stamp is at or before `t`, or `none`; `asOfBefore t` the strict twin. Two versions with the same stamp: the later in list order wins (both existed at that instant, and the revision is the later publication) `[open question 6]`.
+- **Reason.** What was known then must stay known then.
+- A refusal is a new constructor: `Refusal.vintageOutOfOrder (last new : Nat)` (an appended version stamped before the last one: a history is non-decreasing in stamp).
+- THEOREMS TO STATE (a hypothesis is named; each has its witness below):
+  - `asOf_stamp_le : asOf t v = some s → s.at ≤ t` (`asOf` never returns a version stamped after `t`; no ordering hypothesis); `asOf_mem : asOf t v = some s → s ∈ v.versions`; `asOf_nil : (Vintages.empty k).asOf t = none` (the empty list gives `none`); `asOf_eq_none_iff : asOf t v = none ↔ ∀ s ∈ v.versions, t < s.at`.
+  - `asOf_mono : v.Ordered → t ≤ t' → asOf t v = some s → ∃ s', asOf t' v = some s' ∧ s.at ≤ s'.at ∧ (s' = s ∨ s' comes after s in v.versions)` (a later `t` returns that version or a later one).
+  - `asOf_append_gt : t < new.at → asOf t { v with versions := v.versions ++ [new] } = asOf t v` (THE KEY PROPERTY: appending a revision stamped after `t` does not change `asOf t`: what was known then stays known then; no ordering hypothesis). Corollary for the checked `append`: `append_ok_iff : v.append new = .ok v' ↔ v'.versions = v.versions ++ [new] ∧ v'.key = v.key ∧ (∀ l, v.versions.getLast? = some l → l.at ≤ new.at)`; `append_ordered : v.Ordered → v.append new = .ok v' → v'.Ordered`; `append_error_iff`; `asOf_append_ok_gt` (the key property through `append`).
+  - the strict twins: `asOfBefore_stamp_lt : asOfBefore t v = some s → s.at < t`; `asOfBefore_nil`; `asOfBefore_mono`; `asOfBefore_append_ge : t ≤ new.at → asOfBefore t (append) = asOfBefore t v`; `asOfBefore_eq_asOf_of_ne` (if no version is stamped exactly `t`, `asOfBefore t = asOf t`); `asOfBefore_le_asOf` (the strict result, if any, is at or before the non-strict one in the list).
+- Witness (instants; key `"k"`; versions `v1 = (at 10, value 1)`, `v2 = (at 20, value 2)`, `v3 = (at 30, value 3)`, all `published`): `asOf 5 = none`; `asOf 10 = v1`; `asOf 19 = v1`; `asOf 20 = v2`; `asOf 100 = v3`; `asOfBefore 10 = none`; `asOfBefore 11 = v1`; `asOfBefore 20 = v1`; `asOfBefore 21 = v2`. Append a revision `(at 40, value 4)`: `asOf 35` is still `v3` (the key property), `asOf 40` is the revision. Append `(at 25, value 9)` after `v3`: `error (vintageOutOfOrder 30 25)`. The hypothesis `Ordered` holds for `[v1, v2, v3]`; `[v2, v1]` is the counter-witness (not `Ordered`).
+- Whether `Vintages` is keyed or a plain `List (Stamped α)` is NOT decided beyond this definition `[open question 2]`; every theorem above is a statement about `versions` and does not use `key`.
+
+### 11.8 D7: the guard and the scored call (port of the incubating point-in-time module)
+
+```
+structure Leak where  index : Nat;  stamp : Nat           -- the FIRST leaking index in the list, and the stamp found there
+def knowableAt (t : Nat) (es : List (Stamped α)) : List (Stamped α) := es.filter (fun s => decide (s.at ≤ t))
+def firstLeakFrom (t i : Nat) : List (Stamped α) → Option Leak       -- scan from list index i
+  | []      => none
+  | s :: r  => if s.at ≤ t then firstLeakFrom t (i + 1) r else some { index := i, stamp := s.at }
+def firstLeak (t : Nat) (es : List (Stamped α)) : Option Leak := firstLeakFrom t 0 es
+structure Guarded (t : Nat) (α : Type) where
+  items     : List (Stamped α)
+  knowable  : ∀ s ∈ items, Knowable t s
+def guard (t : Nat) (es : List (Stamped α)) : Except Leak (Guarded t α)       -- `error l` with l = firstLeak, else `ok` carrying the proof
+structure ScoredCall (α : Type) where     -- a prediction made at instant `t` from `inputs`, all of them known at `t`
+  t       : Nat
+  inputs  : List (Stamped α)
+  knowable : ∀ s ∈ inputs, Knowable t s
+def ScoredCall.make (t : Nat) (es : List (Stamped α)) : Except Leak (ScoredCall α)     -- `guard` and repackage
+def ScoredCall.score (f : List (Stamped α) → β) (c : ScoredCall α) : β := f c.inputs
+```
+- **Decision.** The guard and the scored call are ported from the incubating consumer, generalised from its `{at, value}` pair to `Stamped` with origin. Scoring takes the proof-carrying `ScoredCall`, so scoring with leaked information has no well-typed term (a `ScoredCall` cannot be built except by `make`, whose `error` is the `Leak` naming the first offender). The leak is its own type, not a `Refusal`: it carries the evidence (an index and a stamp), as section 2 requires of a refusal.
+- **Reason.** The cheapest proof is the one the type checker holds: a leak is an unbuildable term, not a test that has to be remembered.
+- THE PORT TARGET (each statement carried over, with `Stamped`-with-`at` replaced by the new `Stamped`; none of the statements mentions `origin`). If the incubating source is at hand, its statement text is the authority modulo that replacement; the one-line statements below are the minimum a worker can build from this section alone. Modules: `Time/Guard.lean` for `Knowable`, `knowableAt`, `Leak`, `firstLeak*`, `Guarded`, `guard`; `Time/Scored.lean` for `ScoredCall`.
+  | name | statement |
+  |---|---|
+  | `firstLeakFrom_none_iff` | `firstLeakFrom t i es = none ↔ ∀ s ∈ es, Knowable t s` |
+  | `firstLeakFrom_some` | `firstLeakFrom t i es = some l → i ≤ l.index ∧` the element at list position `l.index - i` exists, is not `Knowable t`, has `at = l.stamp`, and every element before it is `Knowable t` |
+  | `guard_isOk_iff` | `(guard t es).isOk = true ↔ ∀ s ∈ es, Knowable t s` (equivalently `firstLeak t es = none`) |
+  | `guard_ok_items` | `guard t es = .ok g → g.items = es` |
+  | `guard_error_first` | `guard t es = .error l → firstLeak t es = some l` |
+  | `guard_refuses_iff` | `guard t es` is an `error` `↔ ∃ s ∈ es, ¬ Knowable t s` |
+  | `mem_knowableAt` | `s ∈ knowableAt t es ↔ s ∈ es ∧ Knowable t s` |
+  | `knowableAt_knowable` | `s ∈ knowableAt t es → Knowable t s` |
+  | `knowableAt_sublist` | `knowableAt t es <+ es` |
+  | `knowableAt_mono` | `t ≤ t' → knowableAt t es <+ knowableAt t' es` |
+  | `knowableAt_idem` | `knowableAt t (knowableAt t es) = knowableAt t es` |
+  | `knowableAt_of_knowable` | `(∀ s ∈ es, Knowable t s) → knowableAt t es = es` |
+  | `guard_knowableAt` | `guard t (knowableAt t es)` is `ok` (filtering by the cut always passes the guard) |
+  | `inputs_le` | `∀ c : ScoredCall α, ∀ s ∈ c.inputs, s.at ≤ c.t` |
+  | `make_ok_iff` | `(ScoredCall.make t es).isOk = true ↔ ∀ s ∈ es, Knowable t s` |
+  | `make_ok_spec` | `ScoredCall.make t es = .ok c → c.t = t ∧ c.inputs = es` |
+  | `score_knowableAt` | `ScoredCall.make t (knowableAt t es)` is `ok c`, with `c.inputs = knowableAt t es` and `c.score f = f (knowableAt t es)` |
+  Non-vacuity witnesses (each conditional statement has one): stamps `[3, 5, 9]` at `t = 5`: `firstLeak 5 = some ⟨2, 9⟩`; `guard 5` is `error ⟨2, 9⟩`; `knowableAt 5 = [3, 5]`; `guard 5 (knowableAt 5 …)` is `ok`; `ScoredCall.make 5` of `[3, 5]` is `ok` with `inputs_le` holding, of `[3, 5, 9]` the `error`; an empty list passes every guard.
+- The shape of `ScoredCall` (what is scored, whether `score` takes the function as above) is the port's: the statements above, and no more, are the contract `[open question 9]`.
+
+### 11.9 D8: splits (port of the incubating walk-forward module, plus the single cut)
+
+```
+structure Split (α : Type) where  train : List (Stamped α);  test : List (Stamped α)
+
+def orderEvents (es : List (Stamped α)) : List (Stamped α) := es.mergeSort (fun a b => decide (a.at ≤ b.at))     -- STABLE: equal stamps keep their input order
+def cutBefore (t : Nat) (es : List (Stamped α)) : Split α := { train := es.filter (fun s => decide (s.at < t)), test := es.filter (fun s => !decide (s.at < t)) }
+def cutAt     (t : Nat) (es : List (Stamped α)) : Split α := { train := es.filter (fun s => decide (s.at ≤ t)), test := es.filter (fun s => !decide (s.at ≤ t)) }
+def cut (strict : Bool) (t) (es) : Split α := if strict then cutBefore t es else cutAt t es    -- only a convenience: the caller chooses by NAME, `cutBefore` and `cutAt` are the API
+
+def splitCount (n minTrain horizon step : Nat) : Nat :=
+  if minTrain = 0 ∨ horizon = 0 ∨ step = 0 ∨ n < minTrain + horizon then 0
+  else (n - minTrain - horizon) / step + 1
+def expanding (minTrain horizon step : Nat) (es : List (Stamped α)) : List (Split α)
+```
+- **Decision.** Over `Stamped α`: `orderEvents` is a stable sort by stamp (core `List.mergeSort`; `decide` cannot evaluate it: witnesses use `simp`). `cutBefore` (train = items `Before t`, test = the rest) and `cutAt` (train = items `Knowable t`, test = the rest) are TWO FUNCTIONS: the caller chooses by name; the pre-registered use is `cutBefore`. Both keep the input order and neither sorts (a caller that wants a sorted split sorts first). `expanding minTrain horizon step es` is the expanding-window walk-forward over the input AS GIVEN (in list order; it does not sort: a caller passes `orderEvents es`, and `no_leakage_sorted` states exactly that). The THREE PARAMETERS ARE INPUTS: the library chooses no number. `splitCount n minTrain horizon step` says EXACTLY how many out-of-sample blocks a history of `n` items yields, so a caller sees how small the sample is BEFORE concluding anything from it.
+- **Reason.** One cut or many, the same stamps, the same guarantees; nothing the sample size depends on is hidden in the library.
+- Definition of record of `expanding` (the closed form; a worker may implement it with the helpers `blocksFrom` and `expandingGo` and must prove `expanding_eq`):
+  `expanding m h st es = (List.range (splitCount es.length m h st)).map (fun k => { train := es.take (m + k*st), test := (es.drop (m + k*st)).take h })`.
+  Block `k` trains on the first `m + k*st` items and tests on the next `h`. DEGENERATE parameters (`m = 0`, `h = 0`, `st = 0`) and SHORT histories (`n < m + h`) give the typed empty result `[]` (`splitCount = 0`); no refusal is raised, because `[]` with `splitCount = 0` IS the answer the caller must read. Helper contract (the incubating names, kept so the port is recognisable): `blocksFrom es h st fuel pos` returns the blocks starting at train length `pos`: `blocksFrom … 0 pos = []`; `blocksFrom … (fuel+1) pos = if pos + h ≤ es.length then ⟨es.take pos, (es.drop pos).take h⟩ :: blocksFrom … fuel (pos + st) else []`; `expandingGo` is the guarded entry (the degenerate check, then `blocksFrom` with `fuel = es.length` and `pos = m`).
+- PORT TARGET theorem names (each carried over; `n = es.length`, `m, h, st` the three parameters, `k` a block index, `ES k` the k-th split):
+  | name | statement |
+  |---|---|
+  | `orderEvents_perm` | `orderEvents es ~ es` |
+  | `orderEvents_ordered` | `Ordered (orderEvents es)` |
+  | `orderEvents_length` | `(orderEvents es).length = es.length` |
+  | `orderEvents_nodup` | `es.Nodup → (orderEvents es).Nodup` |
+  | `cut_train_append_test` | `Ordered es → (cutBefore t es).train ++ (cutBefore t es).test = es`, and the same for `cutAt` |
+  | `blocksFrom_zero`, `blocksFrom_succ` | the two defining equations above |
+  | `blocksFrom_le` | `(blocksFrom es h st fuel pos).length ≤ fuel` |
+  | `expandingGo_eq` | the guarded entry equals the closed form when the parameters are not degenerate |
+  | `expanding_eq` | the closed form above |
+  | `length_expanding` | `(expanding m h st es).length = splitCount es.length m h st` |
+  | `splitCount_formula` | `0 < m → 0 < h → 0 < st → m + h ≤ n → splitCount n m h st = (n - m - h) / st + 1` |
+  | `splitCount_short` | `n < m + h → splitCount n m h st = 0` |
+  | `expanding_minTrain_too_large` | `n < m → expanding m h st es = []` |
+  | `expanding_short` | `n < m + h → expanding m h st es = []` (and the same for each degenerate parameter) |
+  | `mem_expanding` | `sp ∈ expanding m h st es ↔ ∃ k < splitCount n m h st, sp = ES k` |
+  | `train_mem`, `test_mem` | every item of `sp.train` / `sp.test` of every `sp ∈ expanding …` is in `es` |
+  | `no_leakage` | `Ordered es → sp ∈ expanding m h st es → ∀ a ∈ sp.train, ∀ b ∈ sp.test, a.at ≤ b.at` |
+  | `no_leakage_sorted` | the same for `expanding m h st (orderEvents es)`, for ANY `es` |
+  | `test_not_in_train` | `es.Nodup → sp ∈ expanding … → ∀ b ∈ sp.test, b ∉ sp.train` |
+  | `train_test_nodup` | `es.Nodup → sp ∈ expanding … → (sp.train ++ sp.test).Nodup` |
+  | `train_grows` | for `k < k' < splitCount`: `(ES k).train <+: (ES k').train` and strictly shorter (`st > 0`) |
+  | `test_blocks_in_order` | `Ordered es →` for `k < k'`, every item of `(ES k).test` has `at ≤` every item of `(ES k').test` |
+  | `test_blocks_disjoint` | `es.Nodup → h ≤ st →` for `k ≠ k'`, `(ES k).test` and `(ES k').test` share no item |
+  | `test_blocks_step_eq_horizon` | `st = h →` the test blocks, concatenated in order, are exactly `(es.drop m).take (splitCount n m h h * h)`: they tile, with no gap and no overlap |
+  | the sample witnesses | below |
+  If the incubating source states one of these differently (for instance `test_blocks_step_eq_horizon`), the port keeps its statement and records the difference in the ledger line; the lines above are the minimum.
+- NEW for the strict cut (three theorems; `Before` from `Time/Before`): `cutBefore_train_before : ∀ s ∈ (cutBefore t es).train, Before t s`; `cutBefore_test_not_before : ∀ s ∈ (cutBefore t es).test, ¬ Before t s` (that is, stamped at or after `t`); `cutBefore_partition : (cutBefore t es).train ++ (cutBefore t es).test ~ es` (for ANY input: together they are exactly the input, as a permutation). Their twins for `cutAt` use `Knowable` (`cutAt_train_knowable`, `cutAt_test_not_knowable`, `cutAt_partition`). Also `cutBefore_train_sublist`, `cutBefore_test_sublist` (each keeps the input order).
+- Sample witnesses (stamps equal to the values, all `published`; this is the WITNESS DATA for `decide`-free `simp` proofs):
+  - `orderEvents` of stamps `[5, 1, 9, 3]` is `[1, 3, 5, 9]`; stability: items `(at 2, "a")`, `(at 1, "b")`, `(at 2, "c")` sort to `b, a, c` (equal stamps keep order).
+  - `cutBefore 5 [2, 5, 5, 8]`: train `[2]`, test `[5, 5, 8]`. `cutAt 5 [2, 5, 5, 8]`: train `[2, 5, 5]`, test `[8]`. `cutBefore 0` of any list has an empty train.
+  - `expanding 3 2 1 [1..7]` (n = 7): `splitCount = (7-3-2)/1+1 = 3`: block 0 train `[1,2,3]` test `[4,5]`; block 1 train `[1..4]` test `[5,6]`; block 2 train `[1..5]` test `[6,7]`. `expanding 3 2 2 [1..7]`: `splitCount = 2`: train `[1,2,3]` test `[4,5]`; train `[1..5]` test `[6,7]` (test blocks disjoint: `h ≤ st` holds). `expanding 2 2 2 [1..6]` has `st = h`: tests `[3,4]`, `[5,6]` tile `(drop 2).take 4`.
+  - `expanding 3 2 1 [1..5]` (n = m + h exactly): `splitCount = 1`. `expanding 3 2 1 [1..4]` (`n < m + h`): `[]`. `expanding 5 1 1 [1..4]` (`n < m`): `[]`. `expanding 0 2 1 _`, `expanding 3 0 1 _`, `expanding 3 2 0 _`: `[]` (each degenerate parameter). The hypothesis `0 < m → 0 < h → 0 < st → m + h ≤ n` of `splitCount_formula` holds at `(7,3,2,1)`.
+
+### 11.10 D9: the leakage check is a check with a falsifier, not a theorem about data
+
+```
+structure LeakPair where  trainIndex : Nat;  testIndex : Nat;  trainStamp : Nat;  testStamp : Nat
+def checkSplit       (sp : Split α) : Except LeakPair Unit      -- ok iff ∀ a ∈ sp.train, ∀ b ∈ sp.test, a.at ≤ b.at
+def checkSplitStrict (sp : Split α) : Except LeakPair Unit      -- ok iff ∀ a ∈ sp.train, ∀ b ∈ sp.test, a.at < b.at   (the variant for `cutBefore`)
+def checkSplits      (sps : List (Split α)) : Except (Nat × LeakPair) Unit     -- the first block (its index) that fails `checkSplit`
+```
+- **Decision.** Nothing in a dataset entails that every train item was knowable when each test item was made: that is a property of HOW THE COLLECTION WAS MADE (11.1). So the check EVALUATES the property (`tr.at ≤ te.at`, or `<` in the strict variant) over every (train, test) pair and, on failure, returns the FIRST leaking pair, naming the train index, the test index and both stamps: the same discipline as the guard (D7). Pairs are scanned train index first, then test index (lexicographic); an index is a position in `sp.train` / `sp.test`.
+- **Reason.** A theorem about data cannot be written; a check that CAN FAIL, with evidence, is the honest form, and the falsifier is part of the statement.
+- THEOREMS (`checkSplitStrict_*` are the twins with `<` for `≤`):
+  - `checkSplit_ok_iff : checkSplit sp = .ok () ↔ ∀ a ∈ sp.train, ∀ b ∈ sp.test, a.at ≤ b.at` (ok exactly when no pair leaks).
+  - `checkSplit_error_first : checkSplit sp = .error p → (p is a leaking pair: `sp.train[p.trainIndex]` and `sp.test[p.testIndex]` exist, carry the stamps `p.trainStamp` and `p.testStamp`, and `¬ p.trainStamp ≤ p.testStamp`) ∧ (no pair with a smaller `trainIndex`, or the same `trainIndex` and a smaller `testIndex`, leaks)`.
+  - `checkSplits_ok_iff` and `checkSplits_error_first` likewise (first block, then first pair).
+  - THE PROVABLE PART (a statement about the functions and the stamps, not about the world): `checkSplit_cutBefore`, `checkSplitStrict_cutBefore`, `checkSplit_cutAt`, `checkSplitStrict_cutAt` (for ANY input list, ordered or not: train is `< t` (or `≤ t`) and test is `≥ t` (or `> t`)); `checkSplits_expanding : Ordered es → checkSplits (expanding m h st es) = .ok ()`; `checkSplits_expanding_sorted : checkSplits (expanding m h st (orderEvents es)) = .ok ()` for ANY `es`.
+  - THE FALSIFIER witnesses (the check can fail): stamps `[5, 1, 9, 3]` UNSORTED, `expanding 2 1 1`: `splitCount = 2`; block 0 (train `[5,1]`, test `[9]`) passes; block 1 (train `[5,1,9]`, test `[3]`) leaks: `checkSplits` is `error (1, ⟨0, 0, 5, 3⟩)`. The same data through `orderEvents` (`[1,3,5,9]`) gives blocks `([1,3],[5])`, `([1,3,5],[9])` and the check is `ok`. `expanding 1 1 1 [4, 4, 4]` (`splitCount = 2`): block 0 has train `[4]` and test `[4]`; `checkSplit` is `ok` (`4 ≤ 4`) and `checkSplitStrict` is `error ⟨0, 0, 4, 4⟩` (equal stamps: the strict variant refuses where the non-strict one passes). `cutBefore 5 [2, 5, 5, 8]` (train `[2]`, test `[5, 5, 8]`) passes `checkSplitStrict` and `checkSplit`; `cutAt 5 [2, 5, 5, 8]` (train `[2, 5, 5]`, test `[8]`) passes both; `cutAt` cannot pass `checkSplitStrict` when an item stamped exactly `t` is in train and another is in test at `t`, which a single cut at `t` never produces (the test side of `cutAt` is `> t`).
+  - `originsUsed` (D2) lives in the same module.
+- **What this does NOT prove.** A passing check says the STAMPS are consistent with the split. It says NOTHING about leakage in the world unless the stamps are the source's publication dates (11.1): that premise is the caller's, written down, and the `origin` field makes it visible (`published` versus `collected`; a `collected` stamp is later than or equal to the truth, so it can only hide information, never add it). It also does not check: that two stamps came from the same clock; that a calendar is well-formed (D4: the caller's hypothesis); that `Observation.referent` is on the calendar the caller thinks it is; that a revision was stamped at its FIRST publication (D5: the caller's hypothesis, which `vintageOutOfOrder` only partly guards: it catches an out-of-order append, not a wrong stamp); that the scored forecast was committed before the outcome was opened (D10).
+
+### 11.11 D10: what stays out
+
+Not in this section, each with its owner:
+- The SEALED OUTCOME (commit the prediction before the outcome is opened): the job of the append-only hash-chained log (`vbm-journal`), a separate item. This section proves nothing about commitment order.
+- The RESOLUTION (the smallest share a frame can distinguish from noise at its `n`, recorded with the prediction, naming its `n`): a separate item, stated by the statistician. `splitCount` is the only count this section offers; it is not a power analysis.
+- Also out: a conversion between calendars; parsing or formatting of dates; time zones; a clock. The library never reads "now".
+- No new named limit: every function of this section is linear (`orderEvents` is `n log n`) in its input list, and the caller bounds the list (`maxEvents`, section 7, is available for that and is not enforced here) `[open question 12]`.
+
+### 11.12 Refusals and values added
+
+| constructor | in | when |
+|---|---|---|
+| `Refusal.publishedAbsent` | `Refusal` (`Rep.lean`) | no publication instant was supplied (`pub = none`), D1, D4 |
+| `Refusal.notExpressible (calendarName : String)` | `Refusal` | a date was supplied in another calendar's units than the named one, D4 |
+| `Refusal.vintageOutOfOrder (last new : Nat)` | `Refusal` | an appended version is stamped before the last one, D5 |
+| `Leak` | `Time/Guard.lean` | not a `Refusal`: the evidence of the guard, D7 |
+| `LeakPair` | `Time/Check.lean` | not a `Refusal`: the evidence of the check, D9 |
+Property 17 of section 8 (validation is total and sound, one theorem and one witness per constructor) extends to the three new constructors; the slice that adds them updates `VbmForecastProofs/Rep.lean` for them.
+
+### 11.13 Module plan and import order
+
+`VbmForecast` modules (each imports `Init` and the modules named, nothing else):
+| file | holds | imports |
+|---|---|---|
+| `VbmForecast/Rep.lean` | (existing) `Refusal` gains the three constructors of 11.12 | (none) |
+| `VbmForecast/Time/Stamp.lean` | `Origin`, `Stamped`, `Observation`, `ofInstant`, `map` | `Rep` |
+| `VbmForecast/Time/Calendar.lean` | `Calendar`, `PeriodRef`, `WellFormed`, `wfUpTo`, `Stamped.ofPeriod`, the three example calendars | `Time.Stamp` |
+| `VbmForecast/Time/Before.lean` | `Before` | `Time.Stamp` |
+| `VbmForecast/Time/Guard.lean` | `Knowable`, the relation, `knowableAt`, `Leak`, `firstLeak*`, `Guarded`, `guard` | `Time.Before` |
+| `VbmForecast/Time/Scored.lean` | `ScoredCall`, `make`, `score` | `Time.Guard` |
+| `VbmForecast/Time/Vintages.lean` | `Vintages`, `append`, `asOf`, `asOfBefore` | `Time.Guard` |
+| `VbmForecast/Time/Join.lean` | `asOfJoin`, `asOfJoinBefore` | `Time.Vintages` |
+| `VbmForecast/Time/Split.lean` | `Split`, `orderEvents`, `cutBefore`, `cutAt`, `cut`, `Ordered` | `Time.Guard` |
+| `VbmForecast/Time/Expanding.lean` | `splitCount`, `blocksFrom`, `expandingGo`, `expanding` | `Time.Split` |
+| `VbmForecast/Time/Check.lean` | `LeakPair`, `checkSplit*`, `checkSplits`, `OriginsUsed`, `originsUsed` | `Time.Expanding` |
+| `VbmForecast.lean` | one `import` line per module | |
+The proof files `VbmForecastProofs/Time/Stamp.lean`, `Calendar.lean`, `Before.lean`, `Guard.lean`, `Scored.lean`, `Vintages.lean`, `Join.lean`, `Split.lean`, `Expanding.lean`, `ExpandingProps.lean`, `Check.lean` mirror them one to one (`ExpandingProps` holds the structural theorems of `Expanding`, and imports `Time/Expanding` proofs). They may import `Std` and `Lean`, are never linked, and each imports the proof file of the module it extends plus the code module it proves about. A consumer that wants only the strict cut imports `VbmForecast.Time.Before` (and `Stamp`, which it needs for `Stamped`): it never loads `Guard`, `Knowable` or the guard.
+Import order (the DAG, dependencies first): `Rep` → `Stamp` → {`Calendar`, `Before`} ; `Before` → `Guard` → {`Scored`, `Vintages`, `Split`} ; `Vintages` → `Join` ; `Split` → `Expanding` → `Check`. Level 0 is `Stamp`; level 1 is `Calendar` and `Before`; level 2 is `Guard`; level 3 is `Scored`, `Vintages`, `Split`; level 4 is `Join` and `Expanding`; level 5 is `Check`.
+
+### 11.14 Vectors (the requirement)
+
+Known answers, by hand, for this section: the witnesses of 11.2 to 11.10 are its vectors (calendars: 11.5 table; `asOf` and `asOfBefore`: 11.7; the join: 11.4; the guard: 11.8; `cut*` and `expanding`: 11.9; the check and its falsifier: 11.10). The vectors slice (T12) re-derives each with an independent reference (integer shell arithmetic, as the existing vectors do), compares it with the library's printed line, and ends with `ran: time-vectors: N cases` (N > 0). Two requirements beyond the existing ones:
+1. **PINNED TO THE HASH OF THE SPECIFICATION FILES.** The generated vector file carries a first line `-- spec-sha256: HEX`, where `HEX` is the SHA-256 of the concatenation, in this order, of: the text of this section 11 (from the heading `## 11.` to the end of `docs/spec.md`) and the files `VbmForecast/Time/*.lean` in sorted path order. The gate recomputes the hash and FAILS, naming the regeneration command, when the specification moved and the vectors were not regenerated. The gate is shown able to fail (a mutated pin is refused: a negative self-test, as for the other gates).
+2. **IT PRINTS ITS COVERAGE.** The vectors print one `coverage KIND NAME COUNT` line per item reached, and the gate fails if any REQUIRED item has `COUNT = 0`: a differential test that never reaches a branch is silent about it, and silence reads as agreement. Required: predicates (`Before` true and false at the boundary stamp, `Knowable` true and false at the boundary); `Origin` (both constructors); calendars (`calendarMonth`, `censusYear`, `fiscalJune`, each stamped, and one not well-formed); refusals (`publishedAbsent`, `notExpressible`, `vintageOutOfOrder`); `asOf`/`asOfBefore` (`none`, an earlier version, the latest version, an equal-stamp pair); the join (a hit, a miss, a revision); the guard (`ok`, `error` first leak not at index 0); splits (`cutBefore`, `cutAt`, `expanding` with `splitCount` 0 by each of its five reasons, `1`, and `≥ 2`, `step = horizon`, `step > horizon`); the check (`ok`, a leak naming the pair, strict versus non-strict disagreement, `checkSplits` naming a block `> 0`).
+
+### 11.15 Slice plan (time)
+
+Each slice is about 150 production lines of Lean with its proofs and non-vacuity witnesses, on DISJOINT files, in dependency order; none lands behind a flag of its own (new exported names, no caller). Each adds one ledger line per proved claim (`VbmForecastProofs/Ledger.lean`, `docs/proof-ledger.md`) and one `import` line to `VbmForecast.lean` / `VbmForecastProofs.lean` (the shared append-only files of the Slices section). A conditional theorem is accompanied, in the same proof file, by a concrete example that meets its hypothesis (`example` by `decide`, `rfl` or `simp`). Slices at the same level run in PARALLEL.
+
+| slice | level | files (code, proofs) | statements and witnesses |
+|---|---|---|---|
+| **T1** stamp | 0 | `Rep.lean` (three constructors), `Time/Stamp.lean`; `Proofs/Rep.lean` (property 17 for them), `Proofs/Time/Stamp.lean` | D1, D2, D3 types; `ofInstant_ok_iff`, `ofInstant_none`, `map_*`; the refusal witnesses; the private constructor (or the recorded fallback) |
+| **T2** calendar | 1 | `Time/Calendar.lean`, `Proofs/Time/Calendar.lean` | D4: `wfUpTo_iff`, `wf_iff_wfUpTo`, `periodEnd_mono`, `ofPeriod_*`, `ofPeriod_conservative` (hypothesis `WellFormed`, witnessed by `fiscalJune`; counter-witness the constant calendar); witnesses of the 11.5 table |
+| **T3** before | 1 | `Time/Before.lean`, `Proofs/Time/Before.lean` | `Before`, `before_mono`, `before_irrefl_at`, the boundary witness; the module imports `Stamp` only (Tier 1 import scan) |
+| **T4** guard | 2 | `Time/Guard.lean`, `Proofs/Time/Guard.lean` | `Knowable`, `before_iff_knowable_ne`, `knowableAt`, `Leak`, `firstLeak*`, `Guarded`, `guard`; the D7 theorems from `firstLeakFrom_none_iff` to `guard_knowableAt` (14 statements); witnesses `[3,5,9]` at `5`. If over budget, T4a `Knowable` + `knowableAt` theorems and T4b `firstLeak`/`guard` theorems (same files, sequenced) |
+| **T5** scored call | 3 | `Time/Scored.lean`, `Proofs/Time/Scored.lean` | `ScoredCall`, `make`, `score`; `inputs_le`, `make_ok_iff`, `make_ok_spec`, `score_knowableAt`; witnesses |
+| **T6** vintages | 3 | `Time/Vintages.lean`, `Proofs/Time/Vintages.lean` | D5 theorems (the key property `asOf_append_gt` first); witness `v1,v2,v3`; counter-witness for `Ordered` |
+| **T7** splits and cuts | 3 | `Time/Split.lean`, `Proofs/Time/Split.lean` | `Split`, `Ordered`, `orderEvents` and its four theorems, `cutBefore`, `cutAt`, `cut_train_append_test`, the three new `cutBefore_*` theorems and their `cutAt` twins; witnesses of 11.9 (`simp`, not `decide`, for the sort) |
+| **T8** join | 4 | `Time/Join.lean`, `Proofs/Time/Join.lean` | D3 `Observation` join theorems; witness of 11.4 |
+| **T9** expanding, definition and counts | 4 | `Time/Expanding.lean`, `Proofs/Time/Expanding.lean` | `splitCount`, `blocksFrom*`, `expandingGo`, `expanding`; `blocksFrom_zero/succ/le`, `expandingGo_eq`, `expanding_eq`, `length_expanding`, `splitCount_formula`, `splitCount_short`, `expanding_minTrain_too_large`, `expanding_short`, `mem_expanding`; the 11.9 `expanding` witnesses |
+| **T10** expanding, structural | 5 | `Proofs/Time/ExpandingProps.lean` (no code file) | `train_mem`, `test_mem`, `no_leakage`, `no_leakage_sorted`, `test_not_in_train`, `train_test_nodup`, `train_grows`, `test_blocks_in_order`, `test_blocks_disjoint`, `test_blocks_step_eq_horizon`; each hypothesis (`Ordered`, `Nodup`, `h ≤ st`, `st = h`) met by a literal example |
+| **T11** check | 5 | `Time/Check.lean`, `Proofs/Time/Check.lean` | D9: `checkSplit*`, `checkSplits`, `originsUsed`; `*_ok_iff`, `*_error_first`, the provable part, the falsifier witnesses, the `originsUsed` witnesses |
+| **T12** vectors | 6 | `vectors/TimeVectors.lean`, `scripts/test_time_vectors.sh` (declared with `par` in `scripts/tier1.sh`, one line) | 11.14: the spec-hash pin, the coverage lines, the negative self-tests, `ran: time-vectors: N cases` |
+| **T13** release | 7 | `VERSION`, `docs/` only | bump to `0.2.0` (11.16); the spec section is read once more against the code |
+Order for parallel workers: T1; then T2 and T3; then T4; then T5, T6, T7; then T8 and T9; then T10 and T11; then T12; then T13. (T10 depends on T7 and T9; T11 on T7, T9; T8 on T6.) If a slice exceeds 150 lines or 45 minutes without a passing build it stops and writes a decomposition plan (the repository rule); no theorem is weakened to fit.
+
+### 11.16 Compatibility
+
+This is a MINOR version: `0.1.0` becomes `0.2.0` when T13 lands. New exported names only; nothing is removed or renamed; the existing `Event` (a (forecast, outcome) pair) is untouched and this section never uses the word. One source-level note, stated so a consumer is not surprised: `Refusal` (section 2) gains three constructors, which is additive, but a downstream function that matches `Refusal` exhaustively without a wildcard must add the three cases; no existing function of this library returns them. The consumer whose two incubating modules (a point-in-time guard and walk-forward splits, over two parallel stamped pair types) this section replaces migrates AFTER the release: it re-vendors this library at the `0.2.0` pin, switches to `Stamped` (adding the `origin` of each of its stamps, which it must now state), and deletes its copies; until then both coexist. A second consumer starts on this section directly (its pre-registered cut is `cutBefore`, D6).
+
+### 11.17 Open questions (time)
+
+Numbered in this list, referred to above as `[open question N]`; each says what depends on it.
+1. **Calendars with non-contiguous periods, and between calendars.** The representation here (`periodEnd : Nat → Nat`, strictly increasing) makes periods contiguous and gives no way to say "period `p` of calendar A is period `q` of calendar B" or to state a gap (trading days, a 52/53-week retail calendar given only by a table). Depends on: `Calendar`, `notExpressible`, T2; a gap representation would add a field (for example a start), and `notExpressible` would then also cover a date that falls in a gap.
+2. **Is `Vintages` keyed or a plain list?** This section defines `Vintages κ α` with a key and a list; no theorem uses the key. Depends on: T6's type; a plain `List (Stamped α)` plus a keyed container for the consumer is the alternative.
+3. **May `collected` stamps be mixed with `published` stamps in one split?** The check reports `originsUsed`; whether a split with a `collected` item should refuse, or only be flagged, is not decided. Depends on: T11 (`originsUsed` could become a refusal of `checkSplit`) and the consumers' policy.
+4. **A source with a publication TIME, not only a date.** How is a stamp finer than the caller's base clock represented (two sources on one day, an intraday release)? The base clock is the caller's, so it can simply be finer, but then a coarse source stamped by `ofPeriod` and a timed source need the SAME base clock. Depends on: `Stamped.at` (whether `at` stays one `Nat` or gains a second component) and the calendar examples.
+5. **The name `Stamped` versus a longer name** (for example `KnownAt`); `Stamped` risks being read as "carrying a timestamp of its own", which is what D1 says it is not. Depends on: every signature in this section (a rename is cheap before T1, a breaking change after the release).
+6. **Equal stamps in a `Vintages`**: two versions published at the same instant: the later in list order wins `asOf`; the strict twin ignores both. Is a same-instant revision allowed, or should `append` refuse it? Depends on: `append`, `asOf_mono`.
+7. **The origin of a revision**: a revision published later may carry a different origin from the first version; `asOf` returns whichever it finds. Whether a vintage must be of one origin is not decided. Depends on: T6.
+8. **Is `cut` (the `Bool`-flag convenience) worth keeping** beside `cutBefore` and `cutAt`? A `Bool` argument is the flag-argument smell the two named functions avoid. Depends on: T7 (it may be dropped before release at no cost).
+9. **The exact shape of `ScoredCall` and of the incubating guard's statements** (what is scored, whether `score` takes a function). Written here from the names of the port target; if the incubating source differs, the source's shape wins and this table is corrected in the same slice. Depends on: T5.
+10. **The legacy names `orderEvents*`**: they contain the word the section avoids; a rename (`orderItems*`) would break the port target's recognisability. Depends on: the migration of the consumer, T7.
+11. **A private constructor on a structure** under the pinned Lean: if not expressible, the convention fallback of D1 applies. Depends on: T1.
+12. **A named limit for the size of a list given to `orderEvents`/`expanding`** (the library chooses no number, and adds none here). Depends on: the owner's answer to open question 1 of the main list (the proposed values of the named limits).
+13. **The pin of the vectors**: whether hashing the whole of section 11 is too coarse (any edit of the text of the section forces a regeneration even when no vector moves); a finer pin (only the code blocks) is possible. Depends on: T12.
