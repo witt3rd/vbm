@@ -1,4 +1,5 @@
 import VbmAreasProofs.Core
+import VbmAreasProofs.Glob
 import LandLedger
 /-! # The obligation ledger
 
@@ -7,5 +8,13 @@ Every claim the library makes, keyed by a slug and checked by `land-lean ledger`
 open Land.Ledger
 
 def ledger : List Obligation := [
-  O "the-library-has-a-name" (.proved [``VbmAreas.libraryName_nonempty])
+  O "the-library-has-a-name" (.proved [``VbmAreas.libraryName_nonempty]),
+  O "glob-matcher-total" (.proved [``VbmAreas.matches_total]),
+  O "glob-star-matches-any-run" (.proved [``VbmAreas.star_iff, ``VbmAreas.star_matches_all, ``VbmAreas.double_star]),
+  O "glob-query-matches-one-char" (.proved [``VbmAreas.query_cons, ``VbmAreas.query_nil]),
+  O "glob-literal-matches-only-itself" (.proved [``VbmAreas.literal_iff]),
+  O "glob-refusal-exact" (.proved [``VbmAreas.refusalChars_none_iff, ``VbmAreas.valid_iff, ``VbmAreas.validCwd_iff]),
+  O "glob-every-reason-has-a-witness" (.proved [``VbmAreas.witness_refused]),
+  O "glob-start-dir-is-a-valid-directory-prefix" (.proved [``VbmAreas.startDir_prefix]),
+  O "glob-under-by-whole-segments" (.proved [``VbmAreas.under_root, ``VbmAreas.under_irrefl])
 ]
