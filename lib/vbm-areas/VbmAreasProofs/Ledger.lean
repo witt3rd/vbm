@@ -1,5 +1,6 @@
 import VbmAreasProofs.Core
 import VbmAreasProofs.Glob
+import VbmAreasProofs.Area
 import LandLedger
 /-! # The obligation ledger
 
@@ -16,5 +17,11 @@ def ledger : List Obligation := [
   O "glob-refusal-exact" (.proved [``VbmAreas.refusalChars_none_iff, ``VbmAreas.valid_iff, ``VbmAreas.validCwd_iff]),
   O "glob-every-reason-has-a-witness" (.proved [``VbmAreas.witness_refused]),
   O "glob-start-dir-is-a-valid-directory-prefix" (.proved [``VbmAreas.startDir_prefix]),
-  O "glob-under-by-whole-segments" (.proved [``VbmAreas.under_root, ``VbmAreas.under_irrefl])
+  O "glob-under-by-whole-segments" (.proved [``VbmAreas.under_root, ``VbmAreas.under_irrefl]),
+  O "area-owns-is-the-rule" (.proved [``VbmAreas.owns_iff, ``VbmAreas.excluded_not_owned]),
+  O "area-owners-in-file-order-no-duplicates" (.proved [``VbmAreas.mem_owners, ``VbmAreas.owners_sublist, ``VbmAreas.owners_nodup]),
+  O "areas-validate-exact" (.proved [``VbmAreas.area_refusal_none_iff, ``VbmAreas.validate_none_iff, ``VbmAreas.check_ok]),
+  O "areas-valid-names-unique-and-shaped" (.proved [``VbmAreas.valid_names_nodup, ``VbmAreas.valid_names_ok]),
+  O "areas-every-glob-refusal-has-a-witness-file" (.proved [``VbmAreas.reason_witness_file]),
+  O "area-encloses-by-whole-segments-and-not-excluded" (.proved [``VbmAreas.encloses_iff, ``VbmAreas.encloses_not_excluded, ``VbmAreas.encloses_of_under, ``VbmAreas.enclosureLength_isSome_iff])
 ]
