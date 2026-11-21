@@ -2,6 +2,8 @@ import VbmAreasProofs.Core
 import VbmAreasProofs.Glob
 import VbmAreasProofs.Area
 import VbmAreasProofs.Decide
+import VbmAreasProofs.Reuse
+import VbmAreasProofs.Report
 import LandLedger
 /-! # The obligation ledger
 
@@ -32,5 +34,16 @@ def ledger : List Obligation := [
   O "decide-monotone" (.proved [``VbmAreas.monotone]),
   O "decide-steps-are-the-steps-of-run-once-in-file-order" (.proved [``VbmAreas.mem_steps, ``VbmAreas.steps_sublist_nodup, ``VbmAreas.stepless, ``VbmAreas.inert_iff]),
   O "decide-closest-enclosing-all-ties-run" (.proved [``VbmAreas.mem_closest, ``VbmAreas.closest_eq_nil, ``VbmAreas.closest_touched]),
-  O "decide-inert-never-owns-a-deleted-path" (.proved [``VbmAreas.inert_not_owner_deleted, ``VbmAreas.inert_owner_iff])
+  O "decide-inert-never-owns-a-deleted-path" (.proved [``VbmAreas.inert_not_owner_deleted, ``VbmAreas.inert_owner_iff]),
+  O "reuse-never-reuses-an-area-moved-touches" (.proved [``VbmAreas.touched_not_reused, ``VbmAreas.stands_iff, ``VbmAreas.mem_reused]),
+  O "reuse-nothing-when-either-side-is-full" (.proved [``VbmAreas.mine_full_nothing, ``VbmAreas.moved_full_all_rerun]),
+  O "reuse-stepless-neither-and-reused-passed-only" (.proved [``VbmAreas.stepless_neither, ``VbmAreas.reused_passed, ``VbmAreas.hasSteps_iff]),
+  O "reuse-fails-toward-running-disjoint-and-complete" (.proved [``VbmAreas.disjoint, ``VbmAreas.reused_or_rerun, ``VbmAreas.unpassed_rerun, ``VbmAreas.mem_rerun]),
+  O "reuse-sound-when-steps-read-only-owned-paths" (.proved [``VbmAreas.reuse_sound]),
+  O "report-order-on-paths-is-a-strict-total-order" (.proved [``VbmAreas.strLt_irrefl, ``VbmAreas.strLt_trans, ``VbmAreas.strLt_total, ``VbmAreas.sortU_asc, ``VbmAreas.mem_sortU, ``VbmAreas.sortU_nodup]),
+  O "report-overlap-exact-and-symmetric" (.proved [``VbmAreas.mem_overlap, ``VbmAreas.overlap_symm, ``VbmAreas.overlap_unique, ``VbmAreas.pathsOf_comm, ``VbmAreas.overlap_paths_asc]),
+  O "report-overlap-sound-and-complete-three-pairs" (.proved [``VbmAreas.overlap_sound, ``VbmAreas.overlap_complete]),
+  O "report-counts-equal-lengths" (.proved [``VbmAreas.counts, ``VbmAreas.areasInOverlap_zero_iff, ``VbmAreas.mem_overlapNames, ``VbmAreas.mem_overlapPaths]),
+  O "report-unowned-exact" (.proved [``VbmAreas.mem_unowned, ``VbmAreas.unowned_paths, ``VbmAreas.unmapped_decide_full]),
+  O "report-stepless-exact" (.proved [``VbmAreas.mem_noSteps])
 ]

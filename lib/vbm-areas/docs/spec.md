@@ -130,8 +130,9 @@ structure Reuse where
   reused : List String          -- areas of `mine` whose verdict on the old base stands
   rerun : List String           -- every other area of `mine` that has steps
 
-def reuse (cfg : Config) (mine moved : Decision) (passed : List String) : Reuse
+def Reuse.decide (cfg : Config) (mine moved : Decision) (passed : List String) : Reuse
 ```
+(As built: `Config.hasSteps` says whether a name is a declared area with steps; `inert` has none. Soundness, `reuse_sound`, is stated under `Reads`: the verdict of an area is a function of the contents of the paths it owns.)
 `mine` is the decision of the validated landing (made on base B1), `moved` the decision of the paths the trunk changed between B1 and B2, `passed` the names of the areas of `mine` that ran and passed. If `mine.full`, nothing is reused: every area with steps reruns. If `moved.full`, everything of `mine` reruns. Otherwise an area of `mine.run` with steps that is in `passed` and not in `moved.touched` is reused, and every other area of `mine.run` with steps reruns. An area with no steps is neither rerun nor reused. Reuse only ever fails toward running.
 
 ## The report
@@ -148,6 +149,7 @@ structure Report where
 
 def report (cfg : Config) (tracked : List String) : Report
 ```
+(As built: `Report.overlap`, `Report.unowned`, `Report.noSteps` and `Report.summary : Summary`, with the counts `areasInOverlap`, `pathsInOverlap`, `unmapped`; paths ordered by `strLt` (code point, lexicographic) and listed without repeats by `sortU`; the stepless list ends with `inert` when inert globs are declared; a tracked path is looked at as modified, so `inert` owns it when an inert glob matches.)
 (a) every pair of areas (`inert` counts, if declared) that both own some tracked path, in name order, with the sorted paths they both own; a path in three areas appears under each of the three pairs. (b) every tracked path no area owns, with the areas that enclose it; gate-defining paths are not listed. (c) the areas with no steps. Counts: `areasInOverlap` is the number of distinct areas in some overlap; `pathsInOverlap` is the number of distinct paths in some overlap; `unmappedCount` is the length of the unmapped list (every entry, including those with enclosing areas, is counted: they are paths no area owns).
 
 ## Theorems the library will prove
