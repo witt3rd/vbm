@@ -1,0 +1,1 @@
+import VbmAreas.Core
