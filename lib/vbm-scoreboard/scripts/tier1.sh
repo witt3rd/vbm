@@ -51,6 +51,10 @@ echo "tier1: wire import scan: negative self-tests ok (each import outside Lean,
 
 scripts/lint-pipefail.sh   # a producer piped into an early-exiting consumer is flaky by construction; the lint has a negative self-test
 .land/tool/bin/land-check   # the vendored lander is the pinned copy (no local patch), offline
+# no secret in the repository (vbm-land docs/secrets-gate.md): the whole history and the tree with the repository's own .gitleaks.toml, and the gate's negative self-test (a planted token must be flagged, a clean file must pass); .gitleaks.toml and .githooks/ are protected, so a change cannot allowlist its own secret
+mise install --quiet > /dev/null 2>&1 || { echo "tier1: the pinned tools (mise.toml) could not be installed on this host" >&2; exit 1; }
+.land/tool/bin/land-secrets --selftest
+.land/tool/bin/land-secrets
 
 # 2. Build, zero warnings (scripts/check-zero-warning.sh: the warning's own diagnostic is required, a clean file must pass; prints `ran: zero-warning: 3 cases`).
 scripts/check-zero-warning.sh
