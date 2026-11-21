@@ -1,0 +1,16 @@
+kind = "library"
+status = "live"
+what = "A project's scorecard as a proved library: metrics, ratchet floors, targets and history"
+milestone = "released v0.1.0; not scored yet"
+depends_on = []
+repo = "https://github.com/witt3rd/vbm-scoreboard"
+commit = "4fe4ad67b05b6689d132698edd58fd830385dced"
+targets = ["Lean"]
+manifest = "vbm-proof.toml"
+
+[latest]
+date = ""
+correctness = "unscored"
+landedness = "unscored"
+level = "unscored"
+card = ""
