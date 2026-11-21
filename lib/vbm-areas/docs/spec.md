@@ -96,8 +96,8 @@ The areas that enclose `p` with the longest directory (by segment count); all ar
 ## `decide`
 
 ```lean
-inductive Status where | A | M | D | R (old : String)   -- added, modified, deleted, renamed (from `old`)
-structure Change where (status : Status) (path : String)
+inductive Status where | added | modified | deleted
+structure Change where (status : Status) (path : String) (renamedFrom : Option String)   -- a rename: `renamedFrom = some old`
 
 structure Config where
   areas : Option Areas          -- none: no areas file, the implicit area `all`
@@ -114,7 +114,7 @@ structure Decision where
   steps : List Step             -- of `run`, in file order, a repeated (cwd, run) once
   skipped : List String         -- every area not in `run`
 
-def splitRenames : List Change → List Change   -- R old p  ↦  [D old, A p]
+def Change.split : Change → List Change   -- a rename ↦ [deleted old, added p]; the decision splits every change
 def decide (cfg : Config) (changes : List Change) (releaseCandidate : Bool) : Decision
 ```
 Meaning, exactly the reference algorithm. `changes := splitRenames changes`; `full := releaseCandidate`. For each `(status, p)`: if `p` is under `.land/` or matches a protected glob, `full := true` and `p` is gate-defining. `owners` := every area that owns `p`, plus `inert` if `p` matches an inert glob and `status ≠ D`. If `owners` is non-empty they are touched and the path is done. Else, if `p` is gate-defining, the path is done (it is never unmapped). Else the areas `closest cfg.areas p` are touched when non-empty; when empty `p` is unmapped and `full := true`. `run` is every area (and `inert`, if declared) when `full`, else `touched`. `steps` is the steps of the areas in `run` in file order, a step repeated by `(cwd, run)` kept at its first occurrence. `skipped` is every area not in `run`.
@@ -186,7 +186,7 @@ Each has a statement, and, when it has a hypothesis, a non-vacuity witness: a co
 26. **Overlap is the dependency; there is no edge.** A path owned by two areas touches both; the touched set is a function of the owners and enclosures of each path only, never of another area. Witness: one path in `a` and `b`.
 27. **Stepless.** If every area in `run` has no steps, `steps = []` and `stepless = true`. Witness: only an inert area touched.
 28. **Inert does not own a deleted path.** A deleted path matching only an inert glob is not owned by `inert` (it falls to enclosure or to unmapped); a non-deleted one is. With no areas file, the same carve-out applies to `all`. Witness: `D docs/x.md` versus `M docs/x.md`.
-29. **`splitRenames`.** Its output has no rename, its length is the number of changes plus the number of renames, and every path of the input appears. Witness: one rename.
+29. **`Change.split`.** Its output has no rename, its length is the number of changes plus the number of renames, and every path of the input appears. Witness: one rename.
 
 ### Reuse (S5)
 30. **Never reuses an area `moved` touches.** `a ∈ (reuse …).reused → a ∉ moved.touched`. Witness: an area that passed, not moved.
