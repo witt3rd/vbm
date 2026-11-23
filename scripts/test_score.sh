@@ -151,8 +151,50 @@ s = tomllib.loads(sys.stdin.read())["scores"]
 assert "proved_claims" not in s and "total_claims" not in s, f"parsed fake markdown: {s}"
 ' <<< "$out_decoy" && ran_case || fail "parsed rendered docs/proof-ledger.md instead of typed Ledger"
 
-# Typed obligation ledger + axiom audit on a real Lean fixture (when lake is available):
-# ignores contradicting docs/proof-ledger.md and reads typed DemoProofs.Ledger via land-lean ledger.
+# Deterministic integration test for typed land-lean ledger, land-lean axiom, and ClosureGate.lean
+# using a local lake test shim (never depends on Lean toolchain availability in root mise.toml).
+M="$T/mock-lean"
+mkdir -p "$M/.land" "$M/scripts" "$M/docs" "$T/mockbin"
+cat > "$M/.land/lean.conf" <<'CONF'
+LAND_LEAN_AXIOM_IMPORTS="DemoProofs"
+LAND_LEAN_AXIOM_ROOTS="DemoProofs"
+LAND_LEAN_LEDGER_MODULE="DemoProofs.Ledger"
+CONF
+printf '# Obligation ledger\n\n**99 proved, 0 partial, 0 open, 0 limit, of 99.**\n' > "$M/docs/proof-ledger.md"
+printf '%s\n' '-- closure gate placeholder' > "$M/scripts/ClosureGate.lean"
+git -C "$M" init -q && git -C "$M" add -A && git -C "$M" commit -qm "feat(mock-lean): fixture"
+
+cat > "$T/mockbin/lake" <<'SH'
+#!/usr/bin/env bash
+case "$*" in
+  *"build LandLedger"*) exit 0 ;;
+  *"LedgerGate.lean"*) echo "ledger: 3 proved, 1 partial, 0 open, 0 limit, of 4"; exit 0 ;;
+  *"AxiomGate.lean"*) echo "axiom gate: 10 constants checked, ${MOCK_AXIOM_BAD:-0} offending"; exit "${MOCK_AXIOM_RC:-0}" ;;
+  *"ClosureGate.lean"*) echo "closure gate: specified share ${MOCK_SHARE:-87.50%}"; exit 0 ;;
+esac
+exit 1
+SH
+chmod +x "$T/mockbin/lake"
+
+out_mock=$(PATH="$T/mockbin:$PATH" "$sc" "$M")
+python3 -c '
+import sys, tomllib
+s = tomllib.loads(sys.stdin.read())["scores"]
+assert s["proved_claims"] == 3 and s["total_claims"] == 4, f"typed ledger mismatch: {s}"
+assert s["unproved_escapes"] == 0, f"expected 0 escapes: {s}"
+assert s["generated_share_pct"] == 87.5, f"generated_share_pct mismatch: {s}"
+' <<< "$out_mock" && ran_case || fail "mock lake integration mismatch: $out_mock"
+
+# Negative case: typed axiom audit offending count overrides clean source scan; n/a closure omits generated_share_pct.
+out_mock_bad=$(PATH="$T/mockbin:$PATH" MOCK_AXIOM_BAD=2 MOCK_AXIOM_RC=1 MOCK_SHARE="n/a" "$sc" "$M")
+python3 -c '
+import sys, tomllib
+s = tomllib.loads(sys.stdin.read())["scores"]
+assert s["unproved_escapes"] == 2, f"typed axiom offending not reported: {s}"
+assert "generated_share_pct" not in s, f"n/a closure invented generated_share_pct: {s}"
+' <<< "$out_mock_bad" && ran_case || fail "mock negative case mismatch: $out_mock_bad"
+
+# Typed obligation ledger + axiom audit on a real Lean fixture when a working Lean toolchain is on PATH:
 if command -v lake >/dev/null 2>&1; then
   L="$T/lean-demo"
   mkdir -p "$L/.land" "$L/DemoProofs" "$L/docs"
@@ -182,17 +224,17 @@ LAND_LEAN_LEDGER_MODULE="DemoProofs.Ledger"
 CONF
   printf '# Obligation ledger\n\n**99 proved, 0 partial, 0 open, 0 limit, of 99.**\n' > "$L/docs/proof-ledger.md"
   git -C "$L" init -q && git -C "$L" add -A && git -C "$L" commit -qm "feat(lean-demo): typed ledger"
-  (cd "$L" && lake build DemoProofs LandLedger >/dev/null 2>&1)
-  out_lean=$("$sc" "$L")
-  python3 -c '
+  if (cd "$L" && lake build DemoProofs LandLedger >/dev/null 2>&1); then
+    out_lean=$("$sc" "$L")
+    python3 -c '
 import sys, tomllib
 s = tomllib.loads(sys.stdin.read())["scores"]
 assert s["proved_claims"] == 1 and s["total_claims"] == 2, f"typed ledger mismatch: {s}"
 assert s["unproved_escapes"] == 0, f"clean lean fixture had escapes: {s}"
 ' <<< "$out_lean" && ran_case || fail "typed ledger mismatch: $out_lean"
 
-  # Negative case: planting a non-standard axiom is caught by both typed axiom audit and token scan.
-  cat > "$L/DemoProofs/Ledger.lean" <<'LEAN'
+    # Negative case: planting a non-standard axiom is caught by both typed axiom audit and token scan.
+    cat > "$L/DemoProofs/Ledger.lean" <<'LEAN'
 import LandLedger
 open Land.Ledger
 axiom badAx : False
@@ -201,15 +243,16 @@ def ledger : List Obligation := [
   O "c1" (.proved [`t1]),
 ]
 LEAN
-  git -C "$L" commit -qam "feat(lean-demo): plant axiom"
-  (cd "$L" && lake build DemoProofs LandLedger >/dev/null 2>&1)
-  out_ax=$("$sc" "$L")
-  python3 -c '
+    git -C "$L" commit -qam "feat(lean-demo): plant axiom"
+    (cd "$L" && lake build DemoProofs LandLedger >/dev/null 2>&1)
+    out_ax=$("$sc" "$L")
+    python3 -c '
 import sys, tomllib
 s = tomllib.loads(sys.stdin.read())["scores"]
 assert s["unproved_escapes"] >= 1, f"planted axiom not caught: {s}"
 assert s["proved_claims"] == 1 and s["total_claims"] == 1, f"updated typed ledger mismatch: {s}"
 ' <<< "$out_ax" && ran_case || fail "planted axiom not caught: $out_ax"
+  fi
 fi
 
 # Negative case: missing directory exits 2.

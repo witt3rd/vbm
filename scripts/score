@@ -208,12 +208,15 @@ def measure_escapes(lib_dir, files, sc, spec_f, proof_f, code_f, lean_conf):
     axiom_bad = 0
     if lean_conf.get("LAND_LEAN_AXIOM_IMPORTS") and lean_conf.get("LAND_LEAN_AXIOM_ROOTS") and shutil.which("lake"):
         land_lean = os.path.join(REPO_ROOT, ".land", "tool", "bin", "land-lean")
-        r = subprocess.run(
-            [land_lean, "axiom"],
-            env={**os.environ, "LAND_LEAN_ROOT": os.path.abspath(lib_dir)},
-            capture_output=True, text=True, timeout=120,
-        )
-        m = re.search(r"^axiom gate: \d+ constants checked, (\d+) offending$", r.stdout, re.M)
+        try:
+            r = subprocess.run(
+                [land_lean, "axiom"],
+                env={**os.environ, "LAND_LEAN_ROOT": os.path.abspath(lib_dir)},
+                capture_output=True, text=True, timeout=120,
+            )
+            m = re.search(r"^axiom gate: \d+ constants checked, (\d+) offending$", r.stdout, re.M)
+        except (OSError, subprocess.TimeoutExpired):
+            m = None
         if m:
             axiom_bad = int(m.group(1))
     return max(token_hits, axiom_bad)
@@ -223,11 +226,14 @@ def measure_ledger(lib_dir, lean_conf):
     if not lean_conf.get("LAND_LEAN_LEDGER_MODULE") or not shutil.which("lake"):
         return None
     land_lean = os.path.join(REPO_ROOT, ".land", "tool", "bin", "land-lean")
-    r = subprocess.run(
-        [land_lean, "ledger", "--no-write"],
-        env={**os.environ, "LAND_LEAN_ROOT": os.path.abspath(lib_dir)},
-        capture_output=True, text=True, timeout=120,
-    )
+    try:
+        r = subprocess.run(
+            [land_lean, "ledger", "--no-write"],
+            env={**os.environ, "LAND_LEAN_ROOT": os.path.abspath(lib_dir)},
+            capture_output=True, text=True, timeout=120,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
     m = re.search(r"^ledger: (\d+) proved, \d+ partial, \d+ open, \d+ limit, of (\d+)$", r.stdout, re.M)
     if not m:
         return None
@@ -247,10 +253,13 @@ def measure_trust_ledger(lib_dir, sc):
 def measure_generated_share(lib_dir):
     if safe_read(lib_dir, "scripts/ClosureGate.lean") is None or not shutil.which("lake"):
         return None
-    r = subprocess.run(
-        ["lake", "env", "lean", "--run", "scripts/ClosureGate.lean"],
-        cwd=lib_dir, capture_output=True, text=True, timeout=120,
-    )
+    try:
+        r = subprocess.run(
+            ["lake", "env", "lean", "--run", "scripts/ClosureGate.lean"],
+            cwd=lib_dir, capture_output=True, text=True, timeout=120,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
     m = re.search(r"specified share ([0-9]+(?:\.[0-9]+)?)%", r.stdout)
     return float(m.group(1)) if m else None
 
