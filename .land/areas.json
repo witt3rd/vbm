@@ -122,6 +122,21 @@
           "cwd": "lib/vbm-scoreboard"
         }
       ]
+    },
+    {
+      "name": "vbm-work",
+      "paths": [
+        "lib/vbm-work/*"
+      ],
+      "steps": [
+        {
+          "run": "mise exec -- scripts/repo-gates.sh"
+        },
+        {
+          "run": "mise exec -- scripts/tier1.sh",
+          "cwd": "lib/vbm-work"
+        }
+      ]
     }
   ]
 }

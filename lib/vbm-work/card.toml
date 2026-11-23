@@ -1,0 +1,9 @@
+name = "vbm-work"
+scope = "The vocabulary of work: the typed outcome of a run (four tags, fourteen kinds of block, what makes one well formed) and the review words (findings, verdicts); pure Lean specifications and proofs."
+kind = "library"
+status = "live"
+license = "Apache-2.0"
+consumers = []
+
+[links]
+docs = "lib/vbm-work/docs"
