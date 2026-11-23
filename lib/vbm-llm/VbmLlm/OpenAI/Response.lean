@@ -1,0 +1,241 @@
+import VbmLlm.Wire
+import VbmLlm.Fault
+/-! # OpenAI chat-completions: the response of one non-streaming call
+
+The wire contract of `CreateChatCompletionResponse` (schema pinned in `docs/schemas/openai-chat.md`), read from a parsed `LeanJson.Value`. **No client behaviour**: nothing here says what to do with a
+reply (an answer with no text and no calls is a *policy* of the harness, not a fault of the wire), and no model name or price appears.
+
+Reading rules (the policy, stated once; each is a theorem in `VbmLlmProofs/OpenAI/Response.lean`):
+* the reply must be an object with a **non-empty** `choices` array; every choice an object with a `message` object. Nothing else is required: the schema's other required fields (`id`, `created`,
+  `model`, `object`) are read when present and ignored when absent, because compatible servers omit them and the decoder reads what a consumer acts on;
+* a field that is read and **present** (not `null`) must have its type: a wrong type is refused, never coerced (fail closed);
+* `null` and absent are the same (the schema marks `content`, `refusal`, `finish_reason` nullable);
+* a tool call is `{id, type?, function: {name, arguments}}`: `id`, `function`, `name` and `arguments` are required, `type` when present must be `"function"` (a `custom` call is a different shape and is
+  refused as unsupported, not read as a function call); `arguments` is kept **verbatim as the model wrote it**: JSON text the model may have got wrong, never parsed here (the schema says so itself);
+* a finish reason is kept as the provider's text; `FinishClass.ofWire` (`Finish.lean`) classes it;
+* usage counts are plain naturals when present (a sign, a fraction, an exponent or a string is refused); absent counts stay absent, they are not 0;
+* the **reported cost** of a call is `usage.cost`: the number the provider wrote, read as itself (`Option Amount`, the pinned lexeme) and nothing more (no unit, no conversion, never combined with the counts). Absent or
+  `null` is `none` (a provider that reports no cost); a `cost` that is present but not a number is refused as not a number, and a number **written with a minus sign** is refused as negative (an amount is
+  the lexeme the provider wrote, so the test is its sign flag: `-0` carries it and is refused too, though it is zero, never a number below zero); `usage.cost_details`, the nested breakdown, is not
+  read. The streamed usage frame carries the same `Usage`, so the cost reaches the fold's reply as the counts do (`Chunk.lean`, `Stream.lean`);
+* the model's **reasoning text** is the message's `reasoning` member (OpenRouter's) or its `reasoning_content` member (the other compatible servers'): the first of the two that is present, each of them a string when
+  present; the served **provider** is the reply's `provider` member (OpenRouter names the upstream that served the call): an opaque string, read when present, never looked at;
+* unread fields (`logprobs`, `system_fingerprint`, `created`, `service_tier`, annotations, audio, ...) are ignored. -/
+namespace VbmLlm.OpenAI
+open LeanJson
+
+/-- A tool call of an assistant message: the provider's id, the function's name, and its arguments as the text the model wrote. -/
+structure ToolCall where
+  id : String
+  name : String
+  arguments : String
+  deriving DecidableEq, Repr
+
+/-- The usage report. A count is `none` when the provider did not report it. `promptTokens` **includes** the cached ones (`cachedTokens` is a part of it). `cost` is the amount the provider reported the
+call cost, as it wrote it (`Amount`: the provider's lexeme, not a float and not a unit of ours); `none` when it reported none. -/
+structure Usage where
+  promptTokens : Option Nat
+  completionTokens : Option Nat
+  totalTokens : Option Nat
+  cachedTokens : Option Nat
+  reasoningTokens : Option Nat
+  cost : Option Amount
+  deriving DecidableEq, Repr
+
+/-- The assistant message of a choice. -/
+structure Message where
+  content : Option String
+  refusal : Option String
+  toolCalls : List ToolCall
+  /-- the model's reasoning text, verbatim -/
+  reasoning : Option String
+  deriving DecidableEq, Repr
+
+structure Choice where
+  index : Option Nat
+  message : Message
+  /-- the provider's text, `none` when `null` or absent -/
+  finishReason : Option String
+  deriving DecidableEq, Repr
+
+structure Response where
+  id : Option String
+  /-- the model the provider says served the call: an opaque string -/
+  model : Option String
+  choices : List Choice
+  usage : Option Usage
+  /-- the upstream provider the router says served the call: an opaque string -/
+  provider : Option String
+  deriving DecidableEq, Repr
+
+/-! ### Field readers: absent or `null` is `none`, a present value must have its type -/
+
+/-- An optional string member. -/
+def optStr (o : Value) (k : String) : Except Fault (Option String) :=
+  match get o k with
+  | .null => .ok none
+  | .str s => .ok (some s)
+  | _ => .error { path := [.key k], kind := .wrongType .string }
+
+/-- The reasoning text of a message or a delta: `reasoning`, else `reasoning_content`; each, when present, must be a string. -/
+def optReasoning (o : Value) : Except Fault (Option String) := do
+  let a ← optStr o "reasoning"
+  let b ← optStr o "reasoning_content"
+  pure (match a with | some _ => a | none => b)
+
+/-- An optional natural member. -/
+def optNat (o : Value) (k : String) : Except Fault (Option Nat) :=
+  match get o k with
+  | .null => .ok none
+  | .num n =>
+    match natOf n with
+    | some m => .ok (some m)
+    | none => .error { path := [.key k], kind := .wrongType .natural }
+  | _ => .error { path := [.key k], kind := .wrongType .natural }
+
+/-- The amount a number lexeme reports: itself when it is written without a minus sign; a fault (`negative`) otherwise. The test is the lexeme's sign flag, **not the value**: `-0` is zero and is refused
+anyway, because "written with a minus sign" is what this reader decides on (a lexeme is never turned into a float here, so the sign is all it has). -/
+def amountMember (n : Amount) : Except Fault (Option Amount) :=
+  if n.neg then .error (Fault.here .negative) else .ok (some n)
+
+/-- `cost` of a usage object: absent or `null` is no report, a number is `amountMember`, anything else is refused. The path is built on the way out. -/
+def optCostOf (o : Value) : Except Fault (Option Amount) :=
+  match get o "cost" with
+  | .null => .ok none
+  | .num n => amountMember n
+  | _ => .error (Fault.here (.wrongType .number))
+
+/-- An optional amount member (`cost`): the number the provider wrote, as itself, when it is written without a minus sign (a fraction and an exponent are such a number, as `1.68e-05` shows); absent or
+`null` is no report; a number **written with a minus sign** is refused as a negative amount (a `-0` too: it is zero, and it is refused for its sign, not for its value), and so is a value that is not a
+number. -/
+def optCost (o : Value) : Except Fault (Option Amount) := underStep (.key "cost") (optCostOf o)
+
+/-- A required string member. -/
+def reqStr (o : Value) (k : String) : Except Fault String :=
+  match get o k with
+  | .null => .error { path := [.key k], kind := .missing }
+  | .str s => .ok s
+  | _ => .error { path := [.key k], kind := .wrongType .string }
+
+/-- A required object member (returned as the value). -/
+def reqObj (o : Value) (k : String) : Except Fault Value :=
+  match get o k with
+  | .null => .error { path := [.key k], kind := .missing }
+  | .obj ms => .ok (.obj ms)
+  | _ => .error { path := [.key k], kind := .wrongType .object }
+
+/-- An optional natural inside an optional detail object (`prompt_tokens_details.cached_tokens`): the detail object `null` or absent means the count is absent; a present non-object is refused. -/
+def optDetail (u : Value) (obj k : String) : Except Fault (Option Nat) :=
+  match get u obj with
+  | .null => .ok none
+  | .obj ms => underStep (.key obj) (optNat (.obj ms) k)
+  | _ => .error { path := [.key obj], kind := .wrongType .object }
+
+/-! ### Tool calls -/
+
+/-- `type`, when present, must be `"function"`: any other word is a different kind of call (refused as unsupported), a non-string is refused. -/
+def checkType (v : Value) : Except Fault Unit :=
+  match get v "type" with
+  | .null => .ok ()
+  | .str "function" => .ok ()
+  | .str t => .error { path := [.key "type"], kind := .unsupported t }
+  | _ => .error { path := [.key "type"], kind := .wrongType .string }
+
+/-- One tool call: `id`, `function.name`, `function.arguments` are required strings; see `checkType`. -/
+def decodeToolCall (v : Value) : Except Fault ToolCall :=
+  match v with
+  | .obj _ => do
+    checkType v
+    let id ← reqStr v "id"
+    let fn ← reqObj v "function"
+    let name ← underStep (.key "function") (reqStr fn "name")
+    let arguments ← underStep (.key "function") (reqStr fn "arguments")
+    pure { id, name, arguments }
+  | _ => .error (Fault.here (.wrongType .object))
+
+/-- The calls of an array, in order; a fault names the index. -/
+def decodeToolCalls : List Value → Nat → Except Fault (List ToolCall)
+  | [], _ => .ok []
+  | v :: vs, i => do
+    let c ← underStep (.idx i) (decodeToolCall v)
+    let cs ← decodeToolCalls vs (i + 1)
+    pure (c :: cs)
+
+/-- `tool_calls`: absent or `null` is no calls; an array is its calls; anything else is refused. -/
+def decodeCalls (m : Value) : Except Fault (List ToolCall) :=
+  match get m "tool_calls" with
+  | .null => .ok []
+  | .arr xs => underStep (.key "tool_calls") (decodeToolCalls xs 0)
+  | _ => .error { path := [.key "tool_calls"], kind := .wrongType .array }
+
+/-! ### Messages, choices, usage, the reply -/
+
+def decodeMessage (m : Value) : Except Fault Message := do
+  let content ← optStr m "content"
+  let refusal ← optStr m "refusal"
+  let toolCalls ← decodeCalls m
+  let reasoning ← optReasoning m
+  pure { content, refusal, toolCalls, reasoning }
+
+def decodeChoice (c : Value) : Except Fault Choice :=
+  match c with
+  | .obj _ => do
+    let index ← optNat c "index"
+    let finishReason ← optStr c "finish_reason"
+    let m ← reqObj c "message"
+    let message ← underStep (.key "message") (decodeMessage m)
+    pure { index, message, finishReason }
+  | _ => .error (Fault.here (.wrongType .object))
+
+def decodeChoices : List Value → Nat → Except Fault (List Choice)
+  | [], _ => .ok []
+  | v :: vs, i => do
+    let c ← underStep (.idx i) (decodeChoice v)
+    let cs ← decodeChoices vs (i + 1)
+    pure (c :: cs)
+
+/-- The usage object: counts when present, and the reported `cost` when present. `prompt_tokens_details.cached_tokens` and `completion_tokens_details.reasoning_tokens` are read from the detail objects
+when those are present. -/
+def decodeUsage (u : Value) : Except Fault Usage := do
+  let promptTokens ← optNat u "prompt_tokens"
+  let completionTokens ← optNat u "completion_tokens"
+  let totalTokens ← optNat u "total_tokens"
+  let cachedTokens ← optDetail u "prompt_tokens_details" "cached_tokens"
+  let reasoningTokens ← optDetail u "completion_tokens_details" "reasoning_tokens"
+  let cost ← optCost u
+  pure { promptTokens, completionTokens, totalTokens, cachedTokens, reasoningTokens, cost }
+
+/-- **The cost the provider reported for the call**, off the reply itself: `none` when there is no usage report or it reports no cost. This is where a caller reads it (with `VbmLlm.Usage.Tokens` for the
+counts); nothing converts it. -/
+def Response.cost (r : Response) : Option Amount := r.usage.bind (·.cost)
+
+/-- `usage`: absent or `null` is no report; an object is read; anything else is refused. -/
+def decodeUsageOpt (v : Value) : Except Fault (Option Usage) :=
+  match get v "usage" with
+  | .null => .ok none
+  | .obj ms => do
+    let u ← underStep (.key "usage") (decodeUsage (.obj ms))
+    pure (some u)
+  | _ => .error { path := [.key "usage"], kind := .wrongType .object }
+
+/-- The `choices` array: required, and not empty. -/
+def decodeChoicesField (v : Value) : Except Fault (List Choice) :=
+  match get v "choices" with
+  | .null => .error { path := [.key "choices"], kind := .missing }
+  | .arr [] => .error { path := [.key "choices"], kind := .empty }
+  | .arr xs => underStep (.key "choices") (decodeChoices xs 0)
+  | _ => .error { path := [.key "choices"], kind := .wrongType .array }
+
+/-- **Decode one complete chat-completion reply.** -/
+def decode (v : Value) : Except Fault Response :=
+  match v with
+  | .obj _ => do
+    let id ← optStr v "id"
+    let model ← optStr v "model"
+    let choices ← decodeChoicesField v
+    let usage ← decodeUsageOpt v
+    let provider ← optStr v "provider"
+    pure { id, model, choices, usage, provider }
+  | _ => .error (Fault.here (.wrongType .object))
+
+end VbmLlm.OpenAI
