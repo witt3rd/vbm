@@ -1,0 +1,3 @@
+proved 32
+open 0
+total 32
