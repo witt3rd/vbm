@@ -1,0 +1,10 @@
+name = "vbm-rng"
+scope = "Deterministic, splittable pseudo-random generators with specified streams, and exactly reproducible sampling primitives."
+kind = "library"
+status = "live"
+license = "Apache-2.0"
+consumers = []
+
+[links]
+spec = "lib/vbm-rng/docs/spec.md"
+docs = "lib/vbm-rng/docs"

@@ -33,6 +33,13 @@ def table(root, pages=None):
     es = []
     for path in sorted(glob.glob(os.path.join(root, "registry", "*__*.toml"))):
         e = tomllib.load(open(path, "rb")); e["name"] = os.path.basename(path)[:-5].split("__", 1)[1]; e["path"] = path; es.append(e)
+    for path in sorted(glob.glob(os.path.join(root, "lib", "*", "card.toml"))):   # a library that lives in lib/ describes itself (docs/hub-cards.md): it is listed from its card, unscored until it has a score command
+        c = tomllib.load(open(path, "rb")); n = os.path.basename(os.path.dirname(path))
+        if c.get("name") != n: raise SystemExit(f"registry-table: {path}: name {c.get('name')!r} is not the directory name {n}")
+        for k in ("scope", "kind", "status"):
+            if k not in c: raise SystemExit(f"registry-table: {path}: has no {k}")
+        if any(e["name"] == n for e in es): raise SystemExit(f"registry-table: {n} is in both lib/{n}/ and registry/ (a library lives in one place)")
+        es.append({"name": n, "what": c["scope"], "kind": c["kind"], "status": c["status"], "path": path, "link": f"lib/{n}"})
     names = [e["name"] for e in es]
     out = ["| Name | What it is | Kind | Status | Correctness | Landedness | Card |", "|---|---|---|---|---|---|---|"]
     for e in sorted(es, key=lambda e: (ORDER.get(e.get("kind"), 2), e["name"])):
@@ -40,7 +47,7 @@ def table(root, pages=None):
         for dep in e.get("depends_on", []):
             if dep not in names: raise SystemExit(f"registry-table: {path}: depends_on {dep} is not a listed entry")
         l = e.get("latest", {"correctness": "unscored", "landedness": "unscored"})
-        name = f"[{e['name']}]({e['repo']})" if "repo" in e else e["name"]
+        name = f"[{e['name']}]({e['link']})" if "link" in e else f"[{e['name']}]({e['repo']})" if "repo" in e else e["name"]
         cv, lv, card = "unscored", "unscored", "-"
         if l["correctness"] == "pending": cv = lv = "pending"
         elif l["correctness"] != "unscored":

@@ -33,6 +33,8 @@ A fact lives in exactly one file. The following are derived from sibling files a
 
 ### 1.3 The `[scores]` section
 
+**Unscored is a state, not a number.** Until a library has its `lib/<name>/score` command (below), its card has NO `[scores]` section and the library is shown as *unscored*. A card must never carry invented, placeholder or zero-filled numbers to satisfy the shape. A `[scores]` section that IS present must be complete (every required field) and carry its provenance; the rule that refuses an incomplete one (section 2.2, rule 6) applies only to a section that is present.
+
 `[scores]` records how the library is doing against the aspiration that its code is generated from a proved specification.
 
 **Advisory rule (non-gating):** Scores are **advisory only**. A score NEVER gates a landing (`.land/land-direct`) or a release (`land-release`), and there are no pass/fail score floors on cards. A landing or release is gated only by the library's own correctness/build checks and card validation (`hub compose --check`), never by a scorecard threshold.
@@ -105,7 +107,7 @@ It executes nothing inside any library and makes no network calls.
 3. `lib/<name>/VERSION` is missing or not valid `MAJOR.MINOR.PATCH`.
 4. Any entry in `lib/<name>/deps` or `consumers` is unknown, or `deps` contains a cycle.
 5. A library appears in both `lib/<name>/` and `registry/external/<name>.card.toml`.
-6. Any `[scores]` field is missing, has the wrong type, or `[scores.provenance]` is incomplete.
+6. A `[scores]` section is PRESENT and any required field is missing or has the wrong type, or `[scores.provenance]` is incomplete (an absent `[scores]` section is valid: the library is unscored).
 
 ### 2.3 Deterministic sort order
 

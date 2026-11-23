@@ -74,5 +74,12 @@ printf 'kind = "library"\nstatus = "live"\nwhat = "Live"\nmilestone = "m"\ndepen
 "$rt" --root "$T" | grep -q '^| \[live\](https://github.com/acme/live) | Live | library | live | unscored | unscored | - |$' && ran_case || fail "a live unscored entry is not rendered as unscored with its link"
 rm "$T/registry/acme__live.toml"; printf 'kind = "library"\nstatus = "planned"\nwhat = "X"\nmilestone = "m"\ndepends_on = ["zzz"]\n' > "$T/registry/acme__x.toml"
 "$rt" --root "$T" >/dev/null 2>"$T/err" && fail "negative self-test: an unknown dependency passed"; grep -q "is not a listed entry" "$T/err" && ran_case || fail "wrong message: $(cat "$T/err")"
+# a library that lives in lib/ is listed from its card (docs/hub-cards.md), and the two ways to get that wrong are caught
+rm -f "$T/registry/acme__x.toml"; mkdir -p "$T/lib/gamma"
+cardfile() { printf 'name = "%s"\nscope = "A library that lives in the repository."\nkind = "library"\nstatus = "live"\nlicense = "Apache-2.0"\nconsumers = []\n' "$1" > "$T/lib/gamma/card.toml"; }
+cardfile gamma; "$rt" --root "$T" | grep -q '^| \[gamma\](lib/gamma) | A library that lives in the repository. | library | live | unscored | unscored | - |$' && ran_case || fail "a library that lives in lib/ is not listed from its card, linked to its directory, as unscored"
+cardfile delta; "$rt" --root "$T" >/dev/null 2>"$T/err" && fail "negative self-test: a card whose name is not its directory passed"; grep -q "is not the directory name" "$T/err" && ran_case || fail "wrong message: $(cat "$T/err")"
+cardfile gamma; sed -i '/^scope/d' "$T/lib/gamma/card.toml"; "$rt" --root "$T" >/dev/null 2>"$T/err" && fail "negative self-test: a card with no scope passed"; grep -q "has no scope" "$T/err" && ran_case || fail "wrong message: $(cat "$T/err")"
+cardfile gamma; printf 'kind = "library"\nstatus = "live"\nwhat = "Both"\nmilestone = "m"\ndepends_on = []\n' > "$T/registry/acme__gamma.toml"; "$rt" --root "$T" >/dev/null 2>"$T/err" && fail "negative self-test: a library in both lib/ and registry/ passed"; grep -q "in both lib/gamma/ and registry/" "$T/err" && ran_case || fail "wrong message: $(cat "$T/err")"
 ran_done test_readme
 echo "tier1: readme: the registry table is a render of registry/*.toml (one source, unscored entries included); hand edits, stale tables, missing markers, unknown dependencies and entry/card disagreements are caught: ok"
