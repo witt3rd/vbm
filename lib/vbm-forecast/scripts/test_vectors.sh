@@ -4,7 +4,7 @@
 # A disagreement is a bug in one of them. The comparison is shown able to fail (a mutated line is refused). Ends with `ran: vectors: N cases`.
 set -euo pipefail
 cd "$(dirname "$0")/.."
-. .land/tool/lib/ran.sh
+. ../../.land/tool/lib/ran.sh
 T=$(mktemp -d); trap 'rm -rf "$T"' EXIT
 fail() { echo "vectors: $*" >&2; exit 1; }
 

@@ -49,6 +49,21 @@
       ]
     },
     {
+      "name": "vbm-forecast",
+      "paths": [
+        "lib/vbm-forecast/*"
+      ],
+      "steps": [
+        {
+          "run": "mise exec -- scripts/repo-gates.sh"
+        },
+        {
+          "run": "mise exec -- scripts/tier1.sh",
+          "cwd": "lib/vbm-forecast"
+        }
+      ]
+    },
+    {
       "name": "vbm-prob",
       "paths": [
         "lib/vbm-prob/*"

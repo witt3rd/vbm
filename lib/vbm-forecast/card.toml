@@ -1,0 +1,9 @@
+name = "vbm-forecast"
+scope = "Forecast verification: proper scoring rules, calibration and reliability, and the comparison of two probabilistic forecasts, in exact arithmetic."
+kind = "library"
+status = "live"
+license = "Apache-2.0"
+consumers = []
+
+[links]
+docs = "lib/vbm-forecast/docs"
