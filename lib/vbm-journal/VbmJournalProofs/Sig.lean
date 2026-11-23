@@ -1,7 +1,7 @@
 import VbmJournalProofs.Chain
 /-! # The signed head: what the signature file gives
 
-`VbmJournal.verdict` is the verification of a journal against its signature file (`VbmJournal.Sig`), as lung's `LungSpec.JournalSig.verdict` is.
+`VbmJournal.verdict` is the verification of a journal against its signature file (`VbmJournal.Sig`), as the host's `HostSpec.JournalSig.verdict` is.
 **Plain statements.**
 
 * `sig_roundtrip`: what is signed is read back (the plain-text file `Sig.toBytes s` reads as `s`, when the head has no separator in it); for any format it is the law `Params.Lawful.sig_round`.

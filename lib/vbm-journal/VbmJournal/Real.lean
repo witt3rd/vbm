@@ -49,7 +49,7 @@ theorem chainInputB_eq (p : Bytes) (b : ByteArray) : chainInputB p b = (chainInp
   rfl
 
 /-- **The real parameters**: the chain is SHA-256 (`link p b` is the hex of the hash of `chainInput p b`; the genesis the hex of the hash of a
-label), the codec the unary one (lung's JSON codec is slice 3's). -/
+label), the codec the unary one (the host's JSON codec is slice 3's). -/
 def Params.real : Params where
   genesis := hexOf (sha256L (ascii "vbm-journal-v1"))
   link p b := hexOf (sha256L (chainInput p b))

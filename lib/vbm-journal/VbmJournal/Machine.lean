@@ -2,7 +2,7 @@ import VbmJournal.Basic
 /-! # vbm-journal slice 1, part 2: the writer as a pure function, and the effect interface as data
 
 `step P st ev` is a pure function from a state and an event to a new state and a **plan**: the list of effects the interpreter must
-perform. The effects are the whole interface to the world: `write`, `fsync`, `fsyncDir`, `readAll`, and `truncate` (lung's
+perform. The effects are the whole interface to the world: `write`, `fsync`, `fsyncDir`, `readAll`, and `truncate` (the host's
 `journalTruncate`, which drops a torn tail before appending again; the brief's four effects cannot do that, see `Effect.truncate`).
 Nothing here runs an effect; `VbmJournal.World` gives them their meaning. -/
 namespace VbmJournal
@@ -17,8 +17,8 @@ inductive Effect where
   | fsyncDir
   /-- Read the whole file; its bytes come back as the next event (`Event.readReply`). -/
   | readAll
-  /-- Cut the file back to `len` bytes, durably (lung's `journalTruncate`: `ftruncate` then `fsync`). Not in the brief's list of four;
-  lung's recovery needs it to drop a torn tail, so slice 2's shim table needs it too. -/
+  /-- Cut the file back to `len` bytes, durably (the host's `journalTruncate`: `ftruncate` then `fsync`). Not in the brief's list of four;
+  the host's recovery needs it to drop a torn tail, so slice 2's shim table needs it too. -/
   | truncate (len : Nat)
   deriving DecidableEq, Repr
 

@@ -3,7 +3,7 @@ import VbmJournalProofs.Impl
 
 `impl_step_eq` and `impl_reachable` (`VbmJournalProofs.Impl`) say that the driver over the models of the shims is the slice 1 model. So every
 theorem of slice 1, which is about `World.step`, is a theorem about the driver. Here are the five families restated of it, each by that equality and
-the slice 1 theorem: they are the statements the lung switch (slice 3) relies on.
+the slice 1 theorem: they are the statements the host switch (slice 3) relies on.
 
 `Impl.step P w ev` is one event of the system with the driver as the writer; `Impl.runAll` a list of them; `Impl.reopen` a new process that takes
 over and recovers. `records w` is the journal (`World.records`). -/

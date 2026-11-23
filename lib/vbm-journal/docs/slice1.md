@@ -1,6 +1,6 @@
 # Slice 1: the verified journal model
 
-A pure Lean model of lung's journal (`VbmJournal/`, `Init` only, no IO) and its proofs (`VbmJournalProofs/`, standard axioms only). Nothing here runs against the operating system: slice 2 implements the model over a shim table and proves it equal to it.
+A pure Lean model of the host's journal (`VbmJournal/`, `Init` only, no IO) and its proofs (`VbmJournalProofs/`, standard axioms only). Nothing here runs against the operating system: slice 2 implements the model over a shim table and proves it equal to it.
 
 ## The model
 
@@ -13,7 +13,7 @@ A pure Lean model of lung's journal (`VbmJournal/`, `Init` only, no IO) and its 
 
 The state is the writer's generation (the fence) and its mode (`idle`, `opened`, `reading`, `ready head count`, `busy`, `broken`). Events: `takeOver`, `crash`, `recover g`, `readReply g bytes`, `append g e`, `acked g`. A writer event of a generation that is not current changes nothing and plans nothing.
 
-`truncate` is a fifth effect: the brief names four, but lung's recovery cuts a torn tail with `journalTruncate` before appending again, and without it a torn tail would run into the next record. Slice 2's shim table needs it (or a `write` that can shorten).
+`truncate` is a fifth effect: the brief names four, but the host's recovery cuts a torn tail with `journalTruncate` before appending again, and without it a torn tail would run into the next record. Slice 2's shim table needs it (or a `write` that can shorten).
 
 ## The theorems (statements first in `VbmJournalProofs/Theorems.lean` and `Chain.lean`)
 
@@ -32,11 +32,11 @@ The state is the writer's generation (the fence) and its mode (`idle`, `opened`,
 - **The digest binds** (`Params.Lawful.link_binds`): collision resistance of SHA-256, a hypothesis of the chain theorems, not a theorem (docs/trust-boundary.md A9). The toy digest of the golden file does not bind and the theorems do not apply to it; they apply to `Params.sym`, which does.
 - **The operating system** (A1, A4, A10): writes reach the file in order; a crash keeps the durable bytes and any prefix of the unsynced ones; `fsync` makes them durable; a file whose directory entry was not made durable may be gone.
 - **A plan runs to its end or to a crash before the next event.** A zombie writer with a write already in flight after a take-over is not modelled; the fence is the generation check at the machine.
-- **The signature** (`Lung.Sign`, the HMAC file) is slice 2. The model has the anchor (`Anchored`: the head after `n` records, which lung signs) and proves what an anchor gives, but the state does not hold one, so a journal cut back at its tail verifies (the chain alone cannot tell).
+- **The signature** (`Host.Sign`, the HMAC file) is slice 2. The model has the anchor (`Anchored`: the head after `n` records, which the host signs) and proves what an anchor gives, but the state does not hold one, so a journal cut back at its tail verifies (the chain alone cannot tell).
 - **The journal is the file's entries once its directory entry is durable.** Before that the file may vanish in a crash, so nothing in it is yet part of the journal (`World.records`).
 
-## Where the model differs from lung today
+## Where the model differs from the host today
 
-- Recovery ends with an `fsyncDir` whenever a file exists. Lung syncs the directory only when it creates the file (`journal.c`, `!existed`), so a crash between the create and its directory sync leaves a file whose later appends never sync it. The model's append syncs the directory on the first record (count 0) and its recovery on any file.
-- Recovery always truncates to the verified length (a no-op without a torn tail); lung truncates only when there is one.
-- Entries are `note`, `call`, `done`: lung's `Action`/`SEvent` records are abstracted to what recovery needs.
+- Recovery ends with an `fsyncDir` whenever a file exists. The host syncs the directory only when it creates the file (`journal.c`, `!existed`), so a crash between the create and its directory sync leaves a file whose later appends never sync it. The model's append syncs the directory on the first record (count 0) and its recovery on any file.
+- Recovery always truncates to the verified length (a no-op without a torn tail); the host truncates only when there is one.
+- Entries are `note`, `call`, `done`: the host's `Action`/`SEvent` records are abstracted to what recovery needs.

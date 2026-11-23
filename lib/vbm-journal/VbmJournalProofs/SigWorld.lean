@@ -378,7 +378,7 @@ theorem signed_reachable (evs : List WEvent) :
       exact this
   exact key evs ⟨World.init, none⟩ inv_init (Or.inl rfl)
 
-/-- **The verifier accepts the journal of the signed driver, whatever happened** (an unsigned tail is accepted, as lung does). -/
+/-- **The verifier accepts the journal of the signed driver, whatever happened** (an unsigned tail is accepted, as the host does). -/
 theorem signed_reachable_verifies (evs : List WEvent) :
     ∃ r v, read P (World.run P World.init evs).fs.contents = some r ∧
       verdict P mac r.entries (SImpl.runAll P mac ⟨World.init, none⟩ evs).sig = .ok v := by

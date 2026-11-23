@@ -28,7 +28,7 @@ Each shim takes the path of the file it acts on (the journal's, or its signature
 
 ### T3. `fsyncDir` (`vbm_fsync_dir`; model `.fsyncDir`)
 - **What:** `open` of the file's directory (`O_RDONLY|O_DIRECTORY`), `fsync`, `close`. The directory is the path up to the last `/` (`.` when there is none).
-- **Assumes:** when it returns, the file's directory entry is durable: a crash afterwards does not lose the file (A10). Lung syncs the directory only when it creates the file; the model syncs it on the first record and after every recovery (`docs/slice1.md`).
+- **Assumes:** when it returns, the file's directory entry is durable: a crash afterwards does not lose the file (A10). The host syncs the directory only when it creates the file; the model syncs it on the first record and after every recovery (`docs/slice1.md`).
 - **Test:** as S1 (it must succeed on the test directory); not testable otherwise (`tests/Main.lean`; the crash test is `tests/crash.sh`).
 - **Plan:** accept because it is one POSIX call whose contract is the assumption above, tested against its model.
 - **Enters:** `Shims.real` (`VbmJournal/Real.lean`: `realFsyncDir`)
@@ -37,7 +37,7 @@ Each shim takes the path of the file it acts on (the journal's, or its signature
 
 ### T4. `truncate` (`vbm_truncate`; model `.truncate n`)
 - **What:** `open(O_WRONLY)` (no create), `ftruncate`, `fsync`, `close`.
-- **Assumes:** afterwards the file is its first `n` bytes and that is durable (lung's `journalTruncate`). The contract is the model: `VbmJournal/Sim.lean`.
+- **Assumes:** afterwards the file is its first `n` bytes and that is durable (the host's `journalTruncate`). The contract is the model: `VbmJournal/Sim.lean`.
 - **Test:** the torn-tail golden case and the random scripts (recovery truncates to the verified length) (`tests/Main.lean`; the crash test is `tests/crash.sh`).
 - **Plan:** accept because it is one POSIX call whose contract is the assumption above, tested against its model.
 - **Enters:** `Shims.real` (`VbmJournal/Real.lean`: `realTruncate`)

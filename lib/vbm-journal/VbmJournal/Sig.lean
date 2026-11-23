@@ -3,7 +3,7 @@ import VbmJournal.Sha256
 
 The hash chain makes an edit of some record detectable, but whoever can write the file can rebuild a consistent chain or cut the journal back
 to an earlier point. So after every append the writer signs the chain head: `<journal>.sig` holds `index head mac`, where
-`mac = hex(HMAC-SHA256(key, "index:head"))` and `index` is the number of records the head follows (lung's `Lung.Sign`, `LungSpec.JournalSig`).
+`mac = hex(HMAC-SHA256(key, "index:head"))` and `index` is the number of records the head follows (the host's `Host.Sign`, `HostSpec.JournalSig`).
 The key is the host's (never in the journal, never here); `mac` below is the keyed function the host supplies.
 
 Verification (`verdict`) **fails closed**: on a signature file that does not read, on a mac that is not the key's, on a journal cut back below the

@@ -1,0 +1,9 @@
+name = "vbm-journal"
+scope = "Append-only, hash-chained log and a generic chain checker."
+kind = "library"
+status = "live"
+license = "Apache-2.0"
+consumers = []
+
+[links]
+docs = "lib/vbm-journal/docs"

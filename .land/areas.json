@@ -94,6 +94,21 @@
       ]
     },
     {
+      "name": "vbm-journal",
+      "paths": [
+        "lib/vbm-journal/*"
+      ],
+      "steps": [
+        {
+          "run": "mise exec -- scripts/repo-gates.sh"
+        },
+        {
+          "run": "mise exec -- tests/tier1.sh",
+          "cwd": "lib/vbm-journal"
+        }
+      ]
+    },
+    {
       "name": "vbm-memory",
       "paths": [
         "lib/vbm-memory/*"

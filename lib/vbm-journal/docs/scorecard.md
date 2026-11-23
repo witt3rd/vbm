@@ -15,7 +15,7 @@ How well vbm-journal is doing against its own goals, as the repository states th
 
 ## Metrics
 
-Commands run from the repository root, with the Lean toolchain on `PATH` (`mise exec -- CMD` when mise can reach the network). In the table `\|` is a markdown escape for a pipe: type `|`. `now` was measured 2026-11-18 on mcfeely (4 cores, 31 GB, shared) with Lean 4.35.0, after a cold `lake build`.
+Commands run from the repository root, with the Lean toolchain on `PATH` (`mise exec -- CMD` when mise can reach the network). In the table `\|` is a markdown escape for a pipe: type `|`. `now` was measured 2026-11-18 on a build host (4 cores, 31 GB, shared) with Lean 4.35.0, after a cold `lake build`.
 
 | metric | direction | goal it serves | how to measure | now | floor (= now) | target |
 |---|---|---|---|---|---|---|
@@ -58,6 +58,6 @@ History (date, metric: value): 2026-11-18, all rows above: first measurement (th
 - Targets: every `target` cell is blank. In particular, what is the budget of Tier 1 (`tier1-seconds`, `proof-recheck-seconds`)? The 60 s is a template comment in `.land/land.conf`, not a decision.
 - Which of the 172 unaudited theorems must be audited: all, or only the headline theorems of each family? (`unaudited-theorems` would then count only those.)
 - Is a smaller verified core (`verified-core-lines`) a goal, or only a smaller trusted C? The repository says nothing on the first.
-- Is a release tag a goal now (the README says "made consumable by a host", `VERSION` is 0.1.0, no tag exists), and which host consumes it (lung?)? Is there a speed goal for the read of a journal (`docs/slice3.md:58` says not a gate), and at what size?
-- Should the differences from lung (`docs/slice1.md:38`-`docs/slice1.md:42`, `docs/slice2.md:55`-`docs/slice2.md:69`) be a metric, as a count of open differences, and is lung's own journal meant to be replaced by this library?
+- Is a release tag a goal now (the README says "made consumable by a host", `VERSION` is 0.1.0, no tag exists), and which host consumes it (the host?)? Is there a speed goal for the read of a journal (`docs/slice3.md:58` says not a gate), and at what size?
+- Should the differences from the host (`docs/slice1.md:38`-`docs/slice1.md:42`, `docs/slice2.md:55`-`docs/slice2.md:69`) be a metric, as a count of open differences, and is the host's own journal meant to be replaced by this library?
 - Are the assumptions A1, A4, A9, A10 to be written down in this repository (`docs/trust-boundary.md` is cited but absent), and is a power-cut test in scope?

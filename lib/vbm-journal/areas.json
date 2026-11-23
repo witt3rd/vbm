@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "areas": [
+    {
+      "name": "vbm-journal",
+      "paths": [
+        "*"
+      ],
+      "steps": [
+        {
+          "run": "mise exec -- tests/tier1.sh"
+        }
+      ]
+    }
+  ]
+}

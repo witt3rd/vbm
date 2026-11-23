@@ -7,7 +7,7 @@ The model of slice 1 (`docs/slice1.md`) as a program: an interpreter that perfor
 | Module | What |
 |---|---|
 | `Sha256` | `sha256` (an `@[extern]` shim whose Lean body, `sha256Model`, is FIPS 180-4 written out), `hexOf`, `hmacSha256` (RFC 2104 **in Lean over the shim**: not a shim) |
-| `Sig` | the signature file (`Sig.toBytes`/`ofBytes`: `index head mac`, decimal and spaces), `macInput` = `"index:head"`, `verdict` (lung's `LungSpec.JournalSig.verdict`: fails closed on an unreadable file, a wrong mac, a journal cut back below the signed index, a chain that is not the signed head; the records after the signed index are an unsigned tail) |
+| `Sig` | the signature file (`Sig.toBytes`/`ofBytes`: `index head mac`, decimal and spaces), `macInput` = `"index:head"`, `verdict` (the host's `HostSpec.JournalSig.verdict`: fails closed on an unreadable file, a wrong mac, a journal cut back below the signed index, a chain that is not the signed head; the records after the signed index are an unsigned tail) |
 | `Driver` | `Shims m` (the table), `Shims.perform`/`runPlan` (the interpreter), `driveRaw`, `drive` (one event of the writer: plan, read, reply, acknowledge; an exception is a crash), `driveSigned` (signs the head after every change, checks the signature at recovery before writing anything), `readSigned` (the reader). Generic in the monad `m`: the same code runs over the real shims and over their models |
 | `Real` | the six IO shims as `@[extern]` declarations, `Shims.real path`, `Params.real` (the SHA-256 chain: `link p b = hex(sha256(chainInput p b))`, the unary codec) |
 | `Sim` | the models of the shims: the file (`Fs`), the signature file, and a fault (`Cut`) in a state monad that can fail |
@@ -48,25 +48,25 @@ Standard axioms only, no `sorry` (`VbmJournalProofs/Axioms.lean` fails the build
 - **The shims do what their models do** (`docs/trust-ledger.md`, one entry each): the real counterpart of `Sim`. Tested, not proved; durability and atomic rename are the operating system's.
 - **A shim that fails is a crash.** The model of an error is a crash at that effect (the file is what a crash there leaves). A real failed `write`/`fsync` leaves a state a crash could have left; the writer is dead (`guarded`), the next process recovers.
 - **SHA-256 is collision resistant** (hypothesis of `real_lawful`), and HMAC-SHA256 with a secret key is a MAC (the host's key is the root of trust: whoever has it can re-sign; a journal and its signature can be deleted together). Neither is a theorem.
-- **A plan runs to its end, or to a crash, before the next event** (slice 1). One interpreter per journal at a time; the fence is the writer's generation. A zombie writer with a write already in flight after a take-over is not modelled, and the **cross-process lock** (lung's `flock` on `<journal>.lock`) is not in this library: it is the host's, until it becomes a shim.
+- **A plan runs to its end, or to a crash, before the next event** (slice 1). One interpreter per journal at a time; the fence is the writer's generation. A zombie writer with a write already in flight after a take-over is not modelled, and the **cross-process lock** (the host's `flock` on `<journal>.lock`) is not in this library: it is the host's, until it becomes a shim.
 - **The signature is written after the records it signs are durable, and the signature file itself is replaced atomically**, so a crash leaves an old signature (an unsigned tail, accepted) or the new one, never a torn one.
-- The codec of `Params.real` is the unary one of slice 1 (`note n` is `n` bytes), enough for the driver and the tests; the codec is a parameter (`Params.enc`/`dec`) and lung's is slice 3's.
+- The codec of `Params.real` is the unary one of slice 1 (`note n` is `n` bytes), enough for the driver and the tests; the codec is a parameter (`Params.enc`/`dec`) and the host's is slice 3's.
 
-## Where it differs from lung
+## Where it differs from the host
 
-- The line is `digest ' ' body '\n'` (slice 1), lung's `{... "c": digest}` JSON; the chain input is `chainInput prev body` (a prefix code, so that the digest binds for every input), lung's `prev "\n" body`. The signature file is `index head mac`, lung's `{index, head, mac}` JSON; `mac` is lung's: hex of HMAC-SHA256 of `index:head`.
+- The line is `digest ' ' body '\n'` (slice 1), the host's `{... "c": digest}` JSON; the chain input is `chainInput prev body` (a prefix code, so that the digest binds for every input), the host's `prev "\n" body`. The signature file is `index head mac`, the host's `{index, head, mac}` JSON; `mac` is the host's: hex of HMAC-SHA256 of `index:head`.
 - Recovery syncs the directory whenever a file exists and always truncates to the verified length (`docs/slice1.md`).
-- The signature is checked by recovery (`sigGate`) before anything is written, and by the reader (`readSigned`); the key is a parameter (`macReal key`), never read or created here (lung's `loadKey` stays the host's).
+- The signature is checked by recovery (`sigGate`) before anything is written, and by the reader (`readSigned`); the key is a parameter (`macReal key`), never read or created here (the host's `loadKey` stays the host's).
 
-## What slice 3 (lung's switch) must change
+## What slice 3 (the host's switch) must change
 
 (Items 1 to 3 are done: `docs/slice3.md`.)
 
-1. **The line format and the chain input.** Lung's journals are JSON lines with the digest in the line, hashed as `sha256(prev "\n" body)`: they do not verify under `Params.real`. Either a one-time migration (read with the old code, write with the new) or make the line format a parameter of the model (`lineOf`, `splitLine`, `frame`: slice 1's `Basic` and the proofs that depend on it) and the chain input unambiguous for every `prev` (`link_binds` is universal).
-2. **The entry and its codec.** `Entry` is `note`/`call`/`done`; lung's records are `SEvent`/`Action` with out-of-line text. Either map lung's records onto the three (`note` carries a handle) or make `Entry` a parameter, and give lung's JSON codec as `Params.enc`/`dec` with the codec laws (round trip, canonical, no newline).
-3. **Bytes.** `Bytes` is `List UInt8` (the proofs' shape): reading a journal of megabytes allocates a list cell per byte. Before lung's journals (megabytes) run on it, `Bytes` should be `ByteArray` in the compiled code with a proof that the two agree (or a streaming read).
-4. **The host keeps**: the writer's lock (`flock`), the key (`Lung.Sign.loadKey`, `LUNG_REQUIRE_SIG`), creating and resetting a fresh journal (`Journal.open`'s `reset`, `dropSig`), the `.beat` file. It replaces `Lung.journalAppend`, `journalTruncate`, `sha256Hex`, `hmacSha256Hex`, `Lung.Sign.sign`/`verify`, `LungSpec.JournalSig.verdict` and `LungSpec.JournalOpen` with `driveSigned`/`readSigned`, keeping the writer's `St` in an `IO.Ref`; `substrate/journal.c` shrinks to nothing (the HTTP substrate keeps OpenSSL for TLS).
-5. **The slice 2 differences above** (directory sync, truncate) are the model's; lung's differential test on recorded journals (slice 1's "pool" item) compares them.
+1. **The line format and the chain input.** The host's journals are JSON lines with the digest in the line, hashed as `sha256(prev "\n" body)`: they do not verify under `Params.real`. Either a one-time migration (read with the old code, write with the new) or make the line format a parameter of the model (`lineOf`, `splitLine`, `frame`: slice 1's `Basic` and the proofs that depend on it) and the chain input unambiguous for every `prev` (`link_binds` is universal).
+2. **The entry and its codec.** `Entry` is `note`/`call`/`done`; the host's records are `SEvent`/`Action` with out-of-line text. Either map the host's records onto the three (`note` carries a handle) or make `Entry` a parameter, and give the host's JSON codec as `Params.enc`/`dec` with the codec laws (round trip, canonical, no newline).
+3. **Bytes.** `Bytes` is `List UInt8` (the proofs' shape): reading a journal of megabytes allocates a list cell per byte. Before the host's journals (megabytes) run on it, `Bytes` should be `ByteArray` in the compiled code with a proof that the two agree (or a streaming read).
+4. **The host keeps**: the writer's lock (`flock`), the key (`Host.Sign.loadKey`, `HOST_REQUIRE_SIG`), creating and resetting a fresh journal (`Journal.open`'s `reset`, `dropSig`), the `.beat` file. It replaces `Host.journalAppend`, `journalTruncate`, `sha256Hex`, `hmacSha256Hex`, `Host.Sign.sign`/`verify`, `HostSpec.JournalSig.verdict` and `HostSpec.JournalOpen` with `driveSigned`/`readSigned`, keeping the writer's `St` in an `IO.Ref`; `substrate/journal.c` shrinks to nothing (the HTTP substrate keeps OpenSSL for TLS).
+5. **The slice 2 differences above** (directory sync, truncate) are the model's; the host's differential test on recorded journals (slice 1's "pool" item) compares them.
 
 ## Tests (Tier 1: `mise exec -- tests/tier1.sh`)
 

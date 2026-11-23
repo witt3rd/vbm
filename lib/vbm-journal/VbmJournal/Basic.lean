@@ -3,7 +3,7 @@ import VbmJournal.Format
 import VbmJournal.Scan
 /-! # vbm-journal slice 1, part 1: records, lines and the digest chain
 
-The pure model of lung's journal (`impl/Lung/Jnl.lean`, `impl/Lung/JournalIO.lean`, `substrate/journal.c`). `Init` only: this
+The pure model of the host's journal (`impl/Host/Jnl.lean`, `impl/Host/JournalIO.lean`, `substrate/journal.c`). `Init` only: this
 file is compiled and linked, so it has no `Std` and no `Lean` import, no IO and no axiom.
 
 The file is a sequence of **lines**. A line is `digest ++ [' '] ++ body`, followed by one newline byte; the body is the encoded entry
@@ -11,8 +11,8 @@ and the digest is `link prev body`, where `prev` is the digest of the line befor
 last line is the journal's **head**; it binds every byte before it. A final fragment without a newline is a **torn tail**
 (a crash in the middle of a write); a reader drops it.
 
-Two things are parameters, because the model must not choose them: the digest function (`link`, SHA-256 in lung; the shim of
-slice 2) and the entry codec (`enc` and `dec`; JSON in lung). What the proofs need of each is stated as laws in
+Two things are parameters, because the model must not choose them: the digest function (`link`, SHA-256 in the host; the shim of
+slice 2) and the entry codec (`enc` and `dec`; JSON in the host). What the proofs need of each is stated as laws in
 `VbmJournalProofs.Laws`, not assumed here. -/
 namespace VbmJournal
 

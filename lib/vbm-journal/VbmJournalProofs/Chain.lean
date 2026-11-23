@@ -10,7 +10,7 @@ import VbmJournalProofs.Laws
   reordered, duplicated, or deleted from the middle fails verification (`perm_verifies_only_if_same`). Cutting off the tail
   verifies (a chain alone cannot tell a shorter journal from the real one): that is what an anchor is for.
 * `edit_fails`: a record whose body is edited and whose digest is left alone (a line that cuts into the original digest and another body) fails verification.
-* `anchored_unique`: against an anchor (the head after `n` records, which lung signs: slice 2), every journal that verifies has the
+* `anchored_unique`: against an anchor (the head after `n` records, which the host signs: slice 2), every journal that verifies has the
   same first `n` entries; a journal cut below `n` records fails it (`anchored_short_fails`).
 
 Digest collision resistance is the law `link_binds` (`Params.Lawful`), a hypothesis. -/
@@ -393,7 +393,7 @@ theorem edit_fails (pre post : List Entry) (e : Entry) (l b' : Bytes)
   have : P.link (headFrom P P.genesis pre) b' ≠ P.link (headFrom P P.genesis pre) (P.enc e) := fun h => hb (L.link_binds _ _ _ _ h).2
   simp [this]
 
-/-! ## Anchors: the head after `n` records, signed in lung (the HMAC file is slice 2) -/
+/-! ## Anchors: the head after `n` records, signed in the host (the HMAC file is slice 2) -/
 
 /-- The bytes are a journal that verifies, has at least `n` entries, and whose head after `n` is `d`. -/
 def Anchored (P : Params) (n : Nat) (d : Digest) (bytes : Bytes) : Prop :=
