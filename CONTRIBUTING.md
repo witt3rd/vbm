@@ -10,6 +10,8 @@ Thank you for looking. A short, honest note about how this repository works.
 
 ## Getting scored
 
+A new family library is a directory `lib/<name>/` of this repository, not a repository of its own: follow [new-vbm-library](skills/new-vbm-library/SKILL.md).
+
 Anyone may run the scorecard on their own repository and publish the card ([run-the-scorecard](skills/run-the-scorecard/SKILL.md)). To be listed in the registry, open an issue or a pull request that adds `registry/<owner>__<repo>.toml` and its card; `scorecard/registry-validate` checks it. Listing without review waits for the isolation that makes it safe to run a stranger's code ([register-in-the-registry](skills/register-in-the-registry/SKILL.md)).
 
 ## Checks

@@ -18,7 +18,8 @@
 The standard is VBM (verified bare metal); the method this repo describes is agentic (software that agents write). Libraries that follow it are `vbm-<name>`. One repository, three parts, kept together so they cannot drift:
 - `guidelines/`: the published best practices for agent-built, verified-by-construction software (small files, one idea each).
 - `scorecard/`: the evaluator. It scores any submitted repo against the seven ideals, from one adapter file in that repo, and writes ONE JSON. `scorecard/SPEC.md` is the design, `scorecard/DECISIONS.md` the owner's decisions.
-- `registry/`: the list of scored repos, one entry file per repo.
+- `registry/`: the list of scored repos, one entry file per repo (outside repositories; a family library lives in `lib/<name>/` and describes itself with its `card.toml`).
+- `lib/`: the family libraries, one self-contained directory each (its own gate, `areas.json`, `deps`, card); `.land/areas.json` is DERIVED from them by `scripts/hub-areas`. Adding or migrating one: [new-vbm-library](skills/new-vbm-library/SKILL.md), `docs/migrating-a-library.md`.
 The repository name is set in `project.toml`; `scripts/lint-public` flags any retired name. Public (published from a fresh history; the earlier development history is archived privately): the lint below runs on the whole tree. `README.md` is the human front door (the no-README house rule is about agent indexes; this file stays the agent file). Its registry table is GENERATED from `registry/*.toml` and their cards by `scorecard/registry-table`: never edit it by hand (`--write README.md` regenerates it; Tier 1 fails on drift).
 The score is computed by scripts from the tree, the build and the git history, never self-reported.
 

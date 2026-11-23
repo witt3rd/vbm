@@ -6,6 +6,8 @@ description: >-
 
 # Flip a vbm-* repo public
 
+This is for a STANDALONE repository. The family libraries are directories of this repository and are public with it (they need no flip; the public lint and the secret scan run on every landing).
+
 Publishing is irreversible (history and forks cannot be recalled): run every step, then stop and get the owner's explicit word before the visibility change.
 
 ## Steps

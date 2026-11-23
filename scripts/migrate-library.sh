@@ -43,7 +43,7 @@ git merge -q --allow-unrelated-histories --no-ff -m "chore($N): migrate the libr
 [ "$(git rev-parse HEAD^1)" = "$tip" ] || die "the first parent is not the family main"
 [ -z "$(git diff --name-only "$tip" HEAD | grep -v "^lib/$N/" || true)" ] || die "the merge touches paths outside lib/$N"
 say "3. the adaptation"
-export N CMD GATE LEAN DEPS ID_NAME SCRUB SCRUB_PRODUCT SCRUB_MACHINES; python3 - <<'PY'
+export N CMD GATE LEAN DEPS ID_NAME SCRUB SCRUB_PRODUCT SCRUB_MACHINES SCRUB_PERSON SCRUB_HOME; python3 - <<'PY'
 import os, re, json, shutil, subprocess, sys, tomllib
 N = os.environ["N"]; DEPS = os.environ.get("DEPS", "").split(); L = f"lib/{N}"; CMD = os.environ["CMD"]; GATE = os.environ["GATE"]; LEAN = os.environ["LEAN"] == "1"
 def sh(*a): return subprocess.run(a, capture_output=True, text=True)
@@ -77,6 +77,8 @@ for d in DEPS:
         if os.path.isfile(fp):
             t = open(fp).read()
             t2 = t.replace(f"vendor/{d}", f"../{d}").replace(f'"vendor" / "{d}"', f'".." / "{d}"')   # the path as text, and as the components a lakefile joins
+            # a package the dependency itself vendored (an inherited entry of the manifest) is that family library's own sibling now, when it is in lib/
+            t2 = re.sub(r"\.\./[\w-]+/vendor/(vbm-[\w-]+)", lambda m: f"../{m.group(1)}" if os.path.isdir(f"lib/{m.group(1)}") else m.group(0), t2)
             if t2 != t: open(fp, "w").write(t2)
 if DEPS and os.path.isdir(f"{L}/vendor") and not os.listdir(f"{L}/vendor"): os.rmdir(f"{L}/vendor")
 # 2. the lander's Lean package, at the same relative place in lib/NAME and vendor/NAME
@@ -142,7 +144,23 @@ if DEPS and os.path.isfile(tl0):
 tl = f"{L}/docs/trust-ledger.md"   # the trust ledger CITES files, and the gate checks that each exists relative to the library: the lander's are two levels up
 if os.path.isfile(tl):
     t = open(tl).read(); t2 = re.sub(r"(?<![./])\.land/tool/", "../../.land/tool/", t)
+    for gone in ("scripts/test_lint_public.sh", "scripts/lint-public", "scripts/public-banned-hashes.txt"):   # files the migration removed (the whole-repository lint is the family repository's): the entry cites the library's gate instead
+        t2 = t2.replace(gone, "scripts/tier1.sh")
     if t2 != t: open(tl, "w").write(t2)
+if os.environ.get("SCRUB_PERSON"):   # opt-in, NOTICE only: a copyright line that names a person is not public-ready; the family's convention is the project name (supplied by the operator, not written here)
+    nf = f"{L}/NOTICE"
+    if os.path.isfile(nf):
+        t = open(nf).read(); t2 = t.replace(os.environ["SCRUB_PERSON"], "witt3rd")
+        if t2 != t: open(nf, "w").write(t2); print("NOTICE: the named person is now the project name in the copyright line", file=sys.stderr)
+if os.environ.get("SCRUB_HOME") == "1":   # opt-in: a home-directory path written with a tilde in a comment or a doc is "a path of ours" to the public lint; $HOME says the same thing
+    for root, dirs, fs in os.walk(L):
+        dirs[:] = [d for d in dirs if d not in (".lake", ".git")]
+        for f in fs:
+            fp = os.path.join(root, f)
+            try: t = open(fp).read()
+            except (UnicodeDecodeError, OSError): continue
+            t2 = re.sub(r"(?<![\w$])" + chr(126) + "/", "$HOME/", t)
+            if t2 != t: open(fp, "w").write(t2)
 resid = sh("grep", "-rnE", r"(^|[^./])\.land/tool|lint-public|\.gitleaks|vendor/vbm-", *[x for x in (f"{L}/scripts", f"{L}/tests", f"{L}/lakefile.lean") if os.path.exists(x)]).stdout.strip()
 def is_code(l):
     m = re.match(r"^[^:]+:\d+:(.*)$", l)
@@ -181,12 +199,31 @@ say "4. the gates (the library's, then the family repository's)"
 run_lib_gate() { ( cd "lib/$N" && timeout 3000 bash -c "$CMD" ) > ../lib-tier1.log 2>&1; }
 if ! run_lib_gate; then
   # a dependent library: the dependency is in-repo now, so its trusted modules need a ledger entry of their own (the old entry called it a pinned library). ONE repair, from the checker's own key lines; anything else fails.
-  if [ -n "$DEPS" ] && grep -q "^trust ledger: not in the trust ledger: module:" ../lib-tier1.log; then
+  if [ -n "$DEPS" ] && grep -q -E "^trust ledger: (not in the trust ledger: module:|T[0-9]+: Covers .* names nothing the tree or closure requires)" ../lib-tier1.log; then
     sed -n 's/^trust ledger: not in the trust ledger: //p' ../lib-tier1.log | sort -u > ../missing-keys
+    cp ../lib-tier1.log ../lib-tier1.first.log
     export N DEPS; python3 - <<'PY2'
-import os, re
+import os, re, sys
 N = os.environ["N"]; deps = os.environ["DEPS"].split(); keys = [l.strip() for l in open("../missing-keys") if l.strip()]
 p = f"lib/{N}/docs/trust-ledger.md"; t = open(p).read()
+# stale covers: a key the entry covers that this library no longer requires (the dependency's externs were seen through a pinned copy; it is in-repo now). Prune the key; an entry left with nothing to cover is padding and goes.
+stale = {}
+for l in open("../lib-tier1.first.log"):
+    m = re.match(r"^trust ledger: (T\d+): Covers `([^`]+)` names nothing the tree or closure requires", l)
+    if m: stale.setdefault(m.group(1), set()).add(m.group(2))
+if stale:
+    blocks = re.split(r"(?m)^(?=### )", t); out = []
+    for b in blocks:
+        m = re.match(r"### (T\d+)\.", b)
+        if m and m.group(1) in stale:
+            cl = re.search(r"(?m)^- \*\*Covers:\*\* (.*)$", b)
+            kept = [k for k in re.findall(r"`([^`]+)`", cl.group(1)) if k not in stale[m.group(1)]] if cl else []
+            if not kept: print(f"retired {m.group(1)}: nothing it covered is required any more", file=sys.stderr); continue
+            b = b.replace(cl.group(0), "- **Covers:** " + " ".join("`" + k + "`" for k in kept))
+        out.append(b)
+    t = "".join(out)
+if not keys:
+    open(p, "w").write(t); print("trust ledger: pruned stale covers"); raise SystemExit(0)
 n = max([int(x) for x in re.findall(r"(?m)^### T(\d+)\.", t)] or [0]) + 1
 dl = ", ".join(deps)
 entry = f"""

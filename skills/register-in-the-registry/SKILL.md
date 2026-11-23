@@ -6,6 +6,8 @@ description: >-
 
 # Register in the registry
 
+**A family library is not registered here.** A library that lives in `lib/<name>/` of this repository describes itself with its `card.toml` and is listed from it ([new-vbm-library](../new-vbm-library/SKILL.md), `docs/hub-cards.md`); appearing in both `lib/` and `registry/` is an error. This skill is for an OUTSIDE repository that wants to be scored and listed.
+
 What is true today: the registry lists repos we have scored. Anyone may run the scorecard on their own repo (Level 1: certify from a proof export, nothing runs) and publish the card. To be listed, open an issue here with the card. Listing without our review waits for the isolation that makes Level 2 safe. You cannot write a score yourself.
 
 The entry-file steps below are what a maintainer (or an allowlisted repo) uses: one PR adding exactly ONE file.
