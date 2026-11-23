@@ -1,0 +1,158 @@
+#!/usr/bin/env python3
+"""scripts/score: deterministic source-metric measurement for a VBM library directory (docs/scoring.md).
+  scripts/score <lib-dir>
+Outputs [scores] (spec_lines, proof_lines, code_lines, trusted_native_lines) and [scores.provenance] TOML to stdout.
+Reuses scorecard/scorecard's newline-count and read-guard conventions; emits no wall-clock timestamps."""
+import os, re, stat, subprocess, sys, tomllib
+
+MAX_FILE = 5_000_000
+NON_CODE_DIRS = {"vectors", "tests", "scripts", "bench", "docs"}
+DEFAULT_TRUST_PATTERNS = ["abi/*.c", "runtime/**/*.c", "native/*.c", "include/*.h", "scripts/rt/runtime/**/*.c"]
+GIT_ENV = {**{k: v for k, v in os.environ.items() if not k.startswith("GIT_")},
+           "GIT_CONFIG_GLOBAL": "/dev/null", "GIT_CONFIG_SYSTEM": "/dev/null", "GIT_TERMINAL_PROMPT": "0"}
+
+
+def die(msg):
+    print(f"score: {msg}", file=sys.stderr)
+    sys.exit(2)
+
+
+def gre(pat):
+    out, i = "", 0
+    while i < len(pat):
+        if pat.startswith("**/", i): out += "(?:.*/)?"; i += 3
+        elif pat.startswith("**", i): out += ".*"; i += 2
+        elif pat[i] == "*": out += "[^/]*"; i += 1
+        elif pat[i] == "?": out += "[^/]"; i += 1
+        else: out += re.escape(pat[i]); i += 1
+    return re.compile(out + r"\Z")
+
+
+def safe_read(root, rel):
+    if os.path.isabs(rel) or ".." in rel.split("/"):
+        return None
+    base = os.path.realpath(root)
+    p = os.path.join(base, rel)
+    try:
+        st = os.lstat(p)
+    except OSError:
+        return None
+    if not stat.S_ISREG(st.st_mode) or os.path.realpath(os.path.dirname(p)) != os.path.dirname(p):
+        return None
+    if st.st_size > MAX_FILE:
+        return None
+    with open(p, "rb") as f:
+        return f.read()
+
+
+def list_files(lib_dir):
+    r = subprocess.run(
+        ["git", "-C", lib_dir, "-c", "core.fsmonitor=false", "ls-files", "-z", "."],
+        capture_output=True, text=True, env=GIT_ENV,
+    )
+    if r.returncode == 0:
+        files = sorted(p for p in r.stdout.split("\0") if p)
+        if files:
+            return files
+    out = []
+    for dp, dns, fns in os.walk(lib_dir):
+        dns[:] = sorted(d for d in dns if not d.startswith("."))
+        for fn in sorted(fns):
+            if not fn.startswith("."):
+                out.append(os.path.relpath(os.path.join(dp, fn), lib_dir))
+    return sorted(out)
+
+
+def count_lines(lib_dir, rel_paths):
+    total = 0
+    for rel in rel_paths:
+        data = safe_read(lib_dir, rel)
+        if data is not None:
+            total += data.count(b"\n")
+    return total
+
+
+def git_commit(lib_dir):
+    r = subprocess.run(
+        ["git", "-C", lib_dir, "rev-parse", "--verify", "-q", "HEAD^{commit}"],
+        capture_output=True, text=True, env=GIT_ENV,
+    )
+    sha = r.stdout.strip()
+    return sha if r.returncode == 0 and re.fullmatch(r"[0-9a-f]{40}", sha) else "working-tree"
+
+
+def tool_version(lib_dir):
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    vf = os.path.join(root, "VERSION")
+    if os.path.isfile(vf):
+        v = open(vf, encoding="utf-8").read().strip()
+        if v:
+            return v
+    return "0.0.0"
+
+
+def classify_lean(files):
+    spec, proof, code = [], [], []
+    for f in files:
+        if not f.endswith(".lean") or f == "lakefile.lean":
+            continue
+        top = f.split("/")[0]
+        if top == "spec":
+            spec.append(f)
+        elif top.endswith("Proofs") or f.endswith("Proofs.lean"):
+            proof.append(f)
+        elif top not in NON_CODE_DIRS:
+            code.append(f)
+    return spec, proof, code
+
+
+def trust_patterns(lib_dir):
+    sc = safe_read(lib_dir, "scorecard.toml")
+    if sc is not None:
+        try:
+            d = tomllib.loads(sc.decode("utf-8"))
+            c_files = d.get("trust", {}).get("c_files")
+            if isinstance(c_files, list) and all(isinstance(x, str) for x in c_files):
+                return c_files
+        except (UnicodeDecodeError, tomllib.TOMLDecodeError):
+            pass
+    return DEFAULT_TRUST_PATTERNS
+
+
+def measure(lib_dir):
+    if not os.path.isdir(lib_dir):
+        die(f"not a directory: {lib_dir}")
+    files = list_files(lib_dir)
+    spec_f, proof_f, code_f = classify_lean(files)
+    t_pats = [gre(p) for p in trust_patterns(lib_dir)]
+    trust_f = [f for f in files if any(r.match(f) for r in t_pats)]
+    return {
+        "spec_lines": count_lines(lib_dir, spec_f),
+        "proof_lines": count_lines(lib_dir, proof_f),
+        "code_lines": count_lines(lib_dir, code_f),
+        "trusted_native_lines": count_lines(lib_dir, trust_f),
+        "commit": git_commit(lib_dir),
+        "tool_version": tool_version(lib_dir),
+    }
+
+
+def main(argv):
+    if len(argv) != 1 or argv[0].startswith("-"):
+        die("usage: scripts/score <lib-dir>")
+    m = measure(argv[0])
+    sys.stdout.write(
+        f"[scores]\n"
+        f"spec_lines = {m['spec_lines']}\n"
+        f"proof_lines = {m['proof_lines']}\n"
+        f"code_lines = {m['code_lines']}\n"
+        f"trusted_native_lines = {m['trusted_native_lines']}\n"
+        f"\n"
+        f"[scores.provenance]\n"
+        f'commit = "{m["commit"]}"\n'
+        f'tool_version = "{m["tool_version"]}"\n'
+    )
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

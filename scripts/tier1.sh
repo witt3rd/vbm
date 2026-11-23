@@ -15,6 +15,7 @@ par scripts/test_pins.sh
 par scripts/test_license.sh
 par scripts/test_hub_areas.sh
 par scripts/test_export.sh
+par scripts/test_score.sh
 par
 for f in scripts/test_*.sh; do case " ${tests[*]} " in *" $f "*) ;; *) echo "tier1: $f is not declared with par" >&2; exit 1;; esac; done
 for f in "${tests[@]}"; do [ -f "$f" ] || { echo "tier1: declared test $f does not exist" >&2; exit 1; }; done
