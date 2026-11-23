@@ -1,0 +1,9 @@
+name = "vbm-decision"
+scope = "A typed decision-model layer: the wire contract of a decisions API, typed answers with probabilities, and a threshold truth table that fails closed."
+kind = "library"
+status = "live"
+license = "Apache-2.0"
+consumers = []
+
+[links]
+docs = "lib/vbm-decision/docs"

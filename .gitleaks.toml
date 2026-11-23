@@ -8,3 +8,8 @@ useDefault = true
 description = "vbm-rng's own fields are called `key` (a seed, a stream key) and its known-answer vectors print them: the generic API-key rule reads `.key ...` lines as credentials. Reviewed: the values are public test vectors, not credentials."
 targetRules = ["generic-api-key"]
 paths = ['^lib/vbm-rng/VbmRngProofs/Stream\.lean$', '^lib/vbm-rng/VbmRngProofs/Vectors\.lean$', '^lib/vbm-rng/docs/spec\.md$']
+
+[[allowlists]]
+description = "A refusal-code name, `badIndexKey`, with a quoted string beside it: the generic API-key rule reads it as a credential. Reviewed 2026-11-20: 1 finding, not a secret."
+targetRules = ["generic-api-key"]
+paths = ['^lib/vbm-decision/VbmDecisionProofs/Decode\.lean$']
