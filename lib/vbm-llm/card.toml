@@ -1,0 +1,9 @@
+name = "vbm-llm"
+scope = "The wire contract of the LLM provider conventions (OpenAI, Anthropic, OpenRouter): codecs, stream fold, tool-call turns, usage and finish-reason arithmetic."
+kind = "library"
+status = "live"
+license = "Apache-2.0"
+consumers = []
+
+[links]
+docs = "lib/vbm-llm/docs"

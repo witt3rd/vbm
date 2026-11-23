@@ -35,7 +35,7 @@ Also: [flip-checklist](skills/flip-checklist/SKILL.md) (publishing a repo), [wri
 | [vbm-journal](lib/vbm-journal) | Append-only, hash-chained log and a generic chain checker. | library | live | unscored | unscored | - |
 | [vbm-json](lib/vbm-json) | Verified JSON codec. | library | live | unscored | unscored | - |
 | vbm-jsonrpc | JSON-RPC 2.0 codec and request/response matching | library | planned | unscored | unscored | - |
-| [vbm-llm](https://github.com/witt3rd/vbm-llm) | The wire contract of the LLM provider conventions (OpenAI, Anthropic, OpenRouter): codecs, stream fold, tool-call turns, usage and finish-reason arithmetic | library | live | unscored | unscored | - |
+| [vbm-llm](lib/vbm-llm) | The wire contract of the LLM provider conventions (OpenAI, Anthropic, OpenRouter): codecs, stream fold, tool-call turns, usage and finish-reason arithmetic. | library | live | unscored | unscored | - |
 | vbm-mcp | Model context protocol client, pinned profile over stdio | library | planned | unscored | unscored | - |
 | [vbm-memory](lib/vbm-memory) | Verified agent memory: scopes, append-only notes, cited recall, supersession; pure Lean specifications and proofs with a reference model and conformance vectors. | library | live | unscored | unscored | - |
 | vbm-oauth | OAuth client flows as a state machine | library | planned | unscored | unscored | - |

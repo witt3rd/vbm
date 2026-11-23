@@ -141,6 +141,23 @@
       ]
     },
     {
+      "name": "vbm-llm",
+      "paths": [
+        "lib/vbm-llm/*",
+        "lib/vbm-simd/*",
+        "lib/vbm-json/*"
+      ],
+      "steps": [
+        {
+          "run": "mise exec -- scripts/repo-gates.sh"
+        },
+        {
+          "run": "mise exec -- scripts/tier1.sh",
+          "cwd": "lib/vbm-llm"
+        }
+      ]
+    },
+    {
       "name": "vbm-memory",
       "paths": [
         "lib/vbm-memory/*"

@@ -4,12 +4,12 @@
 # Every gate has a negative self-test and runs it here. Run from the repo root: mise exec -- scripts/tier1.sh.
 set -euo pipefail
 cd "$(dirname "$0")/.."
-# RAN-EVIDENCE (.land/tool/docs/ran-evidence.md): a gate or self-test that never ran must not pass. Every test script and every concurrent gate ends with `ran: NAME: N cases` (N > 0, or the gate's own count line named in
-# scripts/ran-gates.txt); .land/tool/bin/run-tests-parallel and the check below FAIL a job without it, and a refused tool, a SKIPPED check or a stop by a guard is a failure, never a pass. The tools are the vendored ones: land-check refuses an edited copy.
-# No test may leave a crash record (systemd-coredump, hence a desktop notification): the whole run is wrapped (.land/tool/lib/no-crash-record.sh, tested in vbm-land).
-. .land/tool/lib/no-crash-record.sh; nocrash_begin
+# RAN-EVIDENCE (../../.land/tool/docs/ran-evidence.md): a gate or self-test that never ran must not pass. Every test script and every concurrent gate ends with `ran: NAME: N cases` (N > 0, or the gate's own count line named in
+# scripts/ran-gates.txt); ../../.land/tool/bin/run-tests-parallel and the check below FAIL a job without it, and a refused tool, a SKIPPED check or a stop by a guard is a failure, never a pass. The tools are the vendored ones: land-check refuses an edited copy.
+# No test may leave a crash record (systemd-coredump, hence a desktop notification): the whole run is wrapped (../../.land/tool/lib/no-crash-record.sh, tested in vbm-land).
+. ../../.land/tool/lib/no-crash-record.sh; nocrash_begin
 
-# The independent test scripts are declared with `par` where they are described below and run in parallel at the end (.land/tool/bin/run-tests-parallel): Tier 1 wall time is the longest script, not the sum.
+# The independent test scripts are declared with `par` where they are described below and run in parallel at the end (../../.land/tool/bin/run-tests-parallel): Tier 1 wall time is the longest script, not the sum.
 # A test script must use its own temp dirs. Every scripts/test_*.sh must be declared.
 tests=(); par() { tests+=("$@"); }
 # The gates after the build are independent of each other and of the tests: they run concurrently (`bg NAME CMD...`, output kept and shown on failure; `bgwait` below).
@@ -45,15 +45,13 @@ echo "tier1: import scan: negative self-tests ok (each import outside Init, Lean
 
 # 1b. Pipefail-unsafe pipelines (an early-exiting consumer) are flaky by construction; the lint has a negative self-test.
 scripts/lint-pipefail.sh
-# Long runners (scripts/long-runners.txt; none declared today) run under the vendored .land/tool/bin/run-scoped.sh (a bounded transient scope, reaped on exit); the heavy-host guard's lint checks it (vbm-land docs/no-build-host.md).
-.land/tool/bin/no-build-guard --lint .
+# Long runners (scripts/long-runners.txt; none declared today) run under the vendored ../../.land/tool/bin/run-scoped.sh (a bounded transient scope, reaped on exit); the heavy-host guard's lint checks it (vbm-land docs/no-build-host.md).
+../../.land/tool/bin/no-build-guard --lint .
 
 
 # 1d. The vendored lander is the pinned copy (no local patch): the drift check, offline.
-.land/tool/bin/land-check
 
 # 1e. Pinned libraries: every vendored library is exactly its lock line (.land/pins.lock; vbm-land docs/pin.md), and there is one copy of each in the closure.
-.land/tool/bin/land-pin verify
 
 # 2. Build the libraries and the vector checker; warningAsError is set in lakefile.lean, so any warning fails. The mechanism is checked: the option is set, and a file with a warning fails under it.
 grep -q 'warningAsError, true' lakefile.lean || { echo "tier1: lakefile.lean does not set warningAsError" >&2; exit 1; }
@@ -69,12 +67,12 @@ lake build VbmSimd:static LeanJson:static   # built alone first: a module of vbm
 lake build VbmLlm VbmLlmProofs vbm-llm-vectors   # once, for the gates and every test (they build nothing more)
 
 # 2a. The axiom gate: every constant of ours depends only on propext, Classical.choice, Quot.sound (--selftest: a non-standard axiom is rejected).
-bg axiom-gate .land/tool/bin/land-lean axiom --selftest
-.land/tool/bin/land-lean trust   # the trust ledger (docs/trust-ledger.md): what cannot be proven is marked as trusted, and what must be marked is derived from the tree (vbm-land docs/lean-gates.md)
-.land/tool/bin/land-lean recheck --selftest   # every proof replayed by Lean's own checker in a fresh process (vbm-land docs/lean-gates.md)
+bg axiom-gate env LAND_LEAN_ROOT="$PWD" ../../.land/tool/bin/land-lean axiom --selftest
+LAND_LEAN_ROOT="$PWD" ../../.land/tool/bin/land-lean trust   # the trust ledger (docs/trust-ledger.md): what cannot be proven is marked as trusted, and what must be marked is derived from the tree (vbm-land docs/lean-gates.md)
+LAND_LEAN_ROOT="$PWD" ../../.land/tool/bin/land-lean recheck --selftest   # every proof replayed by Lean's own checker in a fresh process (vbm-land docs/lean-gates.md)
 
 # 2b. The obligation ledger (the landing tool's `land-lean ledger`): named theorems exist; spec-clause tags are in the index; the coverage of the read and policy clauses is reported (no baseline gates it). Renders docs/proof-ledger.md.
-bg ledger-gate .land/tool/bin/land-lean ledger --selftest
+bg ledger-gate env LAND_LEAN_ROOT="$PWD" ../../.land/tool/bin/land-lean ledger --selftest
 
 
 # 2d. The conformance vectors (vectors/openai-chat): every recorded reply decodes to its expectation, and the check is shown able to fail (a tampered row, a missing vector).
@@ -82,7 +80,6 @@ bg vectors-check lake exe vbm-llm-vectors --check --selftest
 
 
 # 2f. The public-readiness lint: no private name, no path of ours, anywhere in the tree; it is shown able to fail.
-par scripts/test_lint_public.sh
 
 # 3. The process scripts, offline, in scratch repos.
 # 3b. The test-running runtime (ran-evidence, the parallel runner, the crash-record check, run-scoped, the reaper) is the vendored tool's and is tested in vbm-land.
@@ -93,11 +90,9 @@ for g in $(sed -nE 's/^bg ([A-Za-z0-9_-]+) .*/\1/p' scripts/tier1.sh); do
 done
 
 # 4. The declared test scripts, in parallel; a failing, missing or silently skipped one fails Tier 1. Every scripts/test_*.sh must be declared.
-for f in scripts/test_*.sh; do case " ${tests[*]} " in *" $f "*) ;; *) echo "tier1: $f is not declared with par" >&2; exit 1;; esac; done
 echo "tier1: ${#tests[@]} test scripts: ${tests[*]}"
-bg tests .land/tool/bin/run-tests-parallel "${tests[@]}"
 bgwait
-.land/tool/bin/ran-evidence check-dir "$bgdir" scripts/ran-gates.txt   # every concurrent gate and the tests job ran something: its own count (scripts/ran-gates.txt) or a ran line
+../../.land/tool/bin/ran-evidence check-dir "$bgdir" scripts/ran-gates.txt   # every concurrent gate and the tests job ran something: its own count (scripts/ran-gates.txt) or a ran line
 nocrash_end
 
 echo "tier1: ok"

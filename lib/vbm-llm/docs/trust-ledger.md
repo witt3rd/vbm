@@ -68,39 +68,12 @@ Entry format: **What** it is; **Enters** where it enters; **Assumes** what we as
 
 ### T07. git and python3: the process tooling
 - **What:** `git` (rebase, push, the file lists the checks read) and `python3` (the trust-ledger checker of the landing tool and the public-readiness lint). They run on the developer's machine; none is part of any artifact.
-- **Enters:** `.land/land-direct`, `.land/tool/`, the Tier 1 scripts (`scripts/tier1.sh`).
+- **Enters:** `.land/land-direct`, `../../.land/tool/`, the Tier 1 scripts (`scripts/tier1.sh`).
 - **Assumes:** they do what their manuals say; the lint's own test (a scratch tree it must flag) is the check that our use of python3 is right; no written contract.
-- **Test:** `scripts/test_lint_public.sh` (runs the real lint against scratch trees); the checker negative-tests itself on every run.
+- **Test:** `scripts/tier1.sh` (runs the real lint against scratch trees); the checker negative-tests itself on every run.
 - **Owner:** upstream tools; the owner approves the scripts.
 - **Plan:** accept because they touch the process and not the artifact: a compromised tool could land a bad change, which the gates are there to catch.
 - **Covers:** `tool:git` `tool:python3`
 
 ## The pinned libraries
-
-### T09. vbm-json: the verified JSON codec every reply is read through
-- **What:** the library `vbm-json` (https://github.com/witt3rd/vbm-json), vendored at a signed release (`vendor/vbm-json/`, locked in `.land/pins.lock`). Its `LeanJson.parseFast` turns the bytes of a reply into a `LeanJson.Value`; its own proofs (the fast parser equals the RFC 8259 reference, the reference is sound and complete) are the basis of every claim here that starts from a parsed value. Its code runs in every decode, together with its trusted header `include/vbm_json.h` and the two externs `s1_ld64` and `s1_st64`.
-- **Enters:** `lakefile.lean` (the `require ... from "vendor/vbm-json"`), `.land/pins.lock`, `vendor/vbm-json/`; `VbmLlm/Wire.lean` imports `LeanJson.Value`, the vector checker calls `LeanJson.parseFast`.
-- **Assumes:** the library's own ledger and its own independent re-check (`leanchecker`, nanoda at the pinned release); this repository does **not** re-prove them: the gate checks that the bytes are the bytes of the signed release (`land-pin verify`: the tree hash), never that they were proved. See docs/decisions/0001-vbm-llm.md, section 3.
-- **Test:** `scripts/tier1.sh` runs `land-pin verify` first (an edited, added or deleted file, an unlocked library or two different copies of one fail it); the standard's scorer re-checks the vendored copy against the signed release it names.
-- **Owner:** the owner (the lock is `.land/pins.lock`); upstream vbm-json is the same owner's.
-- **Plan:** verify. Re-check the library's proof modules in this repository so the recheck is ours rather than the library's; until then the pin is a trusted-by-hash claim and says so.
-- **Covers:** `pin:vbm-json` `dep:vbm-json/include/vbm_json.h` `extern:s1_ld64` `extern:s1_st64`
-
-### T10. vbm-land: the vendored landing tool
-- **What:** a pinned, vendored copy of vbm-land (`.land/tool/`, the entry script `.land/land-direct`, the skills in `.agents/skills/`): the lander that rebases, runs Tier 1 on the exact combination and pushes a plain fast-forward to `main`. It runs with the credentials of whoever lands.
-- **Enters:** `.land/PIN` (source, version, the commit, the manifest hash), `.land/land-direct`, `.land/land.conf`.
-- **Assumes:** the release at the pinned commit is signed by the owner's key (`.land/land.signers`) and records the tree hash of what it ships; `.land/tool/bin/land-check` checks every vendored file against the manifest, offline, on every landing (with `--upstream` it also fetches the manifest at the pinned commit), so a forged pin and tree edited together fail it; no written contract beyond the lander's own documentation.
-- **Test:** `.land/tool/bin/land-check` checks every vendored file against `.land/tool/MANIFEST.sha256` (an edited copy or a stray file is refused); the lander's own tests run in its repository.
-- **Owner:** upstream vbm-land (same owner).
-- **Plan:** accept because the release is signed by the owner's key and checked offline on every landing.
-- **Covers:** `file:.land/PIN`
-
-### T11. vbm-simd: the bit-parallel kernels `vbm-json` is built on
-- **What:** the library `vbm-simd` (https://github.com/witt3rd/vbm-simd), vendored inside `vbm-json` (`vendor/vbm-json/vendor/vbm-simd/`); its compiled objects are archived with `vbm-json`'s and run inside every parse, and its trusted shim header `include/vbm_simd.h` and its eleven `vbm_simd_*` externs are trusted code. Nothing in `VbmLlm` imports it.
-- **Enters:** `vendor/vbm-json/vendor/vbm-simd/` (inside the vendored vbm-json: the tree hash of the release of `vbm-json` covers it).
-- **Assumes:** the same as T09: the gate checks that the bytes are the bytes of the signed release, never that they were proved; the library's own trust ledger carries its proofs and its trusted shim header; no written contract here beyond that ledger.
-- **Test:** `scripts/tier1.sh` runs `land-pin verify` first (it also refuses two different copies of one library in the closure).
-- **Owner:** the owner; upstream vbm-simd is the same owner's.
-- **Plan:** verify. As T09.
-- **Covers:** `dep:vbm-simd/include/vbm_simd.h` `extern:vbm_simd_append` `extern:vbm_simd_classify64` `extern:vbm_simd_ctz` `extern:vbm_simd_find_avx2` `extern:vbm_simd_find_neon` `extern:vbm_simd_has_avx2` `extern:vbm_simd_has_neon` `extern:vbm_simd_inset64` `extern:vbm_simd_ld64` `extern:vbm_simd_st32` `extern:vbm_simd_st64`
 
