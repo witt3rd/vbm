@@ -5,7 +5,6 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 # 0. The vendored libraries are exactly their pins (this repository vendors none: the check still runs, so every repository has the same gate).
-.land/tool/bin/land-pin verify
 lean_sources() { find VbmSimd VbmSimdProofs -name '*.lean'; ls VbmSimd.lean VbmSimdProofs.lean; }
 # 1. Forbidden constructs in Lean sources; a comment may mention one only on a line marked `-- tier1-allow`.
 bad=$(grep -HnE '\b(sorry|admit|axiom|unsafe|implemented_by|csimp)\b' $(lean_sources) | grep -v 'tier1-allow' || true)
@@ -18,8 +17,8 @@ lake build VbmSimd VbmSimdProofs
 # 3b. The trusted C shims against their Lean models (and mutants of the header).
 scripts/test-shims.sh
 # 4. Only the standard axioms. 5. Every spec clause has its proof; a new trusted boundary has a trust-ledger entry.
-.land/tool/bin/land-lean axiom
+LAND_LEAN_ROOT="$PWD" ../../.land/tool/bin/land-lean axiom
 scripts/spec-check.sh
-.land/tool/bin/land-lean trust
-.land/tool/bin/land-lean recheck --selftest   # every proof replayed by Lean's own checker in a fresh process (vbm-land docs/lean-gates.md)
+LAND_LEAN_ROOT="$PWD" ../../.land/tool/bin/land-lean trust
+LAND_LEAN_ROOT="$PWD" ../../.land/tool/bin/land-lean recheck --selftest   # every proof replayed by Lean's own checker in a fresh process (vbm-land docs/lean-gates.md)
 echo "tier1: ok"

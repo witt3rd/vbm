@@ -5,14 +5,14 @@
 set -euo pipefail
 export LC_ALL=C
 cd "$(dirname "$0")/.."
-# Scoped (.land/tool/bin/run-scoped.sh, scripts/long-runners.txt): re-exec under a bounded transient scope, so an aborted run cannot orphan its builds.
-[ -n "${RUN_SCOPED_INNER:-}" ] || RUN_SCOPED_INNER=1 exec .land/tool/bin/run-scoped.sh test-shims 1800 "$PWD/scripts/test-shims.sh" "$@"
+# Scoped (../../.land/tool/bin/run-scoped.sh, scripts/long-runners.txt): re-exec under a bounded transient scope, so an aborted run cannot orphan its builds.
+[ -n "${RUN_SCOPED_INNER:-}" ] || RUN_SCOPED_INNER=1 exec ../../.land/tool/bin/run-scoped.sh test-shims 1800 "$PWD/scripts/test-shims.sh" "$@"
 ulimit -c 0   # a mutant may crash on purpose: no core file
 stale() { rm -f "$1"/.lake/build/ir/ShimTest.c.o.* "$1"/.lake/build/ir/VbmSimd/*.c.o.* "$1"/.lake/build/ir/VbmSimd.c.o.* "$1"/.lake/build/bin/shim-test 2>/dev/null || true; }
 stale .
 lake build shim-test
-# Crash probes (the mutants crash on purpose) run through the vendored lander's run-probe: ulimit -c 0 PLUS the dumpable-clear preload, so a crash leaves no core and no crash record (.land/tool/docs/crash-probes.md).
-probe="$PWD/.land/tool/bin/run-probe"
+# Crash probes (the mutants crash on purpose) run through the vendored lander's run-probe: ulimit -c 0 PLUS the dumpable-clear preload, so a crash leaves no core and no crash record (../../.land/tool/docs/crash-probes.md).
+probe="$PWD/../../.land/tool/bin/run-probe"
 "$probe" true || { echo "test-shims: run-probe is refused or unusable: no mutant can be run" >&2; exit 1; }
 # The vector bodies must have RUN: on a CPU that has AVX2 (and always on x86-64 CI) the test reports a non-zero number of its AVX2 comparisons, on aarch64 (NEON is baseline there, and CI is the real machine) a non-zero number of its NEON ones;
 # a run that skipped them proves nothing about the shim, so it fails. The reports are counted per kernel: the search, the membership masks, the class masks.
@@ -39,7 +39,7 @@ done
 # The byte search against unmapped pages (tests/find_guard.c: any read outside the buffer is a SIGSEGV). Built with the toolchain's own compiler, from the include directory it is given.
 G=$(mktemp -d); leanc -O2 -I include tests/find_guard.c -o "$G/find_guard" && gout=$("$G/find_guard") && echo "$gout" || { rm -rf "$G"; echo "test-shims: the byte-search guard test failed" >&2; exit 1; }; rm -rf "$G"
 [ "$need_neon" = 0 ] || grep -q "neon checked" <<<"$gout" || { echo "test-shims: the guard test did not check the NEON bodies (required on aarch64)" >&2; exit 1; }
-. .land/tool/lib/reap.sh   # an abort or exit stops the mutant jobs by the pids held here (each job is its own process group: set -m); never by pattern
+. ../../.land/tool/lib/reap.sh   # an abort or exit stops the mutant jobs by the pids held here (each job is its own process group: set -m); never by pattern
 pids=(); T=$(mktemp -d); trap 'reap_pids "${pids[@]}"; rm -rf "$T"' EXIT; trap 'exit 143' INT TERM HUP
 # mutant NAME 'sed expression'
 mutants=(

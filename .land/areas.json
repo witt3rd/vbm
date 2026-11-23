@@ -169,6 +169,21 @@
       ]
     },
     {
+      "name": "vbm-simd",
+      "paths": [
+        "lib/vbm-simd/*"
+      ],
+      "steps": [
+        {
+          "run": "mise exec -- scripts/repo-gates.sh"
+        },
+        {
+          "run": "mise exec -- scripts/tier1.sh",
+          "cwd": "lib/vbm-simd"
+        }
+      ]
+    },
+    {
       "name": "vbm-work",
       "paths": [
         "lib/vbm-work/*"

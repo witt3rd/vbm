@@ -23,7 +23,7 @@ Also: [flip-checklist](skills/flip-checklist/SKILL.md) (publishing a repo), [wri
 |---|---|---|---|---|---|---|
 | [vbm-land](https://github.com/witt3rd/vbm-land) | The landing tool and its skills: one lander, one red definition, freeze marker | tool | live | unscored | unscored | - |
 | [vbm-rt](lib/vbm-rt) | The freestanding runtime shim (allocator, mem* replacements, WebAssembly and native) and the ABI description with the C header and binding generators; consumers vbm-json and vbm-sse. | foundation | live | unscored | unscored | - |
-| [vbm-simd](https://github.com/witt3rd/vbm-simd) | Bit-vector model of vector instructions, a trusted shim per instruction set, proved kernels | foundation | live | unscored | unscored | - |
+| [vbm-simd](lib/vbm-simd) | Bit-vector model of vector instructions, a trusted shim per instruction set, proved kernels. | foundation | live | unscored | unscored | - |
 | vbm-acp | Agent client protocol, pinned core profile | library | planned | unscored | unscored | - |
 | [vbm-areas](lib/vbm-areas) | The pure selection logic of a landing: which declared areas a change touches, where areas overlap, and when a verdict can be reused. | library | live | unscored | unscored | - |
 | vbm-baseN | base64, base64url and base16 | library | planned | unscored | unscored | - |

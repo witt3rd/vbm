@@ -1,0 +1,9 @@
+name = "vbm-simd"
+scope = "Bit-vector model of vector instructions, a trusted shim per instruction set, proved kernels."
+kind = "foundation"
+status = "live"
+license = "Apache-2.0"
+consumers = []
+
+[links]
+docs = "lib/vbm-simd/docs"
