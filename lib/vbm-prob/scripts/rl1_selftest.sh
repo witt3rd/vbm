@@ -4,7 +4,7 @@
 # fields and a field named like one (`numer`) pass.
 set -euo pipefail
 cd "$(dirname "$0")/.."
-. .land/tool/lib/ran.sh   # ran_case counts each executed check, ran_done prints `ran: NAME: N cases`
+. ../../.land/tool/lib/ran.sh   # ran_case counts each executed check, ran_done prints `ran: NAME: N cases`
 scan=$(pwd)/scripts/scan_rl1.sh
 fail() { echo "tier1: rl1: $*" >&2; exit 1; }
 "$scan" >/dev/null 2>&1 && ran_case || fail "the library breaks RL1"

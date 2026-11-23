@@ -1,0 +1,9 @@
+name = "vbm-prob"
+scope = "Exact probabilities and discrete distributions: validation and refusals, normalisation, mixture, mean and cumulative distribution."
+kind = "library"
+status = "live"
+license = "Apache-2.0"
+consumers = []
+
+[links]
+docs = "lib/vbm-prob/docs"
