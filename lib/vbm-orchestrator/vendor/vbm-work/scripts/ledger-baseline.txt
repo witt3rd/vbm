@@ -1,3 +1,0 @@
-proved 11
-open 0
-total 12

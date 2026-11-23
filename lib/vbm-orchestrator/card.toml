@@ -1,0 +1,9 @@
+name = "vbm-orchestrator"
+scope = "The task cycle as a pure state machine: prepare, run a worker, validate, review, land, clean up; criticism returns to the same session when a decision model judges the task converging, and only a money ceiling and a deadline stop it; pure Lean specification and proofs."
+kind = "library"
+status = "live"
+license = "Apache-2.0"
+consumers = []
+
+[links]
+docs = "lib/vbm-orchestrator/docs"

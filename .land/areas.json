@@ -140,6 +140,22 @@
       ]
     },
     {
+      "name": "vbm-orchestrator",
+      "paths": [
+        "lib/vbm-orchestrator/*",
+        "lib/vbm-work/*"
+      ],
+      "steps": [
+        {
+          "run": "mise exec -- scripts/repo-gates.sh"
+        },
+        {
+          "run": "mise exec -- scripts/tier1.sh",
+          "cwd": "lib/vbm-orchestrator"
+        }
+      ]
+    },
+    {
       "name": "vbm-prob",
       "paths": [
         "lib/vbm-prob/*"
