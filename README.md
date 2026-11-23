@@ -37,7 +37,7 @@ Also: [flip-checklist](skills/flip-checklist/SKILL.md) (publishing a repo), [wri
 | vbm-jsonrpc | JSON-RPC 2.0 codec and request/response matching | library | planned | unscored | unscored | - |
 | [vbm-llm](https://github.com/witt3rd/vbm-llm) | The wire contract of the LLM provider conventions (OpenAI, Anthropic, OpenRouter): codecs, stream fold, tool-call turns, usage and finish-reason arithmetic | library | live | unscored | unscored | - |
 | vbm-mcp | Model context protocol client, pinned profile over stdio | library | planned | unscored | unscored | - |
-| [vbm-memory](https://github.com/witt3rd/vbm-memory) | Verified agent memory: scopes, append-only notes, cited recall, supersession; pure Lean specifications and proofs with a reference model and conformance vectors | library | live | unscored | unscored | - |
+| [vbm-memory](lib/vbm-memory) | Verified agent memory: scopes, append-only notes, cited recall, supersession; pure Lean specifications and proofs with a reference model and conformance vectors. | library | live | unscored | unscored | - |
 | vbm-oauth | OAuth client flows as a state machine | library | planned | unscored | unscored | - |
 | [vbm-orchestrator](https://github.com/witt3rd/vbm-orchestrator) | The task cycle as a pure state machine: prepare, run a worker, validate, review, land, clean up; criticism returns to the same session when a decision model judges the task converging, and only a money ceiling and a deadline stop it; pure Lean specification and proofs | library | live | unscored | unscored | - |
 | [vbm-prob](lib/vbm-prob) | Exact probabilities and discrete distributions: validation and refusals, normalisation, mixture, mean and cumulative distribution. | library | live | unscored | unscored | - |

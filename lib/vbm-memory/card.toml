@@ -1,0 +1,9 @@
+name = "vbm-memory"
+scope = "Verified agent memory: scopes, append-only notes, cited recall, supersession; pure Lean specifications and proofs with a reference model and conformance vectors."
+kind = "library"
+status = "live"
+license = "Apache-2.0"
+consumers = []
+
+[links]
+docs = "lib/vbm-memory/docs"
