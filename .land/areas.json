@@ -1,5 +1,9 @@
 {
   "version": 1,
+  "gate_areas": [
+    "hub",
+    "vbm-rng"
+  ],
   "areas": [
     {
       "name": "hub",

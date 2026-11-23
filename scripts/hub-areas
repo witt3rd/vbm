@@ -4,13 +4,15 @@
   scripts/hub-areas --write    write .land/areas.json
   scripts/hub-areas --check    exit 1 when .land/areas.json is not exactly the composition (a derived file is never hand-edited)
   scripts/hub-areas --root DIR work in DIR (the tests)
-The file is DERIVED, pure and deterministic: the hub's own area, then each library's areas (lib/NAME/areas.json) in name order, with every path prefixed lib/NAME/, every step run from lib/NAME, and the whole-repository gates (scripts/repo-gates.sh) as the FIRST step of every area.
+The file is DERIVED, pure and deterministic (including `gate_areas`: the areas a change to the judge runs): the hub's own area, then each library's areas (lib/NAME/areas.json) in name order, with every path prefixed lib/NAME/, every step run from lib/NAME, and the whole-repository gates (scripts/repo-gates.sh) as the FIRST step of every area.
 An area that declares no `uses` owns the paths of every library in its library's transitive `deps` (the sound default); `uses` ([{"lib": D, "area": PART}]) narrows that to named areas.
 INTERIM: the specification of this composition is `Compose` in vbm-areas (Lean); this script is replaced by the tool generated from it. Refuses (exit 2, by name): an unknown key, a bad name, an area name that does not start with its library's, a path that leaves the library, a library path no area owns, an unknown or cyclic dependency, a `uses` that names a library outside `deps`."""
 import fnmatch, json, os, re, subprocess, sys
 
 HUB_PATHS = [".agents/*", ".gitignore", "AGENTS.md", "CONTRIBUTING.md", "LICENSE", "MANIFESTO.md", "NOTICE", "README.md", "ROADMAP.md", "SECURITY.md", "VERSION", "docs/*", "guidelines/*", "mise.toml", "project.toml", "registry/*", "scorecard/*", "scripts/*", "skills/*"]
 GATES = {"run": "mise exec -- scripts/repo-gates.sh"}
+# What a change to the JUDGE (anything under .land/: the vendored lander, the settings, this very file) runs: the hub's own area, and ONE small library as a canary that really exercises the vendored tool's Lean gates. Not every library: that is the whole suite, about an hour, and the release candidate runs every area anyway (vbm-land docs/areas.md, gate_areas and rule 7).
+GATE_AREAS = os.environ.get("HUB_GATE_AREAS", "hub vbm-rng").split()
 NAME = re.compile(r"[a-z0-9][a-z0-9_-]*\Z")
 
 
@@ -103,7 +105,10 @@ def compose(root):
                 cwd = f"lib/{n}" if s.get("cwd", ".") in (".", "") else f"lib/{n}/{s['cwd']}"
                 steps.append({"run": s["run"], "cwd": cwd})
             out.append({"name": nm, "paths": paths, "steps": steps})
-    return json.dumps({"version": 1, "areas": out}, indent=2) + "\n"
+    names = [a["name"] for a in out]
+    for g in GATE_AREAS:
+        if g not in names: die(f"gate area '{g}' is not an area of this repository (GATE_AREAS)")
+    return json.dumps({"version": 1, "gate_areas": GATE_AREAS, "areas": out}, indent=2) + "\n"
 
 
 def main():

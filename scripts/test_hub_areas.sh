@@ -15,6 +15,7 @@ lib alpha '{"version":1,"areas":[{"name":"alpha","paths":["*"],"steps":[{"run":"
 lib beta  '{"version":1,"areas":[{"name":"beta:defs","paths":["Beta/*"],"steps":[{"run":"lake build Beta","cwd":"build"}]},{"name":"beta:proofs","paths":["BetaProofs/*","areas.json","deps"],"steps":[{"run":"lake build BetaProofs"}]}]}'
 echo alpha > "$T/lib/beta/deps"; mkdir -p "$T/lib/beta/Beta" "$T/lib/beta/BetaProofs" "$T/lib/alpha"; : > "$T/lib/beta/Beta/A.lean"; : > "$T/lib/beta/BetaProofs/B.lean"; : > "$T/lib/alpha/x"
 git -C "$T" add -A
+export HUB_GATE_AREAS="hub alpha"   # the fixture has no vbm-rng
 out=$("$ha" --root "$T"); echo "$out" | python3 -c '
 import sys, json
 d = json.load(sys.stdin)["areas"]; n = [a["name"] for a in d]
@@ -27,6 +28,8 @@ assert a["beta:defs"]["steps"][1] == {"run": "lake build Beta", "cwd": "lib/beta
 assert "lib/beta/Beta/*" in a["beta:defs"]["paths"] and "lib/alpha/*" in a["beta:defs"]["paths"], "the default uses is the whole dependency closure"
 ' && ran_case || fail "the composition of two libraries (one with two areas and a dependency) is wrong"
 [ "$out" = "$("$ha" --root "$T")" ] && ran_case || fail "the composition is not deterministic"
+echo "$out" | python3 -c 'import sys, json; d = json.load(sys.stdin); assert d["gate_areas"] == ["hub", "alpha"] and all(g in [a["name"] for a in d["areas"]] for g in d["gate_areas"])' && ran_case || fail "gate_areas is not emitted, or names an area that does not exist"
+HUB_GATE_AREAS="hub nope" "$ha" --root "$T" >/dev/null 2>"$T/err" && fail "negative self-test: a gate area that is not an area passed"; grep -q "is not an area" "$T/err" && ran_case || fail "wrong message: $(cat "$T/err")"
 lib beta '{"version":1,"areas":[{"name":"beta:defs","paths":["Beta/*","BetaProofs/*","areas.json","deps"],"steps":[{"run":"true"}],"uses":[{"lib":"alpha","area":"alpha"}]}]}'
 "$ha" --root "$T" | python3 -c 'import sys, json; a = {x["name"]: x for x in json.load(sys.stdin)["areas"]}; assert a["beta:defs"]["paths"][-1] == "lib/alpha/*"' && ran_case || fail "a declared uses does not add the named area"
 refuses() {   # refuses WHAT PATTERN: the composition fails with exit 2 and a message naming the cause
