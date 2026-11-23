@@ -12,7 +12,7 @@ The **wire contract** of the LLM provider conventions, written once in Lean 4 an
 
 ## What it proves, in plain words
 
-The specification is the code that runs: `VbmLlm/` imports only Lean's `Init` and the pinned [vbm-json](https://github.com/witt3rd/vbm-json), so a reply is read from the same verified parse everywhere. The proofs live in `VbmLlmProofs/` and are never linked. The ledger (`docs/proof-ledger.md`, generated) says which claims are proved and which are open, and tags each claim with the clause of the published schema it is about (`docs/clause-index.txt`). Only a `proved` claim is called verified.
+The specification is the code that runs: `VbmLlm/` imports only Lean's `Init` and [vbm-json](../vbm-json), so a reply is read from the same verified parse everywhere. The proofs live in `VbmLlmProofs/` and are never linked. The ledger (`docs/proof-ledger.md`, generated) says which claims are proved and which are open, and tags each claim with the clause of the published schema it is about (`docs/clause-index.txt`). Only a `proved` claim is called verified.
 
 * **A reply decoder accepts exactly what the documented shape allows** (`decode_ok_iff`, one characterisation theorem per decoder): a present field of the wrong type is refused, never coerced; a count is a plain natural; a tool call's arguments are kept verbatim (the model's text, never parsed); every refusal names its path and kind.
 * **Usage arithmetic.** OpenAI's `prompt_tokens` includes the cache, Anthropic's `input_tokens` excludes it: both map onto one record whose parts add up to the input the model was shown; a contradictory report is refused, never clamped; totals add over a turn and a run.

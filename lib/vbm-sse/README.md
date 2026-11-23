@@ -20,7 +20,7 @@ Hand-written SSE readers disagree on the details that matter: a CR LF split acro
 
 ## The ethos: verified bare metal (VBM)
 
-Part of the [VBM standard](https://github.com/witt3rd/vbm) family of small verified libraries (see also [vbm-json](https://github.com/witt3rd/vbm-json)). Verified: proofs, not tests. Bare metal: the core imports only Lean's `Init`, so the C and WebAssembly generated from it need no libc (`nm -u` of the native library is empty; the WebAssembly module has no imports). Correct by construction: the specification is the code that runs; the vectors are generated from the reference and run through every target and binding. Built agentically: coding agents wrote the specification and proofs under mechanical gates (no `sorry`, no new axiom, proved claims and specified share only go up, every gate has a negative self-test).
+Part of the [VBM standard](https://github.com/witt3rd/vbm) family of small verified libraries (see also [vbm-json](../vbm-json)). Verified: proofs, not tests. Bare metal: the core imports only Lean's `Init`, so the C and WebAssembly generated from it need no libc (`nm -u` of the native library is empty; the WebAssembly module has no imports). Correct by construction: the specification is the code that runs; the vectors are generated from the reference and run through every target and binding. Built agentically: coding agents wrote the specification and proofs under mechanical gates (no `sorry`, no new axiom, proved claims and specified share only go up, every gate has a negative self-test).
 
 ## Use it (Lean)
 

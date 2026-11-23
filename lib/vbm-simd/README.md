@@ -12,7 +12,7 @@ they are subtle; a one-bit mistake in a carry trick is a parsing bug that no tes
 
 vbm-simd is the claim that the speed and the proof are one project. Each kernel is specified once as a tiny sequential machine that is obviously right, implemented as 64-bit word code in Lean (which compiles to
 plain C, to WebAssembly and to the other Lean targets), and **proved equal to the machine for every input and every bit position**. What stays trusted is a handful of `static inline` C functions (a load, a store, a bit count) with
-Lean models and differential tests, each with its own entry in a ledger. It is the shared core of [vbm-json](https://github.com/witt3rd/vbm-json)'s structural stage, and is meant for any library that scans bytes.
+Lean models and differential tests, each with its own entry in a ledger. It is the shared core of [vbm-json](../vbm-json)'s structural stage, and is meant for any library that scans bytes.
 
 ## What is proved today
 
@@ -49,13 +49,17 @@ mise exec -- scripts/tier1.sh    # the whole check: build, shim tests, axiom gat
 
 ## Using it from another Lake project
 
-Pin a commit (not a branch) and compile your generated C with the shim header first:
+Vendor it with the landing tool, pinned to a signed release of the family repository, and compile your generated C with the shim header first:
+
+```sh
+land-pin vendor vbm-simd https://github.com/witt3rd/vbm vbm-simd/vX.Y.Z --path lib/vbm-simd
+```
 
 ```lean
-require «vbm-simd» from git "https://github.com/witt3rd/vbm-simd" @ "<commit>"
+require «vbm-simd» from "vendor/vbm-simd"
 
 lean_lib MyLib where
-  moreLeancArgs := #["-include", (__dir__ / ".lake" / "packages" / "vbm-simd" / "include" / "vbm_simd.h").toString]
+  moreLeancArgs := #["-include", (__dir__ / "vendor" / "vbm-simd" / "include" / "vbm_simd.h").toString]
 ```
 
 Your library may import `VbmSimd.*` (it brings `Init` only); a freestanding build must also provide the Lean runtime's array copy (`lean_copy_sarray`; the stores reach it as `lean_copy_sarray_nonlinear` when the array they write is shared). The proofs are `VbmSimdProofs.*`, a separate library that this package does not build by default (build it from your own tree with `lake build VbmSimdProofs` when your proofs import it).
