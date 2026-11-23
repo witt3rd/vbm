@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "areas": [
+    {"name": "vbm-rng", "paths": ["*"], "steps": [{"run": "mise exec -- scripts/tier1.sh", "cwd": "lib/vbm-rng"}]}
+  ]
+}

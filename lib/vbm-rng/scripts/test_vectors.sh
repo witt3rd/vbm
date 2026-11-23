@@ -73,7 +73,7 @@ TAIL
 
 if [ "${1:-}" = "--emit" ]; then emit "$VEC"; exit 0; fi
 
-. .land/tool/lib/ran.sh
+. ../../.land/tool/lib/ran.sh
 fail() { echo "test_vectors: $*" >&2; exit 1; }
 T=$(mktemp -d); trap 'rm -rf "$T"' EXIT
 [ -f "$VEC" ] || fail "$VEC is missing"

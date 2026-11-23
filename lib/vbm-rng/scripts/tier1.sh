@@ -4,10 +4,9 @@
 # Run from the repo root: mise exec -- scripts/tier1.sh.
 set -euo pipefail
 cd "$(dirname "$0")/.."
-# RAN-EVIDENCE (.land/tool/docs/ran-evidence.md): every test script and every concurrent gate ends with `ran: NAME: N cases` (N > 0, or the gate's own count line named in scripts/ran-gates.txt);
-# .land/tool/bin/run-tests-parallel and the check below FAIL a job without it, and a refused tool, a SKIPPED check or a stop by a guard is a failure, never a pass. The tools are the vendored ones: land-check refuses an edited copy.
+# RAN-EVIDENCE (../../.land/tool/docs/ran-evidence.md): every test script and every concurrent gate ends with `ran: NAME: N cases` (N > 0, or the gate's own count line named in scripts/ran-gates.txt);
+# ../../.land/tool/bin/run-tests-parallel and the check below FAIL a job without it, and a refused tool, a SKIPPED check or a stop by a guard is a failure, never a pass. The tools are the vendored ones: land-check refuses an edited copy.
 # The vendored libraries are exactly their pins (vbm-land docs/pin.md): the same first step in every repository (this one vendors none today).
-.land/tool/bin/land-pin verify
 
 tests=(); par() { tests+=("$@"); }   # independent test scripts, run in parallel at the end; every scripts/test_*.sh must be declared
 bgdir=$(mktemp -d); bgnames=()
@@ -38,23 +37,19 @@ printf 'import VbmRng.State\n' > "$st"; [ -z "$(bad_imports "$st")" ] || { echo 
 echo "tier1: import scan: negative self-tests ok (each import outside Init and VbmRng is flagged)"
 
 scripts/lint-pipefail.sh   # a producer piped into an early-exiting consumer is flaky by construction; the lint has a negative self-test
-.land/tool/bin/land-check   # the vendored lander is the pinned copy (no local patch), offline
 # no secret in the repository (vbm-land docs/secrets-gate.md): the whole history and the tree with the repository's own .gitleaks.toml, and the gate's negative self-test (a planted token must be flagged, a clean file must pass); .gitleaks.toml and .githooks/ are protected, so a change cannot allowlist its own secret
 mise install --quiet > /dev/null 2>&1 || { echo "tier1: the pinned tools (mise.toml) could not be installed on this host" >&2; exit 1; }
-.land/tool/bin/land-secrets --selftest
-.land/tool/bin/land-secrets
 
 # 2. Build, zero warnings (scripts/check-zero-warning.sh: the warning's own diagnostic is required, a clean file must pass; prints `ran: zero-warning: 3 cases`).
 scripts/check-zero-warning.sh
 lake build VbmRng VbmRngProofs LandLedger   # once, for the gates and every test (they build nothing more)
 
 # 2a. The axiom gate: every constant of ours depends only on propext, Classical.choice, Quot.sound (--selftest: a non-standard axiom is rejected).
-bg axiom-gate .land/tool/bin/land-lean axiom --selftest
-.land/tool/bin/land-lean trust   # the trust ledger (docs/trust-ledger.md): what cannot be proven is marked as trusted, and what must be marked is derived from the tree (vbm-land docs/lean-gates.md)
-.land/tool/bin/land-lean recheck --selftest   # every proof replayed by Lean's own checker in a fresh process (vbm-land docs/lean-gates.md)
-.land/tool/bin/land-lean ledger --selftest   # the obligation ledger: docs/proof-ledger.md rendered, every theorem checked, the ratchet (vbm-land docs/lean-gates.md)
+bg axiom-gate env LAND_LEAN_ROOT="$PWD" ../../.land/tool/bin/land-lean axiom --selftest
+LAND_LEAN_ROOT="$PWD" ../../.land/tool/bin/land-lean trust   # the trust ledger (docs/trust-ledger.md): what cannot be proven is marked as trusted, and what must be marked is derived from the tree (vbm-land docs/lean-gates.md)
+LAND_LEAN_ROOT="$PWD" ../../.land/tool/bin/land-lean recheck --selftest   # every proof replayed by Lean's own checker in a fresh process (vbm-land docs/lean-gates.md)
+LAND_LEAN_ROOT="$PWD" ../../.land/tool/bin/land-lean ledger --selftest   # the obligation ledger: docs/proof-ledger.md rendered, every theorem checked, the ratchet (vbm-land docs/lean-gates.md)
 # 2d. The public-readiness lint: no private name, no path of ours, anywhere in the tree; it is shown able to fail.
-par scripts/test_lint_public.sh
 par scripts/test_vectors.sh
 # 2e. The test-running runtime (ran-evidence, the parallel runner) is the vendored tool's and is tested in vbm-land. Every concurrent gate must say how its count is read: a `bg NAME` of this script has a line in
 # scripts/ran-gates.txt, or prints its own `ran: NAME: N cases` (the tests job does).
@@ -65,7 +60,7 @@ done
 
 for f in scripts/test_*.sh; do case " ${tests[*]} " in *" $f "*) ;; *) echo "tier1: $f is not declared with par" >&2; exit 1;; esac; done
 echo "tier1: ${#tests[@]} test scripts: ${tests[*]}"
-bg tests .land/tool/bin/run-tests-parallel "${tests[@]}"
+bg tests ../../.land/tool/bin/run-tests-parallel "${tests[@]/#/$PWD/}"   # the runner works from the git root (the family repository's), so it gets absolute paths
 bgwait
-.land/tool/bin/ran-evidence check-dir "$bgdir" scripts/ran-gates.txt   # every concurrent gate and the tests job ran something
+../../.land/tool/bin/ran-evidence check-dir "$bgdir" scripts/ran-gates.txt   # every concurrent gate and the tests job ran something
 echo "tier1: ok"

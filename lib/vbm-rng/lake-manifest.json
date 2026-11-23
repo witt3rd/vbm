@@ -6,7 +6,7 @@
    "name": "«land-ledger»",
    "manifestFile": "lake-manifest.json",
    "inherited": false,
-   "dir": ".land/tool/lean",
+   "dir": "../../.land/tool/lean",
    "copy": false,
    "configFile": "lakefile.toml"}],
  "name": "«vbm-rng»",

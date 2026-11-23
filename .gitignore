@@ -2,3 +2,6 @@ __pycache__/
 *.pyc
 out/
 scorecard/sandbox-bwrap.binds
+
+# Lake build output, anywhere in the tree (a library builds the lander's Lean package into .land/tool/lean/.lake)
+.lake/
