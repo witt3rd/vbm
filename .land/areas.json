@@ -125,6 +125,22 @@
       ]
     },
     {
+      "name": "vbm-json",
+      "paths": [
+        "lib/vbm-json/*",
+        "lib/vbm-simd/*"
+      ],
+      "steps": [
+        {
+          "run": "mise exec -- scripts/repo-gates.sh"
+        },
+        {
+          "run": "mise exec -- scripts/tier1.sh",
+          "cwd": "lib/vbm-json"
+        }
+      ]
+    },
+    {
       "name": "vbm-memory",
       "paths": [
         "lib/vbm-memory/*"

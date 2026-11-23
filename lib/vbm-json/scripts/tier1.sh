@@ -6,7 +6,6 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 # 0. The vendored libraries are exactly their pins (docs/pin.md of vbm-land): the same first step in every repository.
-.land/tool/bin/land-pin verify
 
 lean_sources() { find LeanJson LeanJsonProofs abi -name '*.lean' 2>/dev/null; ls LeanJson.lean LeanJsonProofs.lean 2>/dev/null; }
 # 1. Forbidden constructs in Lean sources; a comment may mention one only on a line marked `-- tier1-allow`.
@@ -18,15 +17,15 @@ if [ -n "$bad" ]; then echo "tier1: LeanJson may import only LeanJson modules:" 
 # 2. Build (warningAsError is set in lakefile.lean), once, for the guards and every test.
 lake build LeanJson LeanJsonProofs vbm-json-vectors compat-size LeanJson:static LeanJsonSimd VbmSimd VbmSimdProofs LandLedger
 # 2a. Only the standard axioms. 2d. A new trusted boundary has a trust-ledger entry. 2e. The shared vectors agree with the Lean reference.
-.land/tool/bin/land-lean axiom
-.land/tool/bin/land-lean trust
-.land/tool/bin/land-lean recheck --selftest   # every proof replayed by Lean's own checker in a fresh process (vbm-land docs/lean-gates.md)
-.land/tool/bin/land-lean ledger --selftest   # the obligation ledger: docs/proof-ledger.md rendered, every theorem checked, the reach rule and the ratchet (vbm-land docs/lean-gates.md)
+LAND_LEAN_ROOT="$PWD" ../../.land/tool/bin/land-lean axiom
+LAND_LEAN_ROOT="$PWD" ../../.land/tool/bin/land-lean trust
+LAND_LEAN_ROOT="$PWD" ../../.land/tool/bin/land-lean recheck --selftest   # every proof replayed by Lean's own checker in a fresh process (vbm-land docs/lean-gates.md)
+LAND_LEAN_ROOT="$PWD" ../../.land/tool/bin/land-lean ledger --selftest   # the obligation ledger: docs/proof-ledger.md rendered, every theorem checked, the reach rule and the ratchet (vbm-land docs/lean-gates.md)
 vdir=$(mktemp -d); trap 'rm -rf "$vdir"' EXIT   # generating runs every check of --check (reference consistency, fast parser, fused tape parser, JSONTestSuite) and writes the rows the tests below share
 lake exe vbm-json-vectors --n 4 --out "$vdir"
 export VBM_JSON_VECTORS="$vdir/vectors.jsonl" VBM_OBJ_CACHE="$vdir/obj"
 # Reported, not gated: the specified share and the closure counts.
 lake env lean --run scripts/ClosureGate.lean || true
 # 4. The real tests, in parallel.
-.land/tool/bin/run-tests-parallel scripts/test_abi.sh scripts/test_wasm.sh scripts/test_native.sh scripts/test_bindings.sh scripts/test_build_cache.sh
+../../.land/tool/bin/run-tests-parallel $PWD/scripts/test_abi.sh $PWD/scripts/test_wasm.sh $PWD/scripts/test_native.sh $PWD/scripts/test_bindings.sh $PWD/scripts/test_build_cache.sh
 echo "tier1: ok"

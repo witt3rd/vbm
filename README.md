@@ -33,7 +33,7 @@ Also: [flip-checklist](skills/flip-checklist/SKILL.md) (publishing a repo), [wri
 | [vbm-forecast](lib/vbm-forecast) | Forecast verification: proper scoring rules, calibration and reliability, and the comparison of two probabilistic forecasts, in exact arithmetic. | library | live | unscored | unscored | - |
 | vbm-http1 | HTTP/1.1 message framing and body length | library | planned | unscored | unscored | - |
 | [vbm-journal](lib/vbm-journal) | Append-only, hash-chained log and a generic chain checker. | library | live | unscored | unscored | - |
-| [vbm-json](https://github.com/witt3rd/vbm-json) | Verified JSON codec | library | live | **FAIL** (2 of 3; Trusted generation not yet defined) | **FAIL** | [card](registry/scores/witt3rd__vbm-json.md) |
+| [vbm-json](lib/vbm-json) | Verified JSON codec. | library | live | unscored | unscored | - |
 | vbm-jsonrpc | JSON-RPC 2.0 codec and request/response matching | library | planned | unscored | unscored | - |
 | [vbm-llm](https://github.com/witt3rd/vbm-llm) | The wire contract of the LLM provider conventions (OpenAI, Anthropic, OpenRouter): codecs, stream fold, tool-call turns, usage and finish-reason arithmetic | library | live | unscored | unscored | - |
 | vbm-mcp | Model context protocol client, pinned profile over stdio | library | planned | unscored | unscored | - |

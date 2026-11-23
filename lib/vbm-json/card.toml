@@ -1,0 +1,9 @@
+name = "vbm-json"
+scope = "Verified JSON codec."
+kind = "library"
+status = "live"
+license = "Apache-2.0"
+consumers = []
+
+[links]
+docs = "lib/vbm-json/docs"

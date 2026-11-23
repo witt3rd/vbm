@@ -2,7 +2,7 @@
 
 Status: draft by a worker, 2026-11-18; goals and targets are the owner's to set.
 
-This is how well vbm-json is doing against the goals this repository states for itself. Every command is run from the repository root, with the pinned Lean on `PATH` (the repository says `mise exec -- ...`; in the drafting jail `mise` could not install offline, so the same Lean 4.35.0 was used from `~/.local/share/mise/installs`, which is what `mise exec` would run). Units: counts are counts, shares are hundredths of a percent, durations are seconds, sizes are bytes or lines. "Floor" starts equal to "now" and may only move toward better.
+This is how well vbm-json is doing against the goals this repository states for itself. Every command is run from the repository root, with the pinned Lean on `PATH` (the repository says `mise exec -- ...`; in the drafting jail `mise` could not install offline, so the same Lean 4.35.0 was used from `$HOME/.local/share/mise/installs`, which is what `mise exec` would run). Units: counts are counts, shares are hundredths of a percent, durations are seconds, sizes are bytes or lines. "Floor" starts equal to "now" and may only move toward better.
 
 ## Goals as the repository states them
 
