@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "areas": [
+    {
+      "name": "vbm-scoreboard",
+      "paths": [
+        "*"
+      ],
+      "steps": [
+        {
+          "run": "mise exec -- scripts/tier1.sh"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+name = "vbm-scoreboard"
+scope = "A project's scorecard as a proved library: metrics, ratchet floors, targets and history."
+kind = "library"
+status = "live"
+license = "Apache-2.0"
+consumers = []
+
+[links]
+docs = "lib/vbm-scoreboard/docs"

@@ -4,7 +4,7 @@
 export LC_ALL=C
 set -euo pipefail
 cd "$(dirname "$0")/.."
-. .land/tool/lib/ran.sh
+. ../../.land/tool/lib/ran.sh
 bin=$(pwd)/.lake/build/bin/vbm-scoreboard
 [ -x "$bin" ] || { echo "test_tool: $bin is not built (lake build vbm-scoreboard)" >&2; exit 1; }
 T=$(mktemp -d); trap 'rm -rf "$T"' EXIT

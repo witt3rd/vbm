@@ -77,6 +77,21 @@
           "cwd": "lib/vbm-rng"
         }
       ]
+    },
+    {
+      "name": "vbm-scoreboard",
+      "paths": [
+        "lib/vbm-scoreboard/*"
+      ],
+      "steps": [
+        {
+          "run": "mise exec -- scripts/repo-gates.sh"
+        },
+        {
+          "run": "mise exec -- scripts/tier1.sh",
+          "cwd": "lib/vbm-scoreboard"
+        }
+      ]
     }
   ]
 }
