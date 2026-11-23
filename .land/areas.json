@@ -42,6 +42,14 @@
       "paths": [
         "lib/vbm-areas/*"
       ],
+      "exclude": [
+        "lib/vbm-areas/README.md",
+        "lib/vbm-areas/CHANGELOG.md",
+        "lib/vbm-areas/NOTICE",
+        "lib/vbm-areas/LICENSE",
+        "lib/vbm-areas/areas.json",
+        "lib/vbm-areas/deps"
+      ],
       "steps": [
         {
           "run": "mise exec -- scripts/repo-gates.sh"
@@ -53,9 +61,31 @@
       ]
     },
     {
+      "name": "vbm-areas__docs",
+      "paths": [
+        "lib/vbm-areas/README.md",
+        "lib/vbm-areas/CHANGELOG.md",
+        "lib/vbm-areas/NOTICE",
+        "lib/vbm-areas/LICENSE"
+      ],
+      "steps": [
+        {
+          "run": "mise exec -- scripts/repo-gates.sh"
+        }
+      ]
+    },
+    {
       "name": "vbm-context",
       "paths": [
         "lib/vbm-context/*"
+      ],
+      "exclude": [
+        "lib/vbm-context/README.md",
+        "lib/vbm-context/CHANGELOG.md",
+        "lib/vbm-context/NOTICE",
+        "lib/vbm-context/LICENSE",
+        "lib/vbm-context/areas.json",
+        "lib/vbm-context/deps"
       ],
       "steps": [
         {
@@ -68,9 +98,31 @@
       ]
     },
     {
+      "name": "vbm-context__docs",
+      "paths": [
+        "lib/vbm-context/README.md",
+        "lib/vbm-context/CHANGELOG.md",
+        "lib/vbm-context/NOTICE",
+        "lib/vbm-context/LICENSE"
+      ],
+      "steps": [
+        {
+          "run": "mise exec -- scripts/repo-gates.sh"
+        }
+      ]
+    },
+    {
       "name": "vbm-decision",
       "paths": [
         "lib/vbm-decision/*"
+      ],
+      "exclude": [
+        "lib/vbm-decision/README.md",
+        "lib/vbm-decision/CHANGELOG.md",
+        "lib/vbm-decision/NOTICE",
+        "lib/vbm-decision/LICENSE",
+        "lib/vbm-decision/areas.json",
+        "lib/vbm-decision/deps"
       ],
       "steps": [
         {
@@ -83,10 +135,38 @@
       ]
     },
     {
+      "name": "vbm-decision__docs",
+      "paths": [
+        "lib/vbm-decision/README.md",
+        "lib/vbm-decision/CHANGELOG.md",
+        "lib/vbm-decision/NOTICE",
+        "lib/vbm-decision/LICENSE"
+      ],
+      "steps": [
+        {
+          "run": "mise exec -- scripts/repo-gates.sh"
+        }
+      ]
+    },
+    {
       "name": "vbm-dispatcher",
       "paths": [
         "lib/vbm-dispatcher/*",
         "lib/vbm-work/*"
+      ],
+      "exclude": [
+        "lib/vbm-dispatcher/README.md",
+        "lib/vbm-dispatcher/CHANGELOG.md",
+        "lib/vbm-dispatcher/NOTICE",
+        "lib/vbm-dispatcher/LICENSE",
+        "lib/vbm-dispatcher/areas.json",
+        "lib/vbm-dispatcher/deps",
+        "lib/vbm-work/README.md",
+        "lib/vbm-work/CHANGELOG.md",
+        "lib/vbm-work/NOTICE",
+        "lib/vbm-work/LICENSE",
+        "lib/vbm-work/areas.json",
+        "lib/vbm-work/deps"
       ],
       "steps": [
         {
@@ -99,9 +179,31 @@
       ]
     },
     {
+      "name": "vbm-dispatcher__docs",
+      "paths": [
+        "lib/vbm-dispatcher/README.md",
+        "lib/vbm-dispatcher/CHANGELOG.md",
+        "lib/vbm-dispatcher/NOTICE",
+        "lib/vbm-dispatcher/LICENSE"
+      ],
+      "steps": [
+        {
+          "run": "mise exec -- scripts/repo-gates.sh"
+        }
+      ]
+    },
+    {
       "name": "vbm-forecast",
       "paths": [
         "lib/vbm-forecast/*"
+      ],
+      "exclude": [
+        "lib/vbm-forecast/README.md",
+        "lib/vbm-forecast/CHANGELOG.md",
+        "lib/vbm-forecast/NOTICE",
+        "lib/vbm-forecast/LICENSE",
+        "lib/vbm-forecast/areas.json",
+        "lib/vbm-forecast/deps"
       ],
       "steps": [
         {
@@ -114,9 +216,31 @@
       ]
     },
     {
+      "name": "vbm-forecast__docs",
+      "paths": [
+        "lib/vbm-forecast/README.md",
+        "lib/vbm-forecast/CHANGELOG.md",
+        "lib/vbm-forecast/NOTICE",
+        "lib/vbm-forecast/LICENSE"
+      ],
+      "steps": [
+        {
+          "run": "mise exec -- scripts/repo-gates.sh"
+        }
+      ]
+    },
+    {
       "name": "vbm-journal",
       "paths": [
         "lib/vbm-journal/*"
+      ],
+      "exclude": [
+        "lib/vbm-journal/README.md",
+        "lib/vbm-journal/CHANGELOG.md",
+        "lib/vbm-journal/NOTICE",
+        "lib/vbm-journal/LICENSE",
+        "lib/vbm-journal/areas.json",
+        "lib/vbm-journal/deps"
       ],
       "steps": [
         {
@@ -129,10 +253,38 @@
       ]
     },
     {
+      "name": "vbm-journal__docs",
+      "paths": [
+        "lib/vbm-journal/README.md",
+        "lib/vbm-journal/CHANGELOG.md",
+        "lib/vbm-journal/NOTICE",
+        "lib/vbm-journal/LICENSE"
+      ],
+      "steps": [
+        {
+          "run": "mise exec -- scripts/repo-gates.sh"
+        }
+      ]
+    },
+    {
       "name": "vbm-json",
       "paths": [
         "lib/vbm-json/*",
         "lib/vbm-simd/*"
+      ],
+      "exclude": [
+        "lib/vbm-json/README.md",
+        "lib/vbm-json/CHANGELOG.md",
+        "lib/vbm-json/NOTICE",
+        "lib/vbm-json/LICENSE",
+        "lib/vbm-json/areas.json",
+        "lib/vbm-json/deps",
+        "lib/vbm-simd/README.md",
+        "lib/vbm-simd/CHANGELOG.md",
+        "lib/vbm-simd/NOTICE",
+        "lib/vbm-simd/LICENSE",
+        "lib/vbm-simd/areas.json",
+        "lib/vbm-simd/deps"
       ],
       "steps": [
         {
@@ -145,11 +297,45 @@
       ]
     },
     {
+      "name": "vbm-json__docs",
+      "paths": [
+        "lib/vbm-json/README.md",
+        "lib/vbm-json/CHANGELOG.md",
+        "lib/vbm-json/NOTICE",
+        "lib/vbm-json/LICENSE"
+      ],
+      "steps": [
+        {
+          "run": "mise exec -- scripts/repo-gates.sh"
+        }
+      ]
+    },
+    {
       "name": "vbm-llm",
       "paths": [
         "lib/vbm-llm/*",
         "lib/vbm-simd/*",
         "lib/vbm-json/*"
+      ],
+      "exclude": [
+        "lib/vbm-llm/README.md",
+        "lib/vbm-llm/CHANGELOG.md",
+        "lib/vbm-llm/NOTICE",
+        "lib/vbm-llm/LICENSE",
+        "lib/vbm-llm/areas.json",
+        "lib/vbm-llm/deps",
+        "lib/vbm-simd/README.md",
+        "lib/vbm-simd/CHANGELOG.md",
+        "lib/vbm-simd/NOTICE",
+        "lib/vbm-simd/LICENSE",
+        "lib/vbm-simd/areas.json",
+        "lib/vbm-simd/deps",
+        "lib/vbm-json/README.md",
+        "lib/vbm-json/CHANGELOG.md",
+        "lib/vbm-json/NOTICE",
+        "lib/vbm-json/LICENSE",
+        "lib/vbm-json/areas.json",
+        "lib/vbm-json/deps"
       ],
       "steps": [
         {
@@ -162,9 +348,31 @@
       ]
     },
     {
+      "name": "vbm-llm__docs",
+      "paths": [
+        "lib/vbm-llm/README.md",
+        "lib/vbm-llm/CHANGELOG.md",
+        "lib/vbm-llm/NOTICE",
+        "lib/vbm-llm/LICENSE"
+      ],
+      "steps": [
+        {
+          "run": "mise exec -- scripts/repo-gates.sh"
+        }
+      ]
+    },
+    {
       "name": "vbm-memory",
       "paths": [
         "lib/vbm-memory/*"
+      ],
+      "exclude": [
+        "lib/vbm-memory/README.md",
+        "lib/vbm-memory/CHANGELOG.md",
+        "lib/vbm-memory/NOTICE",
+        "lib/vbm-memory/LICENSE",
+        "lib/vbm-memory/areas.json",
+        "lib/vbm-memory/deps"
       ],
       "steps": [
         {
@@ -177,10 +385,38 @@
       ]
     },
     {
+      "name": "vbm-memory__docs",
+      "paths": [
+        "lib/vbm-memory/README.md",
+        "lib/vbm-memory/CHANGELOG.md",
+        "lib/vbm-memory/NOTICE",
+        "lib/vbm-memory/LICENSE"
+      ],
+      "steps": [
+        {
+          "run": "mise exec -- scripts/repo-gates.sh"
+        }
+      ]
+    },
+    {
       "name": "vbm-orchestrator",
       "paths": [
         "lib/vbm-orchestrator/*",
         "lib/vbm-work/*"
+      ],
+      "exclude": [
+        "lib/vbm-orchestrator/README.md",
+        "lib/vbm-orchestrator/CHANGELOG.md",
+        "lib/vbm-orchestrator/NOTICE",
+        "lib/vbm-orchestrator/LICENSE",
+        "lib/vbm-orchestrator/areas.json",
+        "lib/vbm-orchestrator/deps",
+        "lib/vbm-work/README.md",
+        "lib/vbm-work/CHANGELOG.md",
+        "lib/vbm-work/NOTICE",
+        "lib/vbm-work/LICENSE",
+        "lib/vbm-work/areas.json",
+        "lib/vbm-work/deps"
       ],
       "steps": [
         {
@@ -193,9 +429,31 @@
       ]
     },
     {
+      "name": "vbm-orchestrator__docs",
+      "paths": [
+        "lib/vbm-orchestrator/README.md",
+        "lib/vbm-orchestrator/CHANGELOG.md",
+        "lib/vbm-orchestrator/NOTICE",
+        "lib/vbm-orchestrator/LICENSE"
+      ],
+      "steps": [
+        {
+          "run": "mise exec -- scripts/repo-gates.sh"
+        }
+      ]
+    },
+    {
       "name": "vbm-prob",
       "paths": [
         "lib/vbm-prob/*"
+      ],
+      "exclude": [
+        "lib/vbm-prob/README.md",
+        "lib/vbm-prob/CHANGELOG.md",
+        "lib/vbm-prob/NOTICE",
+        "lib/vbm-prob/LICENSE",
+        "lib/vbm-prob/areas.json",
+        "lib/vbm-prob/deps"
       ],
       "steps": [
         {
@@ -208,9 +466,31 @@
       ]
     },
     {
+      "name": "vbm-prob__docs",
+      "paths": [
+        "lib/vbm-prob/README.md",
+        "lib/vbm-prob/CHANGELOG.md",
+        "lib/vbm-prob/NOTICE",
+        "lib/vbm-prob/LICENSE"
+      ],
+      "steps": [
+        {
+          "run": "mise exec -- scripts/repo-gates.sh"
+        }
+      ]
+    },
+    {
       "name": "vbm-rng",
       "paths": [
         "lib/vbm-rng/*"
+      ],
+      "exclude": [
+        "lib/vbm-rng/README.md",
+        "lib/vbm-rng/CHANGELOG.md",
+        "lib/vbm-rng/NOTICE",
+        "lib/vbm-rng/LICENSE",
+        "lib/vbm-rng/areas.json",
+        "lib/vbm-rng/deps"
       ],
       "steps": [
         {
@@ -223,9 +503,31 @@
       ]
     },
     {
+      "name": "vbm-rng__docs",
+      "paths": [
+        "lib/vbm-rng/README.md",
+        "lib/vbm-rng/CHANGELOG.md",
+        "lib/vbm-rng/NOTICE",
+        "lib/vbm-rng/LICENSE"
+      ],
+      "steps": [
+        {
+          "run": "mise exec -- scripts/repo-gates.sh"
+        }
+      ]
+    },
+    {
       "name": "vbm-rt",
       "paths": [
         "lib/vbm-rt/*"
+      ],
+      "exclude": [
+        "lib/vbm-rt/README.md",
+        "lib/vbm-rt/CHANGELOG.md",
+        "lib/vbm-rt/NOTICE",
+        "lib/vbm-rt/LICENSE",
+        "lib/vbm-rt/areas.json",
+        "lib/vbm-rt/deps"
       ],
       "steps": [
         {
@@ -238,9 +540,31 @@
       ]
     },
     {
+      "name": "vbm-rt__docs",
+      "paths": [
+        "lib/vbm-rt/README.md",
+        "lib/vbm-rt/CHANGELOG.md",
+        "lib/vbm-rt/NOTICE",
+        "lib/vbm-rt/LICENSE"
+      ],
+      "steps": [
+        {
+          "run": "mise exec -- scripts/repo-gates.sh"
+        }
+      ]
+    },
+    {
       "name": "vbm-scoreboard",
       "paths": [
         "lib/vbm-scoreboard/*"
+      ],
+      "exclude": [
+        "lib/vbm-scoreboard/README.md",
+        "lib/vbm-scoreboard/CHANGELOG.md",
+        "lib/vbm-scoreboard/NOTICE",
+        "lib/vbm-scoreboard/LICENSE",
+        "lib/vbm-scoreboard/areas.json",
+        "lib/vbm-scoreboard/deps"
       ],
       "steps": [
         {
@@ -253,9 +577,31 @@
       ]
     },
     {
+      "name": "vbm-scoreboard__docs",
+      "paths": [
+        "lib/vbm-scoreboard/README.md",
+        "lib/vbm-scoreboard/CHANGELOG.md",
+        "lib/vbm-scoreboard/NOTICE",
+        "lib/vbm-scoreboard/LICENSE"
+      ],
+      "steps": [
+        {
+          "run": "mise exec -- scripts/repo-gates.sh"
+        }
+      ]
+    },
+    {
       "name": "vbm-simd",
       "paths": [
         "lib/vbm-simd/*"
+      ],
+      "exclude": [
+        "lib/vbm-simd/README.md",
+        "lib/vbm-simd/CHANGELOG.md",
+        "lib/vbm-simd/NOTICE",
+        "lib/vbm-simd/LICENSE",
+        "lib/vbm-simd/areas.json",
+        "lib/vbm-simd/deps"
       ],
       "steps": [
         {
@@ -268,10 +614,38 @@
       ]
     },
     {
+      "name": "vbm-simd__docs",
+      "paths": [
+        "lib/vbm-simd/README.md",
+        "lib/vbm-simd/CHANGELOG.md",
+        "lib/vbm-simd/NOTICE",
+        "lib/vbm-simd/LICENSE"
+      ],
+      "steps": [
+        {
+          "run": "mise exec -- scripts/repo-gates.sh"
+        }
+      ]
+    },
+    {
       "name": "vbm-sse",
       "paths": [
         "lib/vbm-sse/*",
         "lib/vbm-simd/*"
+      ],
+      "exclude": [
+        "lib/vbm-sse/README.md",
+        "lib/vbm-sse/CHANGELOG.md",
+        "lib/vbm-sse/NOTICE",
+        "lib/vbm-sse/LICENSE",
+        "lib/vbm-sse/areas.json",
+        "lib/vbm-sse/deps",
+        "lib/vbm-simd/README.md",
+        "lib/vbm-simd/CHANGELOG.md",
+        "lib/vbm-simd/NOTICE",
+        "lib/vbm-simd/LICENSE",
+        "lib/vbm-simd/areas.json",
+        "lib/vbm-simd/deps"
       ],
       "steps": [
         {
@@ -284,9 +658,31 @@
       ]
     },
     {
+      "name": "vbm-sse__docs",
+      "paths": [
+        "lib/vbm-sse/README.md",
+        "lib/vbm-sse/CHANGELOG.md",
+        "lib/vbm-sse/NOTICE",
+        "lib/vbm-sse/LICENSE"
+      ],
+      "steps": [
+        {
+          "run": "mise exec -- scripts/repo-gates.sh"
+        }
+      ]
+    },
+    {
       "name": "vbm-work",
       "paths": [
         "lib/vbm-work/*"
+      ],
+      "exclude": [
+        "lib/vbm-work/README.md",
+        "lib/vbm-work/CHANGELOG.md",
+        "lib/vbm-work/NOTICE",
+        "lib/vbm-work/LICENSE",
+        "lib/vbm-work/areas.json",
+        "lib/vbm-work/deps"
       ],
       "steps": [
         {
@@ -295,6 +691,20 @@
         {
           "run": "mise exec -- scripts/tier1.sh",
           "cwd": "lib/vbm-work"
+        }
+      ]
+    },
+    {
+      "name": "vbm-work__docs",
+      "paths": [
+        "lib/vbm-work/README.md",
+        "lib/vbm-work/CHANGELOG.md",
+        "lib/vbm-work/NOTICE",
+        "lib/vbm-work/LICENSE"
+      ],
+      "steps": [
+        {
+          "run": "mise exec -- scripts/repo-gates.sh"
         }
       ]
     }

@@ -10,7 +10,25 @@
         {
           "run": "tests/test_mem.sh"
         }
+      ],
+      "exclude": [
+        "README.md",
+        "CHANGELOG.md",
+        "NOTICE",
+        "LICENSE",
+        "areas.json",
+        "deps"
       ]
+    },
+    {
+      "name": "vbm-rt__docs",
+      "paths": [
+        "README.md",
+        "CHANGELOG.md",
+        "NOTICE",
+        "LICENSE"
+      ],
+      "steps": []
     }
   ]
 }

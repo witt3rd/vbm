@@ -10,7 +10,25 @@
         {
           "run": "mise exec -- scripts/tier1.sh"
         }
+      ],
+      "exclude": [
+        "README.md",
+        "CHANGELOG.md",
+        "NOTICE",
+        "LICENSE",
+        "areas.json",
+        "deps"
       ]
+    },
+    {
+      "name": "vbm-decision__docs",
+      "paths": [
+        "README.md",
+        "CHANGELOG.md",
+        "NOTICE",
+        "LICENSE"
+      ],
+      "steps": []
     }
   ]
 }

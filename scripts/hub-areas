@@ -68,22 +68,29 @@ def compose(root):
     hub = {"name": "hub", "paths": list(HUB_PATHS), "steps": [GATES, {"run": "mise exec -- scripts/tier1.sh"}]}
     out.append(hub)
     own = {}   # (lib, area) -> composed paths
+    exc, quiet = {}, {}   # (lib, area) -> composed excludes; (lib, area) -> the area has no steps (inert: documents no gate reads)
     for n, L in libs.items():
         for a in L["decl"]["areas"]:
-            strict(a, {"name", "paths", "steps"}, {"uses"}, f"lib/{n}/areas.json area")
+            strict(a, {"name", "paths", "steps"}, {"uses", "exclude"}, f"lib/{n}/areas.json area")
             nm = a["name"]
-            if not (nm == n or (nm.startswith(n + ":") and NAME.match(nm[len(n) + 1:]))): die(f"lib/{n}/areas.json: area name '{nm}' must be '{n}' or '{n}:<part>'")
+            if not (nm == n or (nm.startswith(n + "__") and NAME.match(nm[len(n) + 2:]))): die(f"lib/{n}/areas.json: area name '{nm}' must be '{n}' or '{n}__<part>' (the lander's area names have no colon)")
             if not a["paths"]: die(f"lib/{n}/areas.json: area '{nm}' has no paths")
             for p in a["paths"]:
                 if p.startswith("/") or ".." in p.split("/"): die(f"lib/{n}/areas.json: area '{nm}': path '{p}' leaves the library")
+            ex = a.get("exclude", [])
+            if not isinstance(ex, list) or not all(isinstance(e, str) for e in ex): die(f"lib/{n}/areas.json: area '{nm}': exclude must be a list of paths")
+            for e in ex:
+                if e.startswith("/") or ".." in e.split("/"): die(f"lib/{n}/areas.json: area '{nm}': exclude '{e}' leaves the library")
             own[(n, nm)] = [f"lib/{n}/{p}" for p in a["paths"]]
+            exc[(n, nm)] = [f"lib/{n}/{e}" for e in ex]
+            quiet[(n, nm)] = not a["steps"]
         files = tracked(root, n)
         for f in files:
             if not any(fnmatch.fnmatchcase(f, p) for a in L["decl"]["areas"] for p in a["paths"]): die(f"lib/{n}: the path '{f}' is owned by no area of the library")
     for n, L in libs.items():
         cl = closure(libs, n)
         for a in L["decl"]["areas"]:
-            nm = a["name"]; paths = list(own[(n, nm)])
+            nm = a["name"]; paths = list(own[(n, nm)]); excl = list(exc[(n, nm)])
             if "uses" in a:
                 for u in a["uses"]:
                     strict(u, {"lib"}, {"area"}, f"lib/{n}/areas.json area '{nm}' uses")
@@ -93,18 +100,20 @@ def compose(root):
                     for k in hit:
                         for p in own[k]:
                             if p not in paths: paths.append(p)
-            else:
+                        excl += [e for e in exc[k] if e not in excl]
+            elif a["steps"]:   # an inert area (no steps: documents no gate reads) depends on nothing
                 for d in cl:
                     for k in own:
-                        if k[0] == d:
+                        if k[0] == d and not quiet[k]:   # an inert area (documents no gate reads) is not what a dependent depends on
                             for p in own[k]:
                                 if p not in paths: paths.append(p)
+                            excl += [e for e in exc[k] if e not in excl]
             steps = [GATES]
             for s in a["steps"]:
                 strict(s, {"run"}, {"cwd"}, f"lib/{n}/areas.json area '{nm}' step")
                 cwd = f"lib/{n}" if s.get("cwd", ".") in (".", "") else f"lib/{n}/{s['cwd']}"
                 steps.append({"run": s["run"], "cwd": cwd})
-            out.append({"name": nm, "paths": paths, "steps": steps})
+            out.append({"name": nm, "paths": paths, **({"exclude": excl} if excl else {}), "steps": steps})
     names = [a["name"] for a in out]
     for g in GATE_AREAS:
         if g not in names: die(f"gate area '{g}' is not an area of this repository (GATE_AREAS)")

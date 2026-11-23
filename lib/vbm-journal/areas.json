@@ -10,7 +10,25 @@
         {
           "run": "mise exec -- tests/tier1.sh"
         }
+      ],
+      "exclude": [
+        "README.md",
+        "CHANGELOG.md",
+        "NOTICE",
+        "LICENSE",
+        "areas.json",
+        "deps"
       ]
+    },
+    {
+      "name": "vbm-journal__docs",
+      "paths": [
+        "README.md",
+        "CHANGELOG.md",
+        "NOTICE",
+        "LICENSE"
+      ],
+      "steps": []
     }
   ]
 }
