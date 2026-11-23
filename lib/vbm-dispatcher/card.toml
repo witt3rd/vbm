@@ -1,0 +1,9 @@
+name = "vbm-dispatcher"
+scope = "A work dispatcher as pure Lean: a leased queue's guard and chooser with the store's port laws, and the two machines that drive one host: the tick (read the host, choose, claim) and the run of one claimed item (renew the lease, finish once, clean up once); proofs and language-neutral conformance vectors."
+kind = "library"
+status = "live"
+license = "Apache-2.0"
+consumers = []
+
+[links]
+docs = "lib/vbm-dispatcher/docs"
