@@ -1,7 +1,52 @@
 {
   "version": 1,
   "areas": [
-    {"name": "hub", "paths": [".agents/*", ".gitignore", "AGENTS.md", "CONTRIBUTING.md", "LICENSE", "MANIFESTO.md", "NOTICE", "README.md", "ROADMAP.md", "SECURITY.md", "VERSION", "docs/*", "guidelines/*", "mise.toml", "project.toml", "registry/*", "scorecard/*", "scripts/*", "skills/*"], "steps": [{"run": "mise exec -- scripts/tier1.sh"}]},
-    {"name": "vbm-rng", "paths": ["lib/vbm-rng/*"], "steps": [{"run": "mise exec -- scripts/tier1.sh", "cwd": "lib/vbm-rng"}]}
+    {
+      "name": "hub",
+      "paths": [
+        ".agents/*",
+        ".gitignore",
+        "AGENTS.md",
+        "CONTRIBUTING.md",
+        "LICENSE",
+        "MANIFESTO.md",
+        "NOTICE",
+        "README.md",
+        "ROADMAP.md",
+        "SECURITY.md",
+        "VERSION",
+        "docs/*",
+        "guidelines/*",
+        "mise.toml",
+        "project.toml",
+        "registry/*",
+        "scorecard/*",
+        "scripts/*",
+        "skills/*"
+      ],
+      "steps": [
+        {
+          "run": "mise exec -- scripts/repo-gates.sh"
+        },
+        {
+          "run": "mise exec -- scripts/tier1.sh"
+        }
+      ]
+    },
+    {
+      "name": "vbm-rng",
+      "paths": [
+        "lib/vbm-rng/*"
+      ],
+      "steps": [
+        {
+          "run": "mise exec -- scripts/repo-gates.sh"
+        },
+        {
+          "run": "mise exec -- scripts/tier1.sh",
+          "cwd": "lib/vbm-rng"
+        }
+      ]
+    }
   ]
 }

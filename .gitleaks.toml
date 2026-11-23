@@ -1,0 +1,10 @@
+# gitleaks configuration (the secret gate): the default rules, plus reviewed allowlists, each with its reason. Never allowlist a real secret: rotate it, then remove it (vbm-land docs/secrets-gate.md).
+title = "vbm"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "vbm-rng's own fields are called `key` (a seed, a stream key) and its known-answer vectors print them: the generic API-key rule reads `.key ...` lines as credentials. Reviewed: the values are public test vectors, not credentials."
+targetRules = ["generic-api-key"]
+paths = ['^lib/vbm-rng/VbmRngProofs/Stream\.lean$', '^lib/vbm-rng/VbmRngProofs/Vectors\.lean$', '^lib/vbm-rng/docs/spec\.md$']

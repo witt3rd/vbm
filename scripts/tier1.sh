@@ -17,9 +17,7 @@ par scripts/test_export.sh
 par
 for f in scripts/test_*.sh; do case " ${tests[*]} " in *" $f "*) ;; *) echo "tier1: $f is not declared with par" >&2; exit 1;; esac; done
 for f in "${tests[@]}"; do [ -f "$f" ] || { echo "tier1: declared test $f does not exist" >&2; exit 1; }; done
-.land/tool/bin/land-check   # the pinned lander is intact (edit vbm-land, not the copy); negative self-test:
 # The heavy-host guard's lint (vbm-land docs/no-build-host.md): declared long runners (scripts/long-runners.txt; none today) run through the vendored .land/tool/bin/run-scoped.sh.
-.land/tool/bin/no-build-guard --lint .
 # No test may leave a crash record (systemd-coredump, hence a desktop notification): the run is wrapped (.land/tool/lib/no-crash-record.sh; tested in vbm-land).
 # Audit: no test here crashes on purpose (the fixtures exit 1, the sandbox probes are denials and a timeout kill); a probe that must crash runs under `quiet`.
 . .land/tool/lib/no-crash-record.sh; nocrash_begin
