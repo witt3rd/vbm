@@ -54,7 +54,7 @@ Numbers 1 to 7 are the model; the vectors cite them.
 3. **Run everything of what is touched.** A change runs **every step of every area it touches**: nothing narrower. There is **no selection** by import graph, by what a test read, by coverage, by test name or by size cap, and **no flag that skips a step**. Predictability is the point: the same paths always run the same steps. Steps run in the order of the areas in the file, then of their steps; a step that two touched areas both declare (same `cwd` and same `run`) runs once. A failing step stops the landing (exit 13) and names its area and step.
 4. **There are no dependency edges between areas.** Shared code is listed in the `paths` of **every area that depends on it**, and a path that matches two areas touches **both**. **Overlap is the declared dependency**: it is how coupling is paid for, and the project minimizes it by factoring (section 4 measures it).
 5. **What no area owns.** A path that no area owns (no `paths` glob matches it, or an `exclude` removes it) runs **everything of the closest enclosing area**. The *directory a glob starts in* is the glob's segments before the first segment that contains `*` or `?`, the last segment (the file part) never counting: `src/lib/*` starts in `src/lib`, `core/*.py` in `core`, `docs/*/index.md` in `docs`, `README.md` and `*.md` in the root. A glob that starts in the root **encloses nothing**. An area *encloses* a path when the path is not excluded by the area and lies under (a path prefix, by whole segments: `core/io` does not enclose `core/iodata.json`) the directory of some glob of the area. The **closest** is the area with the longest such directory; **areas that tie all run**. A path **no area encloses is UNMAPPED and runs the FULL suite** (every area, every step), and the lander names it: never a silent skip.
-   **Gate-defining paths** also run the full suite: everything under `.land/` (the areas file, `land.conf`, hooks, the vendored tool) and every path in `LAND_PROTECTED`. They are never "unmapped" (they are named *gate-defining*), and an area that owns one does not narrow the run: the files that judge changes are judged by everything.
+   **Gate-defining paths** also run the full suite: everything under `.land/` (the areas file, `land.conf`, hooks, the vendored tool) and every path in `LAND_PROTECTED`. They are never "unmapped" (they are named *gate-defining*), and an area that owns one does not narrow the run: the files that judge changes are judged by everything. **A repository may declare otherwise:** the areas file may carry a top-level `"gate_areas": ["NAME", ...]` (a non-empty list of distinct area names that exist). A gate-defining change then runs THOSE areas (added to the areas it touches) instead of everything, and still says which path made it gate-defining. Use it when the full suite is too expensive to run for every change to the judge (a family repository of many libraries): the trade is that an area outside the list is not re-judged until a change touches it or the release candidate runs it, and rule 7 is unchanged: the release candidate runs EVERY area, `gate_areas` or not. A path no area owns or encloses still runs the full suite. Without the key nothing changes.
 6. **Inert is an area with no steps.** An area whose `steps` is `[]` is a documented area whose changes run nothing. A landing whose touched areas have no steps runs nothing, says `"validation":"inert"` and lists those areas (section 5): never a bare green. `LAND_INERT` keeps working (expand and contract): its patterns are the reserved pseudo-area `inert`, which owns them, has no steps, and **does not own a deleted path** (a check can read that a file exists, and nothing can tell that from its content; this is the rule `LAND_INERT` already has). With **no areas file**, the repository has one implicit area `all` that owns every path and whose steps are `LAND_GATES_CMD` then `LAND_TEST_CMD`; the inert patterns carve non-deleted paths out of `all`, so a change whose every path is inert touches only `inert`, as today. **With an areas file**, an inert pattern carves nothing out: a path that matches `inert` and an area touches both, and `land-check` reports the overlap. `LAND_INERT` is the older spelling and is retired in the next major release; a stepless area is the way to say it now.
 7. **The release candidate runs EVERY area.** `land-release` runs every step of every area (with `LAND_RC=1`: nothing cached, selected or skipped), then `LAND_RC_CMD` if the repository sets one (the extra checks areas do not carry: a soak, a long suite), and makes no tag unless all pass. A candidate is the audit of the factoring (section 3.3).
 
@@ -65,7 +65,7 @@ decide(areas, inert, protected, changes, release_candidate):
   changes := split every rename into (D old, A new)
   full := release_candidate
   for (status, p) in changes:
-    if p under .land/ or p matches a protected glob: full := true;  mark p gate-defining
+    if p under .land/ or p matches a protected glob:  mark p gate-defining;  if the file declares gate_areas: touched += gate_areas  else: full := true
     owners := every area that owns p
            + [inert]  if p matches an inert glob and status != D
     if owners non-empty:  touched += owners;  continue
@@ -500,6 +500,85 @@ The Lean tree is a chain: `impl` imports `spec`, `proofs` imports both, so `spec
 ```
 
 No code, still areas. `guide` and `policies` are checked separately, and both read the glossary and the word list, so those two files are in both. `scripts` is the tooling the checks use. `front-matter` has no steps: the readme, licence, changelog and contributing guide are read by no check (the audit of 3.3 says so), so a change that touches only them runs nothing and says `"validation":"inert"`. A document change that touches the guide runs the guide's three checks and not the policies'. The repository that sets `LAND_INERT=CHANGELOG.md` today is this one with the area made explicit.
+
+### 8.7 A family repository with per-library areas (leaf, C substrate, split definitions/proofs)
+
+In a family repository (`docs/family-repo.md` section 1.3), each library declares its own `lib/<name>/areas.json` and `.land/areas.json` is composed deterministically from them. Three library shapes illustrate how `uses` and per-library areas compose:
+
+1. **A small leaf library (`leaf`, ~10 Lean modules, `deps` empty)** declares one area named `leaf`:
+
+```json
+{
+  "version": 1,
+  "areas": [
+    {
+      "name": "leaf",
+      "paths": ["*"],
+      "steps": [
+        {"run": "lake build", "cwd": "lib/leaf"},
+        {"run": "lake test", "cwd": "lib/leaf"}
+      ]
+    }
+  ]
+}
+```
+
+2. **A library with a specification and a C substrate (`kernel`, `deps` empty)** splits into `kernel:spec` (shared Lean specification) and `kernel:c` (the C substrate, which reads the specification's exported layout header and has `"uses": []`):
+
+```json
+{
+  "version": 1,
+  "areas": [
+    {
+      "name": "kernel:spec",
+      "paths": ["Spec/*", "lakefile.toml", "lean-toolchain", "lake-manifest.json"],
+      "steps": [{"run": "lake build Spec", "cwd": "lib/kernel"}]
+    },
+    {
+      "name": "kernel:c",
+      "paths": ["c/*", "include/*", "Makefile", "Spec/*"],
+      "steps": [{"run": "make test", "cwd": "lib/kernel"}],
+      "uses": []
+    }
+  ]
+}
+```
+
+Here `Spec/*` is listed in both `kernel:spec` and `kernel:c` (intra-library overlap, rule 4) because the C tests check against the spec; a change in `c/*` runs only `kernel:c` and does not rebuild `Spec`.
+
+3. **A library with quick definitions and slow proofs (`core`, `deps`: `["leaf", "kernel"]`)** splits into `core:defs` and `core:proofs`, and a downstream library `app` (`deps`: `["core"]`) declares `uses` only on `core:defs`:
+
+```json
+{
+  "version": 1,
+  "areas": [
+    {
+      "name": "core:defs",
+      "paths": ["Defs/*", "lakefile.toml", "lean-toolchain", "lake-manifest.json"],
+      "steps": [{"run": "lake build Defs", "cwd": "lib/core"}],
+      "uses": [
+        {"lib": "leaf", "area": "leaf"},
+        {"lib": "kernel", "area": "spec"}
+      ]
+    },
+    {
+      "name": "core:proofs",
+      "paths": ["Proofs/*", "Defs/*", "lakefile.toml", "lean-toolchain", "lake-manifest.json"],
+      "steps": [{"run": "lake build Proofs", "cwd": "lib/core"}],
+      "uses": [
+        {"lib": "leaf", "area": "leaf"},
+        {"lib": "kernel", "area": "spec"}
+      ]
+    }
+  ]
+}
+```
+
+When `app/areas.json` declares `"uses": [{"lib": "core", "area": "defs"}]`, the composed `.land/areas.json` expands `app`'s `paths` to include `lib/core/Defs/*` (and transitively `lib/leaf/*` and `lib/kernel/Spec/*`), **excluding `lib/core/Proofs/*` and `lib/kernel/c/*`**:
+
+- A change to `lib/core/Proofs/*` runs only `core:proofs` (slow proofs), without triggering `app` or `core:defs`.
+- A change to `lib/core/Defs/*` runs `core:defs`, `core:proofs`, and `app`.
+- Releasing `core` (`land-release --area core`) still requires **both** `core:defs` and `core:proofs` plus `app` (every area of `core` and every area that `uses` it) to pass, and tags `core/vX.Y.Z`.
 
 ## 9. What this page does not do
 
