@@ -1,0 +1,5 @@
+# gitleaks configuration (the secret gate): the default rules.
+title = "vbm-prob"
+
+[extend]
+useDefault = true

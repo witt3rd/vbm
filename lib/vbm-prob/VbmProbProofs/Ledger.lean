@@ -1,0 +1,146 @@
+import VbmProbProofs.Core
+import VbmProbProofs.Refusal
+import VbmProbProofs.Limits
+import VbmProbProofs.Prob
+import VbmProbProofs.Prob.Bayes
+import VbmProbProofs.Scaled
+import VbmProbProofs.Apportion
+import VbmProbProofs.Dist
+import VbmProbProofs.Dist.Canon
+import VbmProbProofs.Dist.Query
+import VbmProbProofs.Dist.Quantile
+import VbmProbProofs.Dist.Normalize
+import VbmProbProofs.Dist.Mixture
+import VbmProbProofs.Dist.Map
+import VbmProbProofs.Dist.Condition
+import VbmProbProofs.Dist.Scaled
+import VbmProbProofs.Vectors
+import LandLedger
+/-! # The obligation ledger
+
+Every claim the library makes, keyed by a slug and checked by `land-lean ledger` (`.land/tool/docs/lean-gates.md`): a claim is `proved` only by naming theorems
+(double-backtick names are checked at elaboration), or it is a `limit` no machine decides. -/
+open Land.Ledger
+
+def ledger : List Obligation := [
+  O "the-library-has-a-name" (.proved [``VbmProb.libraryName_nonempty]),
+  O "refusal-carries-its-evidence" (.proved [``VbmProb.Refusal.tooManyAtoms_inj, ``VbmProb.Refusal.eq_iff_decide]),
+  O "limits-default-values" (.proved [``VbmProb.Limits.default_values]),
+  O "bit-length-exact" (.proved [``VbmProb.bitLength_zero, ``VbmProb.bitLength_of_ne_zero, ``VbmProb.bitLength_eq_zero_iff,
+    ``VbmProb.lt_two_pow_bitLength, ``VbmProb.two_pow_bitLength_pred_le, ``VbmProb.bitLength_mono]),
+  O "rat-bits-positive" (.proved [``VbmProb.Rat.bits_pos, ``VbmProb.Rat.bits_ofInt]),
+  O "key-order-laws" (.proved [``VbmProb.Key.le_iff, ``VbmProb.Key.le_refl, ``VbmProb.Key.le_trans, ``VbmProb.Key.le_total,
+    ``VbmProb.Key.le_antisymm, ``VbmProb.Key.lt_asymm]),
+  O "PR1-prob-make" (.proved [``VbmProb.Prob.make_ok_iff, ``VbmProb.Prob.make_val, ``VbmProb.Prob.make_belowZero, ``VbmProb.Prob.make_aboveOne]),
+  O "PR2-prob-ofFrac" (.proved [``VbmProb.Prob.ofFrac_denominatorZero_iff, ``VbmProb.Prob.ofFrac_eq_make]),
+  O "PR3-prob-complement" (.proved [``VbmProb.Prob.complement_val, ``VbmProb.Prob.complement_complement, ``VbmProb.Prob.complement_zero,
+    ``VbmProb.Prob.val_add_complement]),
+  O "PR4-prob-mul" (.proved [``VbmProb.Prob.mul_val, ``VbmProb.Prob.mul_comm, ``VbmProb.Prob.mul_assoc, ``VbmProb.Prob.one_mul,
+    ``VbmProb.Prob.mul_one, ``VbmProb.Prob.zero_mul, ``VbmProb.Prob.mul_zero, ``VbmProb.Prob.mul_le_left, ``VbmProb.Prob.mul_le_right]),
+  O "PR5-prob-add" (.proved [``VbmProb.Prob.add_ok_iff, ``VbmProb.Prob.add_val, ``VbmProb.Prob.add_refuses, ``VbmProb.Prob.add_comm,
+    ``VbmProb.Prob.add_complement]),
+  O "PR10-prob-order" (.proved [``VbmProb.Prob.le_refl, ``VbmProb.Prob.le_trans, ``VbmProb.Prob.le_antisymm, ``VbmProb.Prob.le_total]),
+  O "PR6-prob-bayes" (.proved [``VbmProb.Prob.evidence_val, ``VbmProb.Prob.bayes_ok_iff, ``VbmProb.Prob.bayes_zeroEvidence,
+    ``VbmProb.Prob.bayes_val, ``VbmProb.Prob.bayes_mul_evidence, ``VbmProb.Prob.bayes_val_expanded]),
+  O "PR7-prob-bayes-boundaries" (.proved [``VbmProb.Prob.bayes_prior_zero, ``VbmProb.Prob.bayes_prior_one,
+    ``VbmProb.Prob.bayes_like_eq, ``VbmProb.Prob.bayes_likeNot_zero]),
+  O "PR8-prob-conditional" (.proved [``VbmProb.Prob.conditional_ok_iff, ``VbmProb.Prob.conditional_mul,
+    ``VbmProb.Prob.conditional_zeroMarginal, ``VbmProb.Prob.conditional_jointExceedsMarginal]),
+  O "PR9-prob-bayes-is-conditional" (.proved [``VbmProb.Prob.bayes_eq_conditional,
+    ``VbmProb.Prob.conditional_evidence_ne_jointExceeds, ``VbmProb.Prob.bayes_conditional_zero]),
+  O "prob-ext" (.proved [``VbmProb.Prob.ext]),
+  O "FX1-scale-make" (.proved [``VbmProb.Scale.make_zero, ``VbmProb.Scale.make_tooLarge, ``VbmProb.Scale.make_ok,
+    ``VbmProb.Scale.make_n]),
+  O "FX2-toScaled-range" (.proved [``VbmProb.toScaled_le, ``VbmProb.toScaled_zero, ``VbmProb.toScaled_one]),
+  O "FX3-toScaled-error-bound" (.proved [``VbmProb.toScaled_bounds, ``VbmProb.toScaled_error]),
+  O "FX4-toScaled-monotone" (.proved [``VbmProb.div_round_mono, ``VbmProb.toScaled_mono]),
+  O "FX5-ofScaled" (.proved [``VbmProb.ofScaled_ok_iff, ``VbmProb.ofScaled_val, ``VbmProb.ofScaled_above]),
+  O "FX6-toScaled-ofScaled" (.proved [``VbmProb.num_mul_scale, ``VbmProb.toScaled_ofScaled]),
+  O "FX7-ofScaledInt" (.proved [``VbmProb.ofScaledInt_neg, ``VbmProb.ofScaledInt_above, ``VbmProb.ofScaledInt_in_range,
+    ``VbmProb.ofScaledInt_natCast]),
+  O "FX8-apportion-sum" (.proved [``VbmProb.apportion_sum, ``VbmProb.Apportion.units_sum, ``VbmProb.Apportion.units_length,
+    ``VbmProb.Apportion.chosen_length, ``VbmProb.Apportion.sum_floor_rem]),
+  O "FX9-apportion-within-one" (.proved [``VbmProb.apportion_within_one, ``VbmProb.apportion_zero_weight,
+    ``VbmProb.Apportion.chosen_rem_pos]),
+  O "FX10-apportion-refusal" (.proved [``VbmProb.apportion_refuses_iff, ``VbmProb.apportion_ok_of_pos]),
+  O "FX11-apportion-ties" (.proved [``VbmProb.apportion_tie]),
+  O "FX12-apportion-idempotent" (.proved [``VbmProb.apportion_idem]),
+  O "DS4-canon" (.proved [``VbmProb.canon_keys_increasing, ``VbmProb.canon_weightSum, ``VbmProb.canon_weightAt,
+    ``VbmProb.canon_idem]),
+  O "DS1-dist-make" (.proved [``VbmProb.Dist.make_atoms, ``VbmProb.Dist.make_tooManyAtoms, ``VbmProb.Dist.make_numberTooLarge,
+    ``VbmProb.Dist.make_emptyDist, ``VbmProb.Dist.make_keysNotIncreasing, ``VbmProb.Dist.make_zeroAtom,
+    ``VbmProb.Dist.make_atomSumNotOne, ``VbmProb.Dist.make_ok_iff]),
+  O "DS2-dist-ext" (.proved [``VbmProb.Dist.ext, ``VbmProb.Dist.ext_iff, ``VbmProb.Dist.make_unique]),
+  O "DS3-point-atoms" (.proved [``VbmProb.Dist.point_atoms, ``VbmProb.Dist.point_support, ``VbmProb.Dist.point_size,
+    ``VbmProb.Dist.size_pos, ``VbmProb.Dist.make_point]),
+  O "DS3-point-mean-cdf" (.proved [``VbmProb.Dist.mean_point, ``VbmProb.Dist.point_cdf_ge, ``VbmProb.Dist.point_cdf_lt]),
+  O "DS6-mass" (.proved [``VbmProb.Dist.mass_true, ``VbmProb.Dist.mass_false, ``VbmProb.Dist.mass_or_val, ``VbmProb.Dist.mass_or,
+    ``VbmProb.Dist.mass_not, ``VbmProb.Dist.mass_mono, ``VbmProb.Dist.mass_congr]),
+  O "DS7-cdf" (.proved [``VbmProb.Dist.cdf_mono, ``VbmProb.Dist.cdf_below, ``VbmProb.Dist.cdf_above, ``VbmProb.Dist.cdf_right_cont]),
+  O "DS10-expect" (.proved [``VbmProb.Dist.expect_add, ``VbmProb.Dist.expect_smul, ``VbmProb.Dist.expect_const,
+    ``VbmProb.Dist.expect_mono, ``VbmProb.Dist.expect_point, ``VbmProb.Dist.mean_point]),
+  O "DS8-quantile-total" (.proved [``VbmProb.Dist.quantile_levelNotPositive, ``VbmProb.Dist.quantile_levelAboveOne,
+    ``VbmProb.Dist.quantile_ok, ``VbmProb.Dist.quantile_mem]),
+  O "DS9-quantile-galois" (.proved [``VbmProb.Dist.quantile_galois, ``VbmProb.Dist.quantile_cdf_ge, ``VbmProb.Dist.quantile_cdf_lt,
+    ``VbmProb.Dist.quantile_least, ``VbmProb.Dist.quantile_mono]),
+  O "DS5-normalize-sum-and-probability" (.proved [``VbmProb.Dist.normalize_ok, ``VbmProb.Dist.normalize_total,
+    ``VbmProb.Dist.normalize_prob, ``VbmProb.Dist.normalize_support, ``VbmProb.Dist.normalize_vals]),
+  O "DS5-normalize-refusals" (.proved [``VbmProb.Dist.normalize_tooManyAtoms, ``VbmProb.Dist.normalize_numberTooLarge,
+    ``VbmProb.Dist.normalize_negativeWeight, ``VbmProb.Dist.normalize_zeroTotalWeight_iff]),
+  O "DS5-normalize-make-and-scale" (.proved [``VbmProb.Dist.normalize_of_make, ``VbmProb.Dist.canon_of_increasing,
+    ``VbmProb.Dist.normalize_scale, ``VbmProb.Dist.normalize_eq_core, ``VbmProb.Dist.normCore_scale]),
+  O "DS11-mixture-sum" (.proved [``VbmProb.Dist.mixCore_ok, ``VbmProb.Dist.mixture_vals, ``VbmProb.Dist.mixture_atoms,
+    ``VbmProb.Dist.mixW_sum, ``VbmProb.Dist.mixture_prob]),
+  O "DS12-mixture-ends" (.proved [``VbmProb.Dist.mixCore_zero, ``VbmProb.Dist.mixCore_one, ``VbmProb.Dist.mixCore_swap,
+    ``VbmProb.Dist.mixCore_self, ``VbmProb.Dist.mixture_zero, ``VbmProb.Dist.mixture_one, ``VbmProb.Dist.mixture_swap,
+    ``VbmProb.Dist.mixture_self]),
+  O "DS13-mixture-mean" (.proved [``VbmProb.Dist.mixture_expect, ``VbmProb.Dist.mixture_mean]),
+  O "DS14-mixture-refusals" (.proved [``VbmProb.Dist.mixture_numberTooLarge, ``VbmProb.Dist.mixture_tooManyAtoms_iff,
+    ``VbmProb.Dist.mixture_ok_iff, ``VbmProb.Dist.rows_keys_mem, ``VbmProb.Dist.rows_keys_inc, ``VbmProb.Dist.unionSize_eq]),
+  O "DS15-map-queries" (.proved [``VbmProb.Dist.map_vals, ``VbmProb.Dist.mass_map, ``VbmProb.Dist.expect_map,
+    ``VbmProb.Dist.map_core, ``VbmProb.Dist.canon_gsum, ``VbmProb.Dist.canon_pos]),
+  O "DS15-map-laws" (.proved [``VbmProb.Dist.map_id, ``VbmProb.Dist.map_map, ``VbmProb.Dist.map_const,
+    ``VbmProb.Dist.eq_of_expect, ``VbmProb.Dist.inc_pos_unique]),
+  O "DS15-map-monotone" (.proved [``VbmProb.Dist.map_eq_mapMono, ``VbmProb.Dist.size_map, ``VbmProb.Dist.expect_mapMono,
+    ``VbmProb.Dist.mass_mapMono]),
+  O "DS16-shift" (.proved [``VbmProb.Dist.shift_atoms, ``VbmProb.Dist.mean_shift, ``VbmProb.Dist.cdf_shift,
+    ``VbmProb.Dist.shift_zero, ``VbmProb.Dist.shift_shift]),
+  O "DS17-condition-refusal" (.proved [``VbmProb.Dist.condition_nullEvent, ``VbmProb.Dist.condition_core,
+    ``VbmProb.Dist.condition_ok_iff]),
+  O "DS17-condition-atoms" (.proved [``VbmProb.Dist.condition_vals, ``VbmProb.Dist.condition_mem,
+    ``VbmProb.Dist.eventW_sum', ``VbmProb.Dist.eventW_pos, ``VbmProb.Dist.eventW_keys]),
+  O "DS17-condition-mass" (.proved [``VbmProb.Dist.mass_condition, ``VbmProb.Dist.mass_condition_self,
+    ``VbmProb.Dist.condition_true, ``VbmProb.Dist.condition_condition]),
+  O "FX13-dist-toScaled-sum-and-keys" (.proved [``VbmProb.Dist.toScaled_sum, ``VbmProb.Dist.toScaled_keys,
+    ``VbmProb.Dist.toScaled_length, ``VbmProb.Dist.scaledWeights_sum, ``VbmProb.Dist.thirds_toScaled]),
+  O "FX13-dist-toScaled-error" (.proved [``VbmProb.Dist.toScaled_close, ``VbmProb.Dist.toScaled_error, ``VbmProb.Dist.wt_cast,
+    ``VbmProb.Dist.sum_wt]),
+  O "FX14-dist-ofScaled" (.proved [``VbmProb.Dist.ofScaled_ok_iff, ``VbmProb.Dist.ofScaled_sumNotScale,
+    ``VbmProb.Dist.ofScaled_keysNotIncreasing, ``VbmProb.Dist.ofScaled_vals, ``VbmProb.Dist.ofScaled_prob]),
+  O "RL1-no-float-no-second-ratio" (.limit "scripts/scan_rl1.sh, a Tier 1 scan with its negative self-test scripts/rl1_selftest.sh: no `Float` in VbmProb/ and no structure there with the fields `num` and `den`; a scan, not a Lean theorem"),
+  O "vectors-probability" (.proved [
+    ``VbmProb.Vectors.prob_01, ``VbmProb.Vectors.prob_02, ``VbmProb.Vectors.prob_03, ``VbmProb.Vectors.prob_04, ``VbmProb.Vectors.prob_05,
+    ``VbmProb.Vectors.prob_06, ``VbmProb.Vectors.prob_07, ``VbmProb.Vectors.prob_08, ``VbmProb.Vectors.prob_09, ``VbmProb.Vectors.prob_10,
+    ``VbmProb.Vectors.prob_11, ``VbmProb.Vectors.prob_12, ``VbmProb.Vectors.prob_13, ``VbmProb.Vectors.prob_14, ``VbmProb.Vectors.prob_15,
+    ``VbmProb.Vectors.prob_16, ``VbmProb.Vectors.prob_17, ``VbmProb.Vectors.prob_18, ``VbmProb.Vectors.prob_19]),
+  O "vectors-fixed-point" (.proved [
+    ``VbmProb.Vectors.fixed_01, ``VbmProb.Vectors.fixed_02, ``VbmProb.Vectors.fixed_03, ``VbmProb.Vectors.fixed_04, ``VbmProb.Vectors.fixed_05,
+    ``VbmProb.Vectors.fixed_06, ``VbmProb.Vectors.fixed_07, ``VbmProb.Vectors.fixed_08, ``VbmProb.Vectors.fixed_09, ``VbmProb.Vectors.fixed_10,
+    ``VbmProb.Vectors.fixed_11, ``VbmProb.Vectors.fixed_12, ``VbmProb.Vectors.fixed_13, ``VbmProb.Vectors.fixed_14]),
+  O "vectors-largest-remainder" (.proved [
+    ``VbmProb.Vectors.apportion_01, ``VbmProb.Vectors.apportion_02, ``VbmProb.Vectors.apportion_03, ``VbmProb.Vectors.apportion_04,
+    ``VbmProb.Vectors.apportion_05, ``VbmProb.Vectors.apportion_06, ``VbmProb.Vectors.apportion_07, ``VbmProb.Vectors.apportion_08,
+    ``VbmProb.Vectors.apportion_09, ``VbmProb.Vectors.apportion_10]),
+  O "vectors-distributions" (.proved [
+    ``VbmProb.Vectors.dist_01, ``VbmProb.Vectors.dist_02, ``VbmProb.Vectors.dist_03, ``VbmProb.Vectors.dist_04, ``VbmProb.Vectors.dist_05,
+    ``VbmProb.Vectors.dist_06, ``VbmProb.Vectors.dist_07, ``VbmProb.Vectors.dist_08, ``VbmProb.Vectors.dist_09, ``VbmProb.Vectors.dist_10,
+    ``VbmProb.Vectors.dist_11, ``VbmProb.Vectors.dist_12, ``VbmProb.Vectors.dist_13, ``VbmProb.Vectors.dist_14, ``VbmProb.Vectors.dist_15,
+    ``VbmProb.Vectors.dist_16, ``VbmProb.Vectors.dist_17, ``VbmProb.Vectors.dist_18, ``VbmProb.Vectors.dist_19, ``VbmProb.Vectors.dist_20,
+    ``VbmProb.Vectors.dist_21, ``VbmProb.Vectors.dist_22, ``VbmProb.Vectors.dist_23, ``VbmProb.Vectors.dist_24, ``VbmProb.Vectors.dist_25,
+    ``VbmProb.Vectors.dist_26, ``VbmProb.Vectors.dist_27, ``VbmProb.Vectors.dist_28, ``VbmProb.Vectors.dist_29, ``VbmProb.Vectors.dist_30,
+    ``VbmProb.Vectors.dist_31, ``VbmProb.Vectors.dist_32, ``VbmProb.Vectors.dist_33, ``VbmProb.Vectors.dist_34, ``VbmProb.Vectors.dist_35,
+    ``VbmProb.Vectors.dist_36, ``VbmProb.Vectors.dist_37, ``VbmProb.Vectors.dist_38, ``VbmProb.Vectors.dist_39, ``VbmProb.Vectors.dist_40,
+    ``VbmProb.Vectors.dist_41, ``VbmProb.Vectors.dist_42]),
+  O "vectors-distributions-at-a-scale" (.proved [
+    ``VbmProb.Vectors.scaled_01, ``VbmProb.Vectors.scaled_02, ``VbmProb.Vectors.scaled_03, ``VbmProb.Vectors.scaled_04])
+]
