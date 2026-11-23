@@ -1,0 +1,90 @@
+# Known-answer vectors of vbm-rng (docs/spec.md, part V). Plain text, one vector per line; words are 64-bit hexadecimal.
+# `scripts/test_vectors.sh` turns every line into a kernel-checked Lean `example` (VbmRngProofs/Vectors.lean is that output, checked in),
+# and fails if the two disagree or if a line is wrong. A change of any function that changes a line here is a breaking change.
+# Line kinds (`=` separates the question from the answer, `@` the final stream position):
+#   mix X = Y                                   raw A K = w0 w1 w2 w3 (ofKey K, words 0..3)
+#   seeded S = KEY w0 w1 w2 w3                  at-key K I = W      at-seed S I = W      at-key-advanced K J I = W
+#   child S C = KEY w0 w1                       child-key S C = KEY   child-key-advanced S J C = KEY   grandchild S C D = KEY
+#   below COUNT N SEED = v... @ P               below-err FUEL N SEED = REFUSAL
+#   fraction K SEED = NUM @ P                   fraction-err K SEED = REFUSAL
+#   shuffle-range N SEED = ys... @ P            shuffle-nat SEED xs... = ys... @ P     shuffle-chars SEED xs... = ys... @ P
+#   bernoulli COUNT NUM DEN SEED = 0/1... @ P   bernoulli-err NUM DEN SEED = REFUSAL
+
+# Mixer
+mix 0x0000000000000000 = 0x0000000000000000
+mix 0x0000000000000001 = 0x5692161D100B05E5
+mix 0x0000000000000002 = 0xDBD238973A2B148A
+mix 0xFFFFFFFFFFFFFFFF = 0xB4D055FCF2CBBD7B
+mix 0x0123456789ABCDEF = 0xB2C058E4EBB5112C
+
+# Raw streams (the first is the published SplitMix64 generator from state 0)
+raw 0x0000000000000000 = 0xE220A8397B1DCDAF 0x6E789E6AA1B965F4 0x06C45D188009454F 0xF88BB8A8724C81EC
+raw 0x0000000000000001 = 0x910A2DEC89025CC1 0xBEEB8DA1658EEC67 0xF893A2EEFB32555E 0x71C18690EE42C90B
+raw 0x0123456789ABCDEF = 0x157A3807A48FAA9D 0xD573529B34A1D093 0x2F90B72E996DCCBE 0xA2D419334C4667EC
+raw 0xFFFFFFFFFFFFFFFF = 0xE4D971771B652C20 0xE99FF867DBF682C9 0x382FF84CB27281E9 0x6D1DB36CCBA982D2
+
+# Seeded streams (key, then words 0..3)
+seeded 0x0000000000000000 = 0x86FA59FA943FE6F8 0xFAA2702D3A581CDC 0x3C5CF444C8657B78 0xEFDB4E177B0B3541 0x1BC8C5A31EA54F5D
+seeded 0x0000000000000001 = 0x6DF8F8D77B172277 0x15D22D6DFEA07126 0xD267F8FB4683E9E3 0xED0EC2DFFBED0830 0xB200728D501A78C8
+seeded 0x0123456789ABCDEF = 0x8C85FA23033A91DE 0xB9ED29F41599B816 0xD3F91EA455BE1362 0x11AFABE62566E08B 0x252A5A8B5E9E9888
+seeded 0xFFFFFFFFFFFFFFFF = 0xA4A0E31617CFD1A1 0x75055E6DBB91D266 0x47C7405A5292ACC2 0x3E5B3FF10EE91C29 0x338AF1928F9A632F
+
+# Skip-ahead (random access; the counter at 2^64 - 1 wraps to the key)
+at-key 0x0000000000000001 1000000 = 0x18D805F4F66E8EF0
+at-key 0x0000000000000001 0xFFFFFFFFFFFFFFFF = 0x5692161D100B05E5
+at-key 0x0000000000000001 8 = 0x491718DE357E3DA8
+at-key-advanced 0x0000000000000001 5 3 = 0x491718DE357E3DA8
+at-seed 0x0000000000000001 1000000 = 0x2346460DFEBFC015
+at-seed 0x0000000000000001 1048576 = 0x24402AA9ED7030A3
+at-seed 0x0000000000000001 0xFFFFFFFFFFFFFFFF = 0x0A377D1E0EA7DD99
+
+# Split (parent seed 1: child key, then words 0 and 1 of the child)
+child 0x0000000000000001 0 = 0xD0E6AA970FAF36DD 0xD8B3C18DF3D9E123 0xA2E71C264FFA6F97
+child 0x0000000000000001 1 = 0xFDC79FB16B6BCA7E 0x87016AD7B81BC459 0x4A9931DF72E67C7A
+child 0x0000000000000001 2 = 0xB766FC3237EA4433 0x86847152ADE57FD7 0xAFD172FB6F7A3A07
+child 0x0000000000000001 0xFFFFFFFFFFFFFFFF = 0xBF8F68540A6A4DFB 0xDF108A08167153BD 0x2D6A439B8839D7C3
+grandchild 0x0000000000000001 0 0 = 0xA47AA05215A01329
+child-key 0x0000000000000000 0 = 0x383C38EE70DF4217
+child-key-advanced 0x0000000000000001 7 0 = 0xD0E6AA970FAF36DD
+
+# uniformBelow (three draws in a row, then the position)
+below 3 10 1 = 0 3 2 @ 3
+below 3 10 0 = 8 8 1 @ 3
+below 3 7 0 = 4 6 4 @ 3
+below 3 1 1 = 0 0 0 @ 3
+below 3 18446744073709551616 1 = 1572369170352337190 15161360428669594083 17081804703922980912 @ 3
+below 3 9223372036854775809 3 = 4658251182101344059 2841104050483902510 8369637337981164616 @ 5
+below 1 9223372036854775809 1 = 5937988391814818274 @ 2
+below-err 1 9223372036854775809 1 = fuelExhausted
+below-err 64 0 1 = boundZero
+below-err 64 18446744073709551617 1 = boundTooLarge
+
+# uniformFraction (the numerator for k = 1, 8, 53, 64; position 1)
+fraction 1 0 = 1 @ 1
+fraction 8 0 = 250 @ 1
+fraction 53 0 = 8818418357062403 @ 1
+fraction 64 0 = 18060120795263802588 @ 1
+fraction 1 1 = 0 @ 1
+fraction 8 1 = 21 @ 1
+fraction 53 1 = 767758383961102 @ 1
+fraction 64 1 = 1572369170352337190 @ 1
+fraction-err 0 1 = fractionBitsOutOfRange
+fraction-err 65 1 = fractionBitsOutOfRange
+
+# shuffle (the result and the position after)
+shuffle-range 10 1 = 2 1 4 3 7 5 8 9 6 0 @ 9
+shuffle-range 10 0 = 9 7 4 3 5 0 2 1 6 8 @ 9
+shuffle-range 10 0x0123456789ABCDEF = 8 0 7 4 5 6 1 3 9 2 @ 9
+shuffle-chars 2 a b c d e = d b a c e @ 4
+shuffle-range 0 1 = @ 0
+shuffle-nat 1 7 = 7 @ 0
+
+# bernoulli (eight draws in a row; 1 is true; position 8)
+bernoulli 8 1 3 1 = 0 1 1 0 0 0 0 1 @ 8
+bernoulli 8 3 4 0 = 1 1 1 1 1 1 0 1 @ 8
+bernoulli 8 0 1 1 = 0 0 0 0 0 0 0 0 @ 8
+bernoulli 8 1 1 1 = 1 1 1 1 1 1 1 1 @ 8
+bernoulli-err -1 3 1 = probabilityOutOfRange
+bernoulli-err 4 3 1 = probabilityOutOfRange
+bernoulli-err 1 0 1 = probabilityDenominatorZero
+bernoulli-err 1 18446744073709551617 1 = boundTooLarge
