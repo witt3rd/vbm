@@ -139,6 +139,21 @@
       ]
     },
     {
+      "name": "vbm-rt",
+      "paths": [
+        "lib/vbm-rt/*"
+      ],
+      "steps": [
+        {
+          "run": "mise exec -- scripts/repo-gates.sh"
+        },
+        {
+          "run": "tests/test_mem.sh",
+          "cwd": "lib/vbm-rt"
+        }
+      ]
+    },
+    {
       "name": "vbm-scoreboard",
       "paths": [
         "lib/vbm-scoreboard/*"

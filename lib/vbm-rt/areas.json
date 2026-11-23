@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "areas": [
+    {
+      "name": "vbm-rt",
+      "paths": [
+        "*"
+      ],
+      "steps": [
+        {
+          "run": "tests/test_mem.sh"
+        }
+      ]
+    }
+  ]
+}

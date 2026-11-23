@@ -1,0 +1,6 @@
+name = "vbm-rt"
+scope = "The freestanding runtime shim (allocator, mem* replacements, WebAssembly and native) and the ABI description with the C header and binding generators; consumers vbm-json and vbm-sse."
+kind = "foundation"
+status = "live"
+license = "Apache-2.0"
+consumers = []
