@@ -1,0 +1,9 @@
+name = "vbm-context"
+scope = "A typed, verified agent context state (goal, obligations, facts with provenance, bounded compaction) for long-horizon LLM agents."
+kind = "library"
+status = "live"
+license = "Apache-2.0"
+consumers = []
+
+[links]
+docs = "lib/vbm-context/docs"
