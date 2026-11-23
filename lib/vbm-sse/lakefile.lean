@@ -1,7 +1,7 @@
 import Lake
 open System Lake DSL
 
-require «vbm-simd» from "vendor/vbm-simd"
+require «vbm-simd» from "../vbm-simd"
 
 package «vbm-sse» where
   leanOptions := #[⟨`warningAsError, true⟩, ⟨`autoImplicit, false⟩]
@@ -13,10 +13,10 @@ lean_lib LeanSse where
   -- every module under LeanSse/ is built, imported by the umbrella or not: a module cannot hide from the build
   globs := #[.andSubmodules `LeanSse]
   -- `LeanSse.Fast` calls the search and the CPU test of vbm-simd (trust ledger T13) by their C names: its C is compiled with that package's header, as the package's own modules are
-  moreLeancArgs := #["-include", (__dir__ / "vendor" / "vbm-simd" / "include" / "vbm_simd.h").toString]
+  moreLeancArgs := #["-include", (__dir__ / ".." / "vbm-simd" / "include" / "vbm_simd.h").toString]
 
 /-- The proofs: may import `Std` and `Lean`; NEVER linked (nothing in `LeanSse` may import it, and no executable or export depends on it). -/
-require «land-ledger» from ".land/tool/lean"   -- the landing tool's Lean modules (the ledger vocabulary and the reach walk), a package it ships: required, never declared, so a repository that vendors this one shares a single copy
+require «land-ledger» from "../../.land/tool/lean"   -- the landing tool's Lean modules (the ledger vocabulary and the reach walk), a package it ships: required, never declared, so a repository that vendors this one shares a single copy
 
 lean_lib LeanSseProofs where
   globs := #[.andSubmodules `LeanSseProofs]

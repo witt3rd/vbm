@@ -1,0 +1,9 @@
+name = "vbm-sse"
+scope = "Server-sent event streams."
+kind = "library"
+status = "live"
+license = "Apache-2.0"
+consumers = []
+
+[links]
+docs = "lib/vbm-sse/docs"

@@ -86,7 +86,7 @@ deriving Inhabited
 module ROOT of each from `scripts/pin-roots.txt` (`NAME ROOT`, owned by this repository: the lock is language-neutral and does not know it). A locked library with no line there is an error, never a guess. -/
 def pinVerdicts (args : List String) : IO (Std.HashMap String Pin) := do
   let a := argOf args
-  let tool := a "--land-pin" ".land/tool/bin/land-pin"
+  let tool := a "--land-pin" "../../.land/tool/bin/land-pin"
   let rootsFile := a "--pin-roots" "scripts/pin-roots.txt"
   let roots := (← readLines rootsFile).filterMap fun l => match ((l.splitOn "#").headD "").trimAscii.toString.splitOn " " |>.filter (· != "") with
     | [n, r] => some (n, r)

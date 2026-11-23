@@ -43,7 +43,7 @@ Also: [flip-checklist](skills/flip-checklist/SKILL.md) (publishing a repo), [wri
 | [vbm-prob](lib/vbm-prob) | Exact probabilities and discrete distributions: validation and refusals, normalisation, mixture, mean and cumulative distribution. | library | live | unscored | unscored | - |
 | [vbm-rng](lib/vbm-rng) | Deterministic, splittable pseudo-random generators with specified streams, and exactly reproducible sampling primitives. | library | live | unscored | unscored | - |
 | [vbm-scoreboard](lib/vbm-scoreboard) | A project's scorecard as a proved library: metrics, ratchet floors, targets and history. | library | live | unscored | unscored | - |
-| [vbm-sse](https://github.com/witt3rd/vbm-sse) | Server-sent event streams | library | live | **PASS** (2 of 3; Trusted generation not yet defined) | **PASS** | [card](registry/scores/witt3rd__vbm-sse.md) |
+| [vbm-sse](lib/vbm-sse) | Server-sent event streams. | library | live | unscored | unscored | - |
 | vbm-uri | URI parsing and resolution (RFC 3986) | library | planned | unscored | unscored | - |
 | [vbm-work](lib/vbm-work) | The vocabulary of work: the typed outcome of a run (four tags, fourteen kinds of block, what makes one well formed) and the review words (findings, verdicts); pure Lean specifications and proofs. | library | live | unscored | unscored | - |
 <!-- registry:end -->
