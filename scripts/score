@@ -1,9 +1,17 @@
 #!/usr/bin/env python3
-"""scripts/score: deterministic source-metric measurement for a VBM library directory (docs/scoring.md).
+"""scripts/score: deterministic source, proof and trust measurement for a VBM library directory (docs/scoring.md).
   scripts/score <lib-dir>
-Outputs [scores] (spec_lines, proof_lines, code_lines, trusted_native_lines) and [scores.provenance] TOML to stdout.
-Reuses scorecard/scorecard's newline-count and read-guard conventions; emits no wall-clock timestamps."""
-import os, re, stat, subprocess, sys, tomllib
+Outputs [scores] and [scores.provenance] TOML to stdout.
+Reuses scorecard/scorecard's newline-count and read-guard conventions, .land/tool/lean/trust_ledger.py, and land-lean; emits no wall-clock timestamps."""
+import os, re, shlex, shutil, stat, subprocess, sys, tomllib
+
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(REPO_ROOT, ".land", "tool", "lean"))
+import trust_ledger
+
+ESCAPES = {"sorry", "admit", "axiom", "unsafe", "implemented_by", "csimp"}
+IDENT_START = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_")
+IDENT_CONT = IDENT_START | set("0123456789'.!?")
 
 MAX_FILE = 5_000_000
 NON_CODE_DIRS = {"vectors", "tests", "scripts", "bench", "docs"}
@@ -82,8 +90,7 @@ def git_commit(lib_dir):
 
 
 def tool_version(lib_dir):
-    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    vf = os.path.join(root, "VERSION")
+    vf = os.path.join(REPO_ROOT, "VERSION")
     if os.path.isfile(vf):
         v = open(vf, encoding="utf-8").read().strip()
         if v:
@@ -106,51 +113,199 @@ def classify_lean(files):
     return spec, proof, code
 
 
-def trust_patterns(lib_dir):
+def load_scorecard(lib_dir):
     sc = safe_read(lib_dir, "scorecard.toml")
     if sc is not None:
         try:
-            d = tomllib.loads(sc.decode("utf-8"))
-            c_files = d.get("trust", {}).get("c_files")
-            if isinstance(c_files, list) and all(isinstance(x, str) for x in c_files):
-                return c_files
+            return tomllib.loads(sc.decode("utf-8"))
         except (UnicodeDecodeError, tomllib.TOMLDecodeError):
             pass
+    return {}
+
+
+def trust_patterns(sc):
+    c_files = sc.get("trust", {}).get("c_files")
+    if isinstance(c_files, list) and all(isinstance(x, str) for x in c_files):
+        return c_files
     return DEFAULT_TRUST_PATTERNS
+
+
+def load_lean_conf(lib_dir):
+    raw = safe_read(lib_dir, ".land/lean.conf")
+    if raw is None:
+        return {}
+    conf = {}
+    for line in raw.decode("utf-8", errors="replace").splitlines():
+        s = line.strip()
+        if not s or s.startswith("#") or "=" not in s:
+            continue
+        k, v = s.split("=", 1)
+        k = k.strip()
+        try:
+            parts = shlex.split(v, comments=True)
+            conf[k] = parts[0] if len(parts) == 1 else " ".join(parts)
+        except ValueError:
+            conf[k] = v.strip().strip("\"'")
+    return conf
+
+
+def count_lean_escapes(src):
+    n, i, count, in_block = len(src), 0, 0, 0
+    while i < n:
+        ch = src[i]
+        if in_block > 0:
+            if src.startswith("/-", i): in_block += 1; i += 2
+            elif src.startswith("-/", i): in_block -= 1; i += 2
+            else: i += 1
+            continue
+        if src.startswith("/-", i): in_block = 1; i += 2; continue
+        if src.startswith("--", i):
+            nl = src.find("\n", i)
+            i = n if nl < 0 else nl + 1
+            continue
+        if ch == '"':
+            i += 1
+            while i < n:
+                if src[i] == "\\": i += 2
+                elif src[i] == '"': i += 1; break
+                else: i += 1
+            continue
+        if ch == "«":
+            end = src.find("»", i + 1)
+            i = n if end < 0 else end + 1
+            continue
+        if ch == "'" and i + 2 < n:
+            if src[i + 1] == "\\":
+                j = i + 2
+                while j < n and src[j] not in "'\n": j += 1
+                if j < n and src[j] == "'": i = j + 1; continue
+            elif src[i + 2] == "'" and src[i + 1] != "\n":
+                i += 3; continue
+        if ch in IDENT_START:
+            j = i + 1
+            while j < n and src[j] in IDENT_CONT: j += 1
+            if src[i:j] in ESCAPES:
+                count += 1
+            i = j
+            continue
+        i += 1
+    return count
+
+
+def measure_escapes(lib_dir, files, sc, spec_f, proof_f, code_f, lean_conf):
+    globs = sc.get("source", {}).get("globs")
+    if isinstance(globs, list) and all(isinstance(x, str) for x in globs):
+        rs = [gre(p) for p in globs]
+        scan_files = [f for f in files if any(r.match(f) for r in rs)]
+    else:
+        extra = [f for f in files if f.endswith(".lean") and f.split("/")[0] in {"abi", "vectors"}]
+        scan_files = sorted(set(spec_f + proof_f + code_f + extra))
+    token_hits = 0
+    for rel in scan_files:
+        data = safe_read(lib_dir, rel)
+        if data is not None:
+            token_hits += count_lean_escapes(data.decode("utf-8", errors="replace"))
+    axiom_bad = 0
+    if lean_conf.get("LAND_LEAN_AXIOM_IMPORTS") and lean_conf.get("LAND_LEAN_AXIOM_ROOTS") and shutil.which("lake"):
+        land_lean = os.path.join(REPO_ROOT, ".land", "tool", "bin", "land-lean")
+        r = subprocess.run(
+            [land_lean, "axiom"],
+            env={**os.environ, "LAND_LEAN_ROOT": os.path.abspath(lib_dir)},
+            capture_output=True, text=True, timeout=120,
+        )
+        m = re.search(r"^axiom gate: \d+ constants checked, (\d+) offending$", r.stdout, re.M)
+        if m:
+            axiom_bad = int(m.group(1))
+    return max(token_hits, axiom_bad)
+
+
+def measure_ledger(lib_dir, lean_conf):
+    if not lean_conf.get("LAND_LEAN_LEDGER_MODULE") or not shutil.which("lake"):
+        return None
+    land_lean = os.path.join(REPO_ROOT, ".land", "tool", "bin", "land-lean")
+    r = subprocess.run(
+        [land_lean, "ledger", "--no-write"],
+        env={**os.environ, "LAND_LEAN_ROOT": os.path.abspath(lib_dir)},
+        capture_output=True, text=True, timeout=120,
+    )
+    m = re.search(r"^ledger: (\d+) proved, \d+ partial, \d+ open, \d+ limit, of (\d+)$", r.stdout, re.M)
+    if not m:
+        return None
+    return int(m.group(1)), int(m.group(2))
+
+
+def measure_trust_ledger(lib_dir, sc):
+    rel = sc.get("trust", {}).get("ledger", "docs/trust-ledger.md")
+    if not isinstance(rel, str):
+        rel = "docs/trust-ledger.md"
+    data = safe_read(lib_dir, rel)
+    if data is None:
+        return None
+    return len(trust_ledger.parse(data.decode("utf-8", errors="replace")))
+
+
+def measure_generated_share(lib_dir):
+    if safe_read(lib_dir, "scripts/ClosureGate.lean") is None or not shutil.which("lake"):
+        return None
+    r = subprocess.run(
+        ["lake", "env", "lean", "--run", "scripts/ClosureGate.lean"],
+        cwd=lib_dir, capture_output=True, text=True, timeout=120,
+    )
+    m = re.search(r"specified share ([0-9]+(?:\.[0-9]+)?)%", r.stdout)
+    return float(m.group(1)) if m else None
 
 
 def measure(lib_dir):
     if not os.path.isdir(lib_dir):
         die(f"not a directory: {lib_dir}")
     files = list_files(lib_dir)
+    sc = load_scorecard(lib_dir)
+    lean_conf = load_lean_conf(lib_dir)
     spec_f, proof_f, code_f = classify_lean(files)
-    t_pats = [gre(p) for p in trust_patterns(lib_dir)]
+    t_pats = [gre(p) for p in trust_patterns(sc)]
     trust_f = [f for f in files if any(r.match(f) for r in t_pats)]
-    return {
+    res = {
         "spec_lines": count_lines(lib_dir, spec_f),
         "proof_lines": count_lines(lib_dir, proof_f),
         "code_lines": count_lines(lib_dir, code_f),
         "trusted_native_lines": count_lines(lib_dir, trust_f),
+        "unproved_escapes": measure_escapes(lib_dir, files, sc, spec_f, proof_f, code_f, lean_conf),
         "commit": git_commit(lib_dir),
         "tool_version": tool_version(lib_dir),
     }
+    share = measure_generated_share(lib_dir)
+    if share is not None:
+        res["generated_share_pct"] = share
+    claims = measure_ledger(lib_dir, lean_conf)
+    if claims is not None:
+        res["proved_claims"], res["total_claims"] = claims
+    trust_n = measure_trust_ledger(lib_dir, sc)
+    if trust_n is not None:
+        res["trust_ledger_entries"] = trust_n
+    return res
 
 
 def main(argv):
     if len(argv) != 1 or argv[0].startswith("-"):
         die("usage: scripts/score <lib-dir>")
     m = measure(argv[0])
-    sys.stdout.write(
-        f"[scores]\n"
-        f"spec_lines = {m['spec_lines']}\n"
-        f"proof_lines = {m['proof_lines']}\n"
-        f"code_lines = {m['code_lines']}\n"
-        f"trusted_native_lines = {m['trusted_native_lines']}\n"
-        f"\n"
-        f"[scores.provenance]\n"
-        f'commit = "{m["commit"]}"\n'
-        f'tool_version = "{m["tool_version"]}"\n'
-    )
+    lines = [
+        "[scores]",
+        f"spec_lines = {m['spec_lines']}",
+        f"proof_lines = {m['proof_lines']}",
+        f"code_lines = {m['code_lines']}",
+        f"trusted_native_lines = {m['trusted_native_lines']}",
+    ]
+    for key in ("generated_share_pct", "proved_claims", "total_claims", "unproved_escapes", "trust_ledger_entries"):
+        if key in m:
+            lines.append(f"{key} = {m[key]}")
+    lines += [
+        "",
+        "[scores.provenance]",
+        f'commit = "{m["commit"]}"',
+        f'tool_version = "{m["tool_version"]}"',
+    ]
+    sys.stdout.write("\n".join(lines) + "\n")
     return 0
 
 

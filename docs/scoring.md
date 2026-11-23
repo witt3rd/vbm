@@ -1,6 +1,6 @@
 # Library Scoring (`scripts/score` and `lib/<name>/score`)
 
-Status: normative definition (Part 1 of 3: definitions and source metrics).
+Status: normative definition (Part 2 of 3: source, proof, and trust metrics).
 
 Every family library under `lib/<name>/` computes its own advisory `[scores]` and `[scores.provenance]` block for `lib/<name>/card.toml` (`docs/hub-cards.md`, section 1.3). Scores are **advisory only** and never gate a landing or release. Until a library exposes `lib/<name>/score`, its card carries no `[scores]` section and the library is **unscored**.
 
@@ -10,17 +10,17 @@ This document defines every common core metric in `docs/hub-cards.md` section 1.
 
 ## 1. Common Core Metrics
 
-| Metric | Type | Source in `lib/<name>/` | Measurement | Status (Part 1) |
+| Metric | Type | Source in `lib/<name>/` | Measurement | Status (Part 2) |
 |---|---|---|---|---|
 | `spec_lines` | int >= 0 | Pure specification `.lean` files (e.g. `spec/**/*.lean` when present; otherwise `0` unless separated from `code_lines`) | Newline count (`b"\n"`) of tracked regular files | Implemented |
 | `code_lines` | int >= 0 | Executable/compiled `.lean` library modules (root `<Lib>.lean`, `<Lib>/**/*.lean`, `<Lib>Simd`, `<Lib>Wire`, `<Lib>Tool`, excluding `*Proofs*`, `vectors/`, `tests/`, `scripts/`, `bench/`, `docs/`, `lakefile.lean`) | Newline count (`b"\n"`) of tracked regular files | Implemented |
 | `proof_lines` | int >= 0 | Machine-checked proof `.lean` files (`*Proofs.lean`, `*Proofs/**/*.lean`) | Newline count (`b"\n"`) of tracked regular files | Implemented |
 | `trusted_native_lines` | int >= 0 | Trusted native boundary files (`abi/*.c`, `runtime/**/*.c`, `native/*.c`, `include/*.h`, `scripts/rt/runtime/**/*.c`, or `[trust] c_files` in `scorecard.toml` when present) | Newline count (`b"\n"`) of tracked regular files (matches `scorecard/scorecard` `verified.trusted_c_lines`) | Implemented |
-| `generated_share_pct` | float (0.0..100.0) | `scripts/ClosureGate.lean` (or `[proof] closure_cmd` in `scorecard.toml`) | Executed spec expression nodes / total executed expression nodes * 100 | Not measurable yet (requires Lean build/closure run; Part 2) |
-| `proved_claims` | int >= 0 | `docs/proof-ledger.md` summary line (`**N proved, ... of M.**`) produced by `land-lean ledger` | Count of claims with status `proved` | Not measurable yet (Part 2) |
-| `total_claims` | int >= 0 | `docs/proof-ledger.md` summary line (`**N proved, ... of M.**`) produced by `land-lean ledger` | Total claims in the obligation ledger | Not measurable yet (Part 2) |
-| `unproved_escapes` | int >= 0 | Static scan of tracked `.lean` source files (matches `scorecard/scorecard` `verified.unproved_escapes`: `\b(sorry|admit|axiom|unsafe|implemented_by|csimp)\b` excluding lines with `tier1-allow`) | Count of matching lines | Not measurable yet (Part 2) |
-| `trust_ledger_entries` | int >= 0 | `docs/trust-ledger.md` (`^### T[0-9]` headers, matching `scorecard/scorecard` `verified.trust_ledger_entries`) | Count of matching entry headers | Not measurable yet (Part 2) |
+| `generated_share_pct` | float (0.0..100.0) | `scripts/ClosureGate.lean` | Executed spec expression nodes / total executed expression nodes * 100 (omitted when no closure gate or unbuilt) | Implemented (when measurable) |
+| `proved_claims` | int >= 0 | Typed obligation ledger (`LAND_LEAN_LEDGER_MODULE` via `land-lean ledger --no-write`) | Count of claims with status `proved` (omitted when no ledger module or unbuilt) | Implemented (when measurable) |
+| `total_claims` | int >= 0 | Typed obligation ledger (`LAND_LEAN_LEDGER_MODULE` via `land-lean ledger --no-write`) | Total claims in the obligation ledger (omitted when no ledger module or unbuilt) | Implemented (when measurable) |
+| `unproved_escapes` | int >= 0 | Lexer/AST-level Lean token scan (skipping comments, strings, char literals, guillemets) and typed `land-lean axiom` audit | Maximum of token hits (`sorry`, `admit`, `axiom`, `unsafe`, `implemented_by`, `csimp`) and non-standard axiom offenders | Implemented |
+| `trust_ledger_entries` | int >= 0 | `docs/trust-ledger.md` (or `[trust] ledger` in `scorecard.toml`) via `.land/tool/lean/trust_ledger.py` `parse()` | Count of parsed `### T<N>. ...` entries (omitted when no trust ledger file exists) | Implemented (when measurable) |
 
 ### Provenance (`[scores.provenance]`)
 
@@ -62,16 +62,15 @@ Test harnesses (`tests/`), benchmarks (`bench/`), and performance prototypes (`d
 
 ---
 
-## 3. What Is Not Honestly Measurable Yet
+## 3. When Metrics Are Omitted (Never Invented)
 
-The following five core metrics are **not** emitted by `scripts/score` in Part 1 because they require either ledger/escape scanners or executing the Lean build/closure gate:
+Per `docs/hub-cards.md` section 1.3 ("unscored is a state, not a number"), `scripts/score` omits a metric rather than inventing `0` or `0.0` when its source does not exist or cannot be evaluated:
 
-1. **`generated_share_pct`:** Requires running `scripts/ClosureGate.lean` (or `[proof] closure_cmd`), which needs a Lean build and only exists in libraries with C/WASM exports (`vbm-json`, `vbm-sse`). Pure-Lean libraries without a closure gate have no executed-node share defined yet.
-2. **`proved_claims` and `total_claims`:** Require parsing `docs/proof-ledger.md` (and handling libraries that do not yet have a generated obligation ledger, such as `vbm-context`, `vbm-journal`, `vbm-memory`, `vbm-rt`, `vbm-simd`).
-3. **`unproved_escapes`:** Requires the static escape scan across declared source globs (`scorecard/scorecard` `verified.unproved_escapes`).
-4. **`trust_ledger_entries`:** Requires parsing `docs/trust-ledger.md` (and handling `vbm-rt`, which has no `docs/trust-ledger.md` yet).
+1. **`generated_share_pct`:** Measured by running `lake env lean --run scripts/ClosureGate.lean` when `scripts/ClosureGate.lean` exists and prints `specified share <P>%`. Pure-Lean libraries without a closure gate (or unbuilt trees) omit `generated_share_pct`.
+2. **`proved_claims` and `total_claims`:** Measured from the typed `List Obligation` evaluation of `LAND_LEAN_LEDGER_MODULE` via `land-lean ledger --no-write` (never by regex-matching `docs/proof-ledger.md`). Libraries without `LAND_LEAN_LEDGER_MODULE` in `.land/lean.conf` (such as `vbm-context`, `vbm-journal`, `vbm-memory`, `vbm-rt`, `vbm-simd`) or unbuilt trees omit both fields.
+3. **`trust_ledger_entries`:** Measured by `.land/tool/lean/trust_ledger.py` `parse()` over `docs/trust-ledger.md` (or `[trust] ledger` in `scorecard.toml`). Libraries without a trust ledger file (such as `vbm-rt`) omit `trust_ledger_entries`.
 
-Because `docs/hub-cards.md` section 2.2 rule 6 forbids committing an incomplete `[scores]` block into `card.toml`, `scripts/score` in Part 1 prints only the source metrics and `[scores.provenance]` to stdout and does **not** implement `--write` onto `lib/*/card.toml`.
+Because `docs/hub-cards.md` section 2.2 rule 6 forbids committing an incomplete `[scores]` block into `card.toml`, `scripts/score` in Part 2 prints the measured `[scores]` fields and `[scores.provenance]` to stdout and does **not** implement `--write` onto `lib/*/card.toml` (Part 3).
 
 ---
 
@@ -82,5 +81,5 @@ scripts/score <lib-dir>
 ```
 
 - Reads `<lib-dir>` (a library directory such as `lib/vbm-json`).
-- Prints deterministic TOML containing `[scores]` (`spec_lines`, `code_lines`, `proof_lines`, `trusted_native_lines`) and `[scores.provenance]` (`commit`, `tool_version`) to stdout.
+- Prints deterministic TOML containing `[scores]` (all measurable core metrics) and `[scores.provenance]` (`commit`, `tool_version`) to stdout.
 - Exits `0` on success, `2` on invalid input (missing directory, unsafe path).
