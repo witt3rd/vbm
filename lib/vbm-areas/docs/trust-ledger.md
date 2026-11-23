@@ -8,7 +8,7 @@ Entry format: **What** it is; **Enters** where it enters; **Assumes** what we as
 - **What:** the Lean compiler and kernel, the runtime (`lean.h`, `libleanrt`) and the bundled clang and ld.lld, pinned by `lean-toolchain` and `mise.toml`; `lakefile.lean` drives the build.
 - **Enters:** `lean-toolchain`, `mise.toml`, `lakefile.lean`; the kernel checks every proof and the compiler produces every artifact built from this library.
 - **Assumes:** the kernel is sound and the compiler is faithful (a miscompile would void what the proofs say about the compiled code): no written contract beyond the Lean project's own documentation.
-- **Test:** the axiom gate (`.land/tool/bin/land-lean axiom`, configured by `.land/lean.conf`) fails when any constant depends on an axiom beyond the three standard ones; `lake build` re-checks every proof.
+- **Test:** the axiom gate (`../../.land/tool/bin/land-lean axiom`, configured by `.land/lean.conf`) fails when any constant depends on an axiom beyond the three standard ones; `lake build` re-checks every proof.
 - **Owner:** the owner
 - **Plan:** accept because the kernel and the compiler are outside this repository and every claim in it assumes them.
 - **Covers:** `file:lean-toolchain` `file:mise.toml` `file:lakefile.lean` `lean-compiler` `lean-runtime` `clang-lld`

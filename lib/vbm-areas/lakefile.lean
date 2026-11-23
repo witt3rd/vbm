@@ -14,4 +14,4 @@ lean_lib VbmAreasProofs where
   globs := #[.andSubmodules `VbmAreasProofs]
 
 /-- The landing tool's Lean modules (the obligation-ledger vocabulary and the reach walk, `land-lean ledger`), a small package it ships; required, never declared here, so a repository that vendors this library and requires it too shares one copy. -/
-require «land-ledger» from ".land/tool/lean"
+require «land-ledger» from "../../.land/tool/lean"

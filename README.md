@@ -25,7 +25,7 @@ Also: [flip-checklist](skills/flip-checklist/SKILL.md) (publishing a repo), [wri
 | [vbm-rt](https://github.com/witt3rd/vbm-rt) | The freestanding runtime shim (allocator, mem* replacements, WebAssembly and native) and the ABI description with the C header and binding generators; consumers vbm-json and vbm-sse | foundation | live | unscored | unscored | - |
 | [vbm-simd](https://github.com/witt3rd/vbm-simd) | Bit-vector model of vector instructions, a trusted shim per instruction set, proved kernels | foundation | live | unscored | unscored | - |
 | vbm-acp | Agent client protocol, pinned core profile | library | planned | unscored | unscored | - |
-| [vbm-areas](https://github.com/witt3rd/vbm-areas) | The pure selection logic of a landing: which declared areas a change touches, where areas overlap, and when a verdict can be reused | library | live | unscored | unscored | - |
+| [vbm-areas](lib/vbm-areas) | The pure selection logic of a landing: which declared areas a change touches, where areas overlap, and when a verdict can be reused. | library | live | unscored | unscored | - |
 | vbm-baseN | base64, base64url and base16 | library | planned | unscored | unscored | - |
 | [vbm-context](lib/vbm-context) | A typed, verified agent context state (goal, obligations, facts with provenance, bounded compaction) for long-horizon LLM agents. | library | live | unscored | unscored | - |
 | [vbm-decision](lib/vbm-decision) | A typed decision-model layer: the wire contract of a decisions API, typed answers with probabilities, and a threshold truth table that fails closed. | library | live | unscored | unscored | - |

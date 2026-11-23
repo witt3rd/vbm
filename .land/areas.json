@@ -34,6 +34,21 @@
       ]
     },
     {
+      "name": "vbm-areas",
+      "paths": [
+        "lib/vbm-areas/*"
+      ],
+      "steps": [
+        {
+          "run": "mise exec -- scripts/repo-gates.sh"
+        },
+        {
+          "run": "mise exec -- scripts/tier1.sh",
+          "cwd": "lib/vbm-areas"
+        }
+      ]
+    },
+    {
       "name": "vbm-context",
       "paths": [
         "lib/vbm-context/*"

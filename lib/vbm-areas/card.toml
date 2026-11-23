@@ -1,0 +1,9 @@
+name = "vbm-areas"
+scope = "The pure selection logic of a landing: which declared areas a change touches, where areas overlap, and when a verdict can be reused."
+kind = "library"
+status = "live"
+license = "Apache-2.0"
+consumers = []
+
+[links]
+docs = "lib/vbm-areas/docs"

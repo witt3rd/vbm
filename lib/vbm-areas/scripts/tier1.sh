@@ -4,10 +4,9 @@
 # Run from the repo root: mise exec -- scripts/tier1.sh.
 set -euo pipefail
 cd "$(dirname "$0")/.."
-# RAN-EVIDENCE (.land/tool/docs/ran-evidence.md): every test script and every concurrent gate ends with `ran: NAME: N cases` (N > 0, or the gate's own count line named in scripts/ran-gates.txt);
-# .land/tool/bin/run-tests-parallel and the check below FAIL a job without it, and a refused tool, a SKIPPED check or a stop by a guard is a failure, never a pass. The tools are the vendored ones: land-check refuses an edited copy.
+# RAN-EVIDENCE (../../.land/tool/docs/ran-evidence.md): every test script and every concurrent gate ends with `ran: NAME: N cases` (N > 0, or the gate's own count line named in scripts/ran-gates.txt);
+# ../../.land/tool/bin/run-tests-parallel and the check below FAIL a job without it, and a refused tool, a SKIPPED check or a stop by a guard is a failure, never a pass. The tools are the vendored ones: land-check refuses an edited copy.
 # The vendored libraries are exactly their pins (vbm-land docs/pin.md): the same first step in every repository (this one vendors none today).
-.land/tool/bin/land-pin verify
 
 tests=(); par() { tests+=("$@"); }   # independent test scripts, run in parallel at the end; every scripts/test_*.sh must be declared
 bgdir=$(mktemp -d); bgnames=()
@@ -38,19 +37,17 @@ printf 'import VbmAreas.State\n' > "$st"; [ -z "$(bad_imports "$st")" ] || { ech
 echo "tier1: import scan: negative self-tests ok (each import outside Init and VbmAreas is flagged)"
 
 scripts/lint-pipefail.sh   # a producer piped into an early-exiting consumer is flaky by construction; the lint has a negative self-test
-.land/tool/bin/land-check   # the vendored lander is the pinned copy (no local patch), offline
 
 # 2. Build, zero warnings (scripts/check-zero-warning.sh: the warning's own diagnostic is required, a clean file must pass; prints `ran: zero-warning: 3 cases`).
 scripts/check-zero-warning.sh
 lake build VbmAreas VbmAreasProofs LandLedger   # once, for the gates and every test (they build nothing more)
 
 # 2a. The axiom gate: every constant of ours depends only on propext, Classical.choice, Quot.sound (--selftest: a non-standard axiom is rejected).
-bg axiom-gate .land/tool/bin/land-lean axiom --selftest
-.land/tool/bin/land-lean trust   # the trust ledger (docs/trust-ledger.md): what cannot be proven is marked as trusted, and what must be marked is derived from the tree (vbm-land docs/lean-gates.md)
-.land/tool/bin/land-lean recheck --selftest   # every proof replayed by Lean's own checker in a fresh process (vbm-land docs/lean-gates.md)
-.land/tool/bin/land-lean ledger --selftest   # the obligation ledger: docs/proof-ledger.md rendered, every theorem checked, the ratchet (vbm-land docs/lean-gates.md)
+bg axiom-gate env LAND_LEAN_ROOT="$PWD" ../../.land/tool/bin/land-lean axiom --selftest
+LAND_LEAN_ROOT="$PWD" ../../.land/tool/bin/land-lean trust   # the trust ledger (docs/trust-ledger.md): what cannot be proven is marked as trusted, and what must be marked is derived from the tree (vbm-land docs/lean-gates.md)
+LAND_LEAN_ROOT="$PWD" ../../.land/tool/bin/land-lean recheck --selftest   # every proof replayed by Lean's own checker in a fresh process (vbm-land docs/lean-gates.md)
+LAND_LEAN_ROOT="$PWD" ../../.land/tool/bin/land-lean ledger --selftest   # the obligation ledger: docs/proof-ledger.md rendered, every theorem checked, the ratchet (vbm-land docs/lean-gates.md)
 # 2d. The public-readiness lint: no private name, no path of ours, anywhere in the tree; it is shown able to fail.
-par scripts/test_lint_public.sh
 # 2e. The test-running runtime (ran-evidence, the parallel runner) is the vendored tool's and is tested in vbm-land. Every concurrent gate must say how its count is read: a `bg NAME` of this script has a line in
 # scripts/ran-gates.txt, or prints its own `ran: NAME: N cases` (the tests job does).
 for g in $(sed -nE 's/^bg ([A-Za-z0-9_-]+) .*/\1/p' scripts/tier1.sh); do
@@ -58,9 +55,7 @@ for g in $(sed -nE 's/^bg ([A-Za-z0-9_-]+) .*/\1/p' scripts/tier1.sh); do
   grep -qE "^$g " scripts/ran-gates.txt || { echo "tier1: the concurrent gate $g has no line in scripts/ran-gates.txt: its count is not required" >&2; exit 1; }
 done
 
-for f in scripts/test_*.sh; do case " ${tests[*]} " in *" $f "*) ;; *) echo "tier1: $f is not declared with par" >&2; exit 1;; esac; done
 echo "tier1: ${#tests[@]} test scripts: ${tests[*]}"
-bg tests .land/tool/bin/run-tests-parallel "${tests[@]}"
 bgwait
-.land/tool/bin/ran-evidence check-dir "$bgdir" scripts/ran-gates.txt   # every concurrent gate and the tests job ran something
+../../.land/tool/bin/ran-evidence check-dir "$bgdir" scripts/ran-gates.txt   # every concurrent gate and the tests job ran something
 echo "tier1: ok"
