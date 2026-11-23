@@ -13,6 +13,7 @@ par scripts/test_scorecard.sh scripts/test_lint_public.sh scripts/test_sandbox_c
 par scripts/test_manifest.sh
 par scripts/test_pins.sh
 par scripts/test_license.sh
+par scripts/test_hub_areas.sh
 par scripts/test_export.sh
 par
 for f in scripts/test_*.sh; do case " ${tests[*]} " in *" $f "*) ;; *) echo "tier1: $f is not declared with par" >&2; exit 1;; esac; done

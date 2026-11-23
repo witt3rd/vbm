@@ -1,0 +1,121 @@
+#!/usr/bin/env python3
+"""scripts/hub-areas: compose .land/areas.json from the libraries' own declarations (vbm-land docs/family-repo.md, section 1.3).
+  scripts/hub-areas            print the composed file
+  scripts/hub-areas --write    write .land/areas.json
+  scripts/hub-areas --check    exit 1 when .land/areas.json is not exactly the composition (a derived file is never hand-edited)
+  scripts/hub-areas --root DIR work in DIR (the tests)
+The file is DERIVED, pure and deterministic: the hub's own area, then each library's areas (lib/NAME/areas.json) in name order, with every path prefixed lib/NAME/, every step run from lib/NAME, and the whole-repository gates (scripts/repo-gates.sh) as the FIRST step of every area.
+An area that declares no `uses` owns the paths of every library in its library's transitive `deps` (the sound default); `uses` ([{"lib": D, "area": PART}]) narrows that to named areas.
+INTERIM: the specification of this composition is `Compose` in vbm-areas (Lean); this script is replaced by the tool generated from it. Refuses (exit 2, by name): an unknown key, a bad name, an area name that does not start with its library's, a path that leaves the library, a library path no area owns, an unknown or cyclic dependency, a `uses` that names a library outside `deps`."""
+import fnmatch, json, os, re, subprocess, sys
+
+HUB_PATHS = [".agents/*", ".gitignore", "AGENTS.md", "CONTRIBUTING.md", "LICENSE", "MANIFESTO.md", "NOTICE", "README.md", "ROADMAP.md", "SECURITY.md", "VERSION", "docs/*", "guidelines/*", "mise.toml", "project.toml", "registry/*", "scorecard/*", "scripts/*", "skills/*"]
+GATES = {"run": "mise exec -- scripts/repo-gates.sh"}
+NAME = re.compile(r"[a-z0-9][a-z0-9_-]*\Z")
+
+
+def die(msg): print(f"hub-areas: {msg}", file=sys.stderr); sys.exit(2)
+
+
+def strict(d, keys, opt, what):
+    if not isinstance(d, dict): die(f"{what}: not an object")
+    for k in d:
+        if k not in keys | opt: die(f"{what}: unknown key '{k}'")
+    for k in keys:
+        if k not in d: die(f"{what}: missing key '{k}'")
+
+
+def load(root):
+    libs = {}
+    base = os.path.join(root, "lib")
+    for n in sorted(os.listdir(base)) if os.path.isdir(base) else []:
+        d = os.path.join(base, n)
+        if not os.path.isdir(d): continue
+        if not NAME.match(n) or n in ("registry", "docs", "tooling", "inert", "hub"): die(f"lib/{n}: not a library name")
+        f = os.path.join(d, "areas.json")
+        if not os.path.isfile(f): die(f"lib/{n}: no areas.json")
+        try: decl = json.load(open(f))
+        except ValueError as e: die(f"lib/{n}/areas.json: {e}")
+        strict(decl, {"version", "areas"}, set(), f"lib/{n}/areas.json")
+        if decl["version"] != 1: die(f"lib/{n}/areas.json: version must be 1")
+        if not decl["areas"]: die(f"lib/{n}/areas.json: no areas")
+        deps = []
+        df = os.path.join(d, "deps")
+        if os.path.isfile(df): deps = [l.split("#")[0].strip() for l in open(df) if l.split("#")[0].strip()]
+        libs[n] = {"decl": decl, "deps": deps, "dir": d}
+    return libs
+
+
+def closure(libs, n, seen=None, path=()):
+    out = []
+    for d in libs[n]["deps"]:
+        if d not in libs: die(f"lib/{n}/deps: unknown library '{d}'")
+        if d == n or d in path: die(f"lib/{n}/deps: a dependency cycle through '{d}'")
+        for x in closure(libs, d, None, path + (n,)) + [d]:
+            if x not in out: out.append(x)
+    return out
+
+
+def tracked(root, n):
+    r = subprocess.run(["git", "-C", root, "ls-files", "--cached", "--others", "--exclude-standard", f"lib/{n}"], capture_output=True, text=True)
+    return [p[len(f"lib/{n}/"):] for p in r.stdout.splitlines()] if r.returncode == 0 else []
+
+
+def compose(root):
+    libs = load(root); out = []
+    hub = {"name": "hub", "paths": list(HUB_PATHS), "steps": [GATES, {"run": "mise exec -- scripts/tier1.sh"}]}
+    out.append(hub)
+    own = {}   # (lib, area) -> composed paths
+    for n, L in libs.items():
+        for a in L["decl"]["areas"]:
+            strict(a, {"name", "paths", "steps"}, {"uses"}, f"lib/{n}/areas.json area")
+            nm = a["name"]
+            if not (nm == n or (nm.startswith(n + ":") and NAME.match(nm[len(n) + 1:]))): die(f"lib/{n}/areas.json: area name '{nm}' must be '{n}' or '{n}:<part>'")
+            if not a["paths"]: die(f"lib/{n}/areas.json: area '{nm}' has no paths")
+            for p in a["paths"]:
+                if p.startswith("/") or ".." in p.split("/"): die(f"lib/{n}/areas.json: area '{nm}': path '{p}' leaves the library")
+            own[(n, nm)] = [f"lib/{n}/{p}" for p in a["paths"]]
+        files = tracked(root, n)
+        for f in files:
+            if not any(fnmatch.fnmatchcase(f, p) for a in L["decl"]["areas"] for p in a["paths"]): die(f"lib/{n}: the path '{f}' is owned by no area of the library")
+    for n, L in libs.items():
+        cl = closure(libs, n)
+        for a in L["decl"]["areas"]:
+            nm = a["name"]; paths = list(own[(n, nm)])
+            if "uses" in a:
+                for u in a["uses"]:
+                    strict(u, {"lib"}, {"area"}, f"lib/{n}/areas.json area '{nm}' uses")
+                    if u["lib"] not in cl: die(f"lib/{n}/areas.json: area '{nm}' uses '{u['lib']}', which is not in the library's dependency closure")
+                    hit = [k for k in own if k[0] == u["lib"] and ("area" not in u or k[1] in (u["area"], u["lib"] + ":" + u["area"]))]
+                    if not hit: die(f"lib/{n}/areas.json: area '{nm}' uses an area of '{u['lib']}' that does not exist")
+                    for k in hit:
+                        for p in own[k]:
+                            if p not in paths: paths.append(p)
+            else:
+                for d in cl:
+                    for k in own:
+                        if k[0] == d:
+                            for p in own[k]:
+                                if p not in paths: paths.append(p)
+            steps = [GATES]
+            for s in a["steps"]:
+                strict(s, {"run"}, {"cwd"}, f"lib/{n}/areas.json area '{nm}' step")
+                cwd = f"lib/{n}" if s.get("cwd", ".") in (".", "") else f"lib/{n}/{s['cwd']}"
+                steps.append({"run": s["run"], "cwd": cwd})
+            out.append({"name": nm, "paths": paths, "steps": steps})
+    return json.dumps({"version": 1, "areas": out}, indent=2) + "\n"
+
+
+def main():
+    a = sys.argv[1:]; root = os.getcwd()
+    if "--root" in a: i = a.index("--root"); root = a[i + 1]; a = a[:i] + a[i + 2:]
+    text = compose(root); target = os.path.join(root, ".land", "areas.json")
+    if a == ["--write"]: open(target, "w").write(text)
+    elif a == ["--check"]:
+        have = open(target).read() if os.path.isfile(target) else ""
+        if have != text: print("hub-areas: .land/areas.json is not the composition of lib/*/areas.json: run scripts/hub-areas --write", file=sys.stderr); sys.exit(1)
+    elif a == []: sys.stdout.write(text)
+    else: die("usage: hub-areas [--write | --check] [--root DIR]")
+
+
+main()
